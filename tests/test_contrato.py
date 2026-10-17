@@ -161,3 +161,18 @@ def test_nivel_de_resposta_de_cada_planilha(tmp_path):
     rc, saida = rodar_duas(tmp_path)
     assert json.loads((saida / "nivel_resposta.json").read_text(encoding="utf-8")) == [{"nivel": 1}]
     assert json.loads((saida / "fogo_nivel_resposta.json").read_text(encoding="utf-8")) == [{"nivel": 2}]
+
+
+def test_depuracao_por_situacao_e_por_motivo(tmp_path):
+    rc, saida = rodar_duas(tmp_path)
+    assert rc == 0
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    dep = meta["conjuntos"]["sisgeo"]["depuracao"]
+    # amostra: 1 falso aviso, 1 com motivo, 1 cancelada COM motivo; "atendida com prestação de serviço" é válida
+    assert dep == {"validas": 36, "situacao": 1, "motivo": 1, "ambos": 1}
+    sis = json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
+    validas = [r for r in sis if "depuracao" not in r]
+    assert {r["situacao"] for r in validas} <= {"Encerrada com empenho de viatura", "Ocorrência atendida com prestação de serviço"}
+    assert not any("motivo_exclusao" in r for r in sis), "texto do motivo da exclusão não pode ser publicado"
+    fv = meta["conjuntos"]["fogo_sisgeo"]["depuracao"]
+    assert fv["motivo"] == 1 and fv["situacao"] >= 1

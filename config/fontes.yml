@@ -111,9 +111,9 @@ conjuntos:
       municipio:       ["Município"]
       latlon:          ["Latitude/Longitude"]
       duracao_s:       ["Duração (segundos)"]
+      motivo_exclusao: ["Motivo da Exclusão"]   # só para a depuração; o texto não é publicado
       # DE FORA DE PROPÓSITO (dados pessoais / texto livre):
-      #   Efetivo (nomes e matrículas), Endereço, Avaliação Cenário,
-      #   Atualização Cenário, Motivo da Exclusão
+      #   Efetivo (nomes e matrículas), Endereço, Avaliação Cenário, Atualização Cenário
     tipos:
       redec: redec
       data_ocorrencia: datahora
@@ -130,6 +130,11 @@ conjuntos:
     # Identidade de um registro do SisGeO: número do evento + número da ocorrência.
     # Mesmo evento com várias ocorrências = unidades em apoio (não é duplicata).
     chave_unica: [id_evento, ocorrencia]
+    # Depuração: só conta como válida a ocorrência "atendida com prestação de serviço" ou
+    # "encerrada com empenho de viatura" E sem nada em "Motivo da Exclusão". As demais
+    # aparecem só na aba Depuração (o texto do motivo não é publicado).
+    depuracao:
+      situacoes_validas: ["Ocorrência atendida com prestação de serviço", "Encerrada com empenho de viatura"]
 
   danos_humanos:
     aba: "DANOS HUMANOS"
@@ -296,9 +301,16 @@ conjuntos:
       situacao:        ["Situação"]
       vitimas:         ["VítimaQtd"]
       municipio:       ["Município"]
+      motivo_exclusao: ["Motivo da Exclusão"]   # só para a depuração; o texto não é publicado
       # DE FORA DE PROPÓSITO: Efetivo, Endereço, Viatura, Avaliação/Atualização Cenário
     tipos: {redec: redec, data_ocorrencia: datahora, vitimas: inteiro, municipio: municipio}
     chave_unica: [id_evento, ocorrencia]
+    # Depuração: só conta como válida a ocorrência "atendida com prestação de serviço" ou
+    # "encerrada com empenho de viatura" E sem nada em "Motivo da Exclusão". As demais
+    # aparecem só na aba Depuração (o texto do motivo não é publicado).
+    depuracao:
+      situacoes_validas: ["Ocorrência atendida com prestação de serviço", "Encerrada com empenho de viatura"]
+
     compactar: true     # ~17 mil linhas: município/REDEC saem do JSON e voltam pelo código IBGE
 
   fogo_abertos:

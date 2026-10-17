@@ -35,6 +35,10 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
   de REDEC/município, porque é uma referência estadual (`INDICATIVO_EXTINCTUS` em `site/assets/js/app.js`).
 - **Mapas:** as faixas de cor se ajustam ao recorte (progressão geométrica de 1 até o maior valor, em números
   redondos), para o mapa não saturar quando muitos municípios passam de 100.
+- **Depuração (SisGeO · Chuvas e SisGeO · Fogo):** só conta a ocorrência com situação "Ocorrência atendida com
+  prestação de serviço" ou "Encerrada com empenho de viatura" **e** sem nada em "Motivo da Exclusão". As demais
+  (excluídas por situação, por motivo ou pelos dois) ficam fora de todos os indicadores e aparecem só na aba
+  **Depuração**. A lista de situações válidas está em `config/fontes.yml` (`depuracao:`); o texto do motivo não é publicado.
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
 ## Por que este desenho não quebra a cada commit

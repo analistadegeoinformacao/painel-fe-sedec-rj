@@ -44,6 +44,7 @@ class Relatorio:
         self.erros: list[str] = []
         self.avisos: dict[str, list[str]] = defaultdict(list)
         self.excluidos: dict[str, int] = {}
+        self.depuracao: dict[str, dict] = {}
 
     def erro(self, conj, msg):
         self.erros.append(f"[{conj}] {msg}")
@@ -61,6 +62,27 @@ def mapear_colunas(cabecalho, spec_colunas):
                 achadas[campo] = idx[N.chave(nome)]
                 break
     return achadas
+
+
+def depurar(nome, dep, saida, cols, rel):
+    """Depuração do SisGeO: só é válida a ocorrência com situação na lista de válidas
+    E sem nada escrito em "Motivo da Exclusão". As demais continuam publicadas (para a
+    aba Depuração) com o campo "depuracao" = situacao | motivo | ambos; o texto do motivo
+    nunca é publicado (é texto livre)."""
+    validas = {N.chave(s) for s in dep["situacoes_validas"]}
+    usa_sit = "situacao" in cols
+    if not usa_sit:
+        rel.aviso(nome, "coluna de situação ausente: depuração por situação não aplicada")
+    cont = Counter()
+    for reg in saida:
+        motivo = reg.pop("motivo_exclusao", None)
+        por_sit = usa_sit and N.chave(reg.get("situacao") or "") not in validas
+        por_mot = not N.vazio(motivo)
+        tipo = "ambos" if por_sit and por_mot else "situacao" if por_sit else "motivo" if por_mot else None
+        if tipo:
+            reg["depuracao"] = tipo
+        cont[tipo or "validas"] += 1
+    rel.depuracao[nome] = {k: cont.get(k, 0) for k in ("validas", "situacao", "motivo", "ambos")}
 
 
 def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limites):
@@ -164,6 +186,8 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
             rel.aviso(nome, f"{len(saida) - len(unicos)} linha(s) repetida(s) (mesmo {' + '.join(chave)}) removida(s)")
         saida = unicos
     rel.excluidos[nome] = excluidos
+    if spec.get("depuracao"):
+        depurar(nome, spec["depuracao"], saida, cols, rel)
     if len(saida) < spec.get("min_linhas", 0):
         rel.erro(nome, f"apenas {len(saida)} linha(s); mínimo exigido {spec['min_linhas']}")
     return saida, sem_mun
@@ -226,6 +250,8 @@ def main(argv=None):
             meta_conj[nome] = {"titulo": spec.get("titulo", nome), "aba": spec["aba"], "linhas": len(dados),
                                "planilha": planilhas.get(spec.get("planilha", "principal"), {}).get("titulo", ""),
                                "excluidos": rel.excluidos.get(nome, 0)}
+            if nome in rel.depuracao:
+                meta_conj[nome]["depuracao"] = rel.depuracao[nome]
         if spec.get("separar_sem_municipio"):
             alvo = spec["separar_sem_municipio"]
             resultados[alvo] = extra

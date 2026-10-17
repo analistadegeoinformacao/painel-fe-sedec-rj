@@ -116,6 +116,7 @@ body[data-amb="fogo"] { --acento: #a16207; --acento-suave: #fdf3dc; }
 main { padding: 18px clamp(16px, 3vw, 32px) 32px; display: block; }
 .painel-aba { display: grid; gap: 16px; }
 .painel-aba[hidden] { display: none; }
+.nota--bloco { margin: 0; padding: 10px 14px; background: var(--superficie); border: 1px solid var(--borda); border-left: 3px solid var(--acento); border-radius: var(--raio); font-size: 13px; color: var(--texto-2); }
 .grade { display: grid; gap: 16px; }
 .grade--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); }
 .grade--mapa { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }

@@ -55,6 +55,7 @@
     <button role="tab" data-amb="sisgeo" data-aba="geral">Visão geral</button>
     <button role="tab" data-amb="sisgeo" data-aba="tipos">Tipos e territórios</button>
     <button role="tab" data-amb="sisgeo" data-aba="registros">Registros</button>
+    <button role="tab" data-amb="sisgeo" data-aba="depuracao">Depuração</button>
     <button role="tab" data-amb="sisgeo" data-aba="qualidade">Qualidade dos dados <span class="selo-contagem" data-avisos="sisgeo"></span></button>
 
     <button role="tab" data-amb="redecs" data-aba="geral">Visão geral</button>
@@ -68,6 +69,7 @@
     <button role="tab" data-amb="fogo" data-aba="territorios">Subtipos e territórios</button>
     <button role="tab" data-amb="fogo" data-aba="condicoes">Condições meteorológicas</button>
     <button role="tab" data-amb="fogo" data-aba="registros">Registros</button>
+    <button role="tab" data-amb="fogo" data-aba="depuracao">Depuração</button>
     <button role="tab" data-amb="fogo" data-aba="qualidade">Qualidade dos dados <span class="selo-contagem" data-avisos="fogo"></span></button>
   </nav>
 
@@ -121,6 +123,16 @@
 
     <section class="painel-aba" data-amb="sisgeo" data-aba="registros" hidden>
       <article class="cartao"><header class="cartao__cab"><h2>Ocorrências SisGeO</h2></header><div id="s-tabela"></div></article>
+    </section>
+
+    <section class="painel-aba" data-amb="sisgeo" data-aba="depuracao" hidden>
+      <p class="nota nota--bloco">Só contam no painel as ocorrências <b>atendidas com prestação de serviço</b> ou <b>encerradas com empenho de viatura</b> e sem nada escrito em <b>Motivo da Exclusão</b>. As demais aparecem só aqui.</p>
+      <div class="kpis" id="s-dep-kpis"></div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Excluídas por situação</h2><span class="dica">situação registrada no SisGeO</span></header><div class="grafico" id="s-dep-situacao"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Excluídas por REDEC</h2></header><div class="grafico" id="s-dep-redec"></div></article>
+      </div>
+      <article class="cartao"><header class="cartao__cab"><h2>Ocorrências excluídas na depuração</h2><span class="dica">o texto do motivo não é publicado</span></header><div id="s-dep-tabela"></div></article>
     </section>
 
     <section class="painel-aba" data-amb="sisgeo" data-aba="qualidade" hidden>
@@ -238,6 +250,16 @@
 
     <section class="painel-aba" data-amb="fogo" data-aba="registros" hidden>
       <article class="cartao"><header class="cartao__cab"><h2>Ocorrências de fogo em vegetação</h2><span class="dica">um evento pode ter várias ocorrências (unidades em apoio)</span></header><div id="fv-tabela-filtro" class="filtro-tabela"></div><div id="fv-tabela"></div></article>
+    </section>
+
+    <section class="painel-aba" data-amb="fogo" data-aba="depuracao" hidden>
+      <p class="nota nota--bloco">Só contam no painel as ocorrências <b>atendidas com prestação de serviço</b> ou <b>encerradas com empenho de viatura</b> e sem nada escrito em <b>Motivo da Exclusão</b>. As demais aparecem só aqui.</p>
+      <div class="kpis" id="fv-dep-kpis"></div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Excluídas por situação</h2><span class="dica">situação registrada no SisGeO</span></header><div class="grafico" id="fv-dep-situacao"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Excluídas por REDEC</h2></header><div class="grafico" id="fv-dep-redec"></div></article>
+      </div>
+      <article class="cartao"><header class="cartao__cab"><h2>Ocorrências excluídas na depuração</h2><span class="dica">o texto do motivo não é publicado</span></header><div id="fv-dep-tabela"></div></article>
     </section>
 
     <section class="painel-aba" data-amb="fogo" data-aba="qualidade" hidden>

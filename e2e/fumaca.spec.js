@@ -149,7 +149,7 @@ test("Fogo em vegetação: eventos x ocorrências e quadro de eventos em andamen
     await expect(page.locator(".painel-aba[data-amb='fogo'] .falha")).toHaveCount(0);
     return;
   }
-  await expect(page.locator("#fv-kpis .kpi__rotulo")).toHaveText(["Ocorrências", "Eventos", "Eventos com apoio", "Municípios atingidos", "Em andamento"]);
+  await expect(page.locator("#fv-kpis .kpi__rotulo")).toHaveText(["Ocorrências válidas", "Eventos", "Eventos com apoio", "Municípios atingidos", "Em andamento"]);
   const n = (i) => page.locator("#fv-kpis .kpi__valor").nth(i).innerText().then((t) => Number(t.replace(/\D/g, "")));
   const [ocorr, eventos] = [await n(0), await n(1)];
   expect(ocorr).toBeGreaterThan(0);
@@ -221,4 +221,19 @@ test("cartão Eventos com apoio abre a tabela filtrada", async ({ page }) => {
   expect(await linhas.count()).toBeGreaterThanOrEqual(2);
   await page.click("#fv-tabela-filtro button");
   await expect(page.locator("#fv-tabela-filtro")).toContainText("Mostrar só eventos com apoio");
+});
+
+test("depuração: excluídas não contam e aparecem na aba Depuração", async ({ page }) => {
+  for (const [amb, p] of [["sisgeo", "s"], ["fogo", "fv"]]) {
+    await page.goto("about:blank");
+    await page.goto(`/#amb=${amb}&aba=depuracao`);
+    await page.waitForFunction(() => window.__painelPronto);
+    await expect(page.locator(`#${p}-dep-kpis`)).toContainText("Excluídas por motivo");
+    const linhas = await page.locator(`#${p}-dep-tabela tbody tr`).count();
+    expect(linhas).toBeGreaterThan(0);
+    // nenhuma linha da tabela de registros tem situação fora das válidas
+    await page.click(`.abas [data-amb="${amb}"][data-aba="registros"]`);
+    const sits = await page.locator(`#${p === "s" ? "s" : "fv"}-tabela tbody td`).allTextContents();
+    expect(sits.some((t) => /Falso aviso|Cancelad|desistiu/.test(t))).toBe(false);
+  }
 });

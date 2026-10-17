@@ -14,13 +14,13 @@ import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, s
 // =====================================================================
 
 const AMBIENTES = {
-  sisgeo: { abas: ["geral", "tipos", "registros", "qualidade"], conjuntos: ["sisgeo", "nivel_resposta"],
+  sisgeo: { abas: ["geral", "tipos", "registros", "depuracao", "qualidade"], conjuntos: ["sisgeo", "nivel_resposta"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   redecs: { abas: ["geral", "decretos", "resposta", "registros", "consulta", "qualidade"],
             conjuntos: ["eventos", "boletins", "danos_humanos", "decretos", "decretos_historico", "alertas",
                         "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h", "nivel_resposta"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
-  fogo:   { abas: ["geral", "territorios", "condicoes", "registros", "qualidade"],
+  fogo:   { abas: ["geral", "territorios", "condicoes", "registros", "depuracao", "qualidade"],
             conjuntos: ["fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_nivel_resposta", "fogo_ultimo_dia", "fogo"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
@@ -55,11 +55,15 @@ const CAMPO_DATA = {
   alertas: (l) => l.data, ajuda_humanitaria: (l) => l.data, pontos_apoio: (l) => l.data,
 };
 
-function filtrar(nome, { comPeriodo = true } = {}) {
+// Depuração do SisGeO (feita no ETL): linhas com "depuracao" (situacao | motivo | ambos) não contam
+// em nenhum painel; só aparecem na aba Depuração (depuracao: "excluidas").
+function filtrar(nome, { comPeriodo = true, depuracao = "validas" } = {}) {
   const linhas = BASE.dados[nome];
   if (linhas === null || linhas === undefined) return null;
   const fd = CAMPO_DATA[nome];
   return linhas.filter((l) => {
+    if (depuracao === "validas" && l.depuracao) return false;
+    if (depuracao === "excluidas" && !l.depuracao) return false;
     if (comPeriodo && fd && (st.de || st.ate)) {
       const d = fd(l);
       if (!d || (st.de && d < st.de) || (st.ate && d > st.ate)) return false;
@@ -436,7 +440,8 @@ const FOGO = {
       const ev = fv ? eventosDe(fv) : null;
       const apoio = ev ? [...ev.values()].filter((n) => n > 1).length : null;
       kpis(el, [
-        { rotulo: "Ocorrências", valor: fv?.length ?? "—", sub: descricaoPeriodo(), destaque: true },
+        { rotulo: "Ocorrências válidas", valor: fv?.length ?? "—", destaque: true,
+          sub: `${descricaoPeriodo()} · ${fmt(filtrar("fogo_sisgeo", { depuracao: "excluidas" })?.length || 0)} excluídas na depuração` },
         { rotulo: "Eventos", valor: ev ? ev.size : "—", sub: "números de evento distintos" },
         { rotulo: "Eventos com apoio", valor: apoio ?? "—", sub: "mais de uma unidade no mesmo evento",
           ...(apoio ? { acao: () => { st.apoio = "1"; st.aba = "registros"; atualizar(); window.scrollTo({ top: 0 }); },
@@ -552,6 +557,44 @@ const FOGO = {
 
   qualidade() { seguro("fv-qualidade", (el) => qualidade(el, AMBIENTES.fogo.conjuntos)); },
 };
+
+// ---- aba Depuração (SisGeO · Chuvas e SisGeO · Fogo)
+const ROTULO_DEP = { situacao: "Situação", motivo: "Motivo da exclusão", ambos: "Situação e motivo" };
+function abaDepuracao(nome, p) {
+  const validas = filtrar(nome), exc = filtrar(nome, { depuracao: "excluidas" });
+  seguro(`${p}-dep-kpis`, (el) => {
+    if (indisponivel(el, validas)) return;
+    const c = contarPor(exc, "depuracao"), total = validas.length + exc.length;
+    const pct = (n) => (total ? `${Math.round((100 * n) / total)}% do registrado` : "");
+    kpis(el, [
+      { rotulo: "Registradas", valor: total, sub: descricaoPeriodo() },
+      { rotulo: "Válidas", valor: validas.length, sub: pct(validas.length), destaque: true },
+      { rotulo: "Excluídas por situação", valor: c.get("situacao") || 0, sub: "situação diferente das válidas" },
+      { rotulo: "Excluídas por motivo", valor: c.get("motivo") || 0, sub: "com Motivo da Exclusão preenchido" },
+      { rotulo: "Por situação e motivo", valor: c.get("ambos") || 0, sub: `total excluído: ${fmt(exc.length)} (${pct(exc.length) || "0%"})` },
+    ]);
+  });
+  seguro(`${p}-dep-situacao`, (el) => {
+    if (indisponivel(el, exc)) return;
+    const porSit = exc.filter((l) => l.depuracao !== "motivo");
+    if (indisponivel(el, porSit)) return;
+    barrasH(el, ordenar(contarPor(porSit.map((l) => ({ s: l.situacao || "(sem situação)" })), "s"), 10), { unidade: "ocorrências" });
+  });
+  seguro(`${p}-dep-redec`, (el) => { if (!indisponivel(el, exc)) barrasH(el, porRedec(exc), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+  seguro(`${p}-dep-tabela`, (el) => tabela(el, {
+    nome: `${nome}_excluidas_depuracao`, linhas: exc?.map((l) => ({ ...l, exclusao: ROTULO_DEP[l.depuracao] })),
+    ordem: { campo: "data_ocorrencia", dir: -1 },
+    colunas: [
+      { campo: "data_ocorrencia", titulo: "Data", formato: fmtData }, { campo: "id_evento", titulo: "Evento" },
+      { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "exclusao", titulo: "Excluída por" },
+      { campo: "situacao", titulo: "Situação" }, { campo: "municipio", titulo: "Município", formato: titulo },
+      { campo: "redec", titulo: "REDEC", formato: rotuloRedec }, { campo: "subtipo", titulo: "Subtipo" },
+      { campo: "unidade", titulo: "Unidade" },
+    ],
+  }));
+}
+SISGEO.depuracao = () => abaDepuracao("sisgeo", "s");
+FOGO.depuracao = () => abaDepuracao("fogo_sisgeo", "fv");
 
 const RENDER = { sisgeo: SISGEO, redecs: REDECS, fogo: FOGO };
 
