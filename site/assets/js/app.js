@@ -670,6 +670,32 @@ function montarBotaoAtualizar() {
   });
 }
 
+// ---- modo claro/escuro: o botão alterna e guarda a escolha neste navegador
+function temaEfetivo() {
+  const t = document.documentElement.dataset.theme;
+  if (t === "light" || t === "dark") return t;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function marcarTema() {
+  const escuro = temaEfetivo() === "dark";
+  document.documentElement.dataset.temaEfetivo = escuro ? "escuro" : "claro";
+  const b = document.getElementById("botao-tema");
+  if (b) b.title = b.ariaLabel = escuro ? "Mudar para modo claro" : "Mudar para modo escuro";
+}
+function montarBotaoTema() {
+  marcarTema();
+  document.getElementById("botao-tema")?.addEventListener("click", () => {
+    const novo = temaEfetivo() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = novo;
+    try { localStorage.setItem("painel-tema", novo); } catch (e) { /* navegador sem armazenamento: vale só nesta visita */ }
+    marcarTema();
+    atualizar(); // gráficos e mapa leem as cores do tema na hora de desenhar
+  });
+  window.matchMedia?.("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
+    if (!document.documentElement.dataset.theme) { marcarTema(); atualizar(); }
+  });
+}
+
 function atualizar() {
   sincronizarControles();
   mostrarNR();
@@ -747,6 +773,7 @@ async function iniciar() {
     if (amb !== st.amb) trocarAmbiente(amb);
   });
 
+  montarBotaoTema();
   atualizar();
   window.__painelPronto = true; // usado pelo teste automatizado
 }

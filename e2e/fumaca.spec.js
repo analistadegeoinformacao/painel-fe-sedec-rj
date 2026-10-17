@@ -253,3 +253,18 @@ test("SisGeO · Chuvas: cartões numéricos por tipo filtram o painel", async ({
   await page.locator("#s-kpis-num button.kpi", { hasText: "Corte de Árvore" }).click();
   await expect(page).not.toHaveURL(/tipo=/);
 });
+
+test("botão alterna modo claro/escuro e lembra a escolha", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo");
+  const fundo = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const antes = await fundo();
+  await page.click("#botao-tema");
+  const depois = await fundo();
+  expect(depois).not.toBe(antes);
+  await page.reload();
+  await page.waitForFunction(() => window.__painelPronto);
+  expect(await fundo()).toBe(depois);
+  await page.click("#botao-tema");
+  expect(await fundo()).toBe(antes);
+  await expect(page.locator(".painel-aba:not([hidden]) .falha")).toHaveCount(0);
+});

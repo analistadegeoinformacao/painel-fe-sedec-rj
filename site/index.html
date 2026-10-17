@@ -4,6 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel Integrado - Força Especializada da SEDEC-RJ</title>
+  <script>
+    // tema escolhido no botão (guardado neste navegador); sem escolha, segue o sistema
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem("painel-tema"); } catch (e) {}
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    })();
+  </script>
   <meta name="description" content="Painel de monitoramento — ambiente SisGeO (CBMERJ) e ambiente Eventos REDECs (Defesa Civil) — SEDEC-RJ / FE-SEDEC / NI²AD">
   <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,6 +54,10 @@
       <button type="button" class="botao-atualizar" id="botao-atualizar" hidden title="Buscar os dados mais recentes. A planilha é consultada automaticamente a cada ~10 min.">
         <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
         <span>Atualizar</span>
+      </button>
+      <button type="button" class="botao-atualizar botao-tema" id="botao-tema" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+        <svg class="icone-lua" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icone-sol" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
       </button>
     </div>
   </header>
