@@ -1,5 +1,5 @@
 # Versões fixas: atualizações chegam via Dependabot em PR e só entram se os testes passarem.
 PyYAML==6.0.2
-gspread==6.1.4
+gspread==6.2.1
 google-auth==2.38.0
 openpyxl==3.1.5
