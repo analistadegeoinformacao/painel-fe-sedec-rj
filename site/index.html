@@ -48,7 +48,7 @@
   <!-- Abas de cada ambiente: só as do ambiente ativo aparecem -->
   <nav class="abas" role="tablist" aria-label="Seções do ambiente">
     <button role="tab" data-amb="sisgeo" data-aba="geral">Visão geral</button>
-    <button role="tab" data-amb="sisgeo" data-aba="tipos">Tipos e unidades</button>
+    <button role="tab" data-amb="sisgeo" data-aba="tipos">Tipos e territórios</button>
     <button role="tab" data-amb="sisgeo" data-aba="registros">Registros</button>
     <button role="tab" data-amb="sisgeo" data-aba="qualidade">Qualidade dos dados <span class="selo-contagem" data-avisos="sisgeo"></span></button>
 
@@ -98,12 +98,12 @@
 
     <section class="painel-aba" data-amb="sisgeo" data-aba="tipos" hidden>
       <div class="grade grade--2">
-        <article class="cartao"><header class="cartao__cab"><h2>Por tipo</h2></header><div class="grafico" id="s-tipo"></div></article>
-        <article class="cartao"><header class="cartao__cab"><h2>Por subtipo (10 maiores)</h2></header><div class="grafico" id="s-subtipo"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Por tipo</h2></header><div class="grafico grafico--alto grafico--rosca" id="s-tipo"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Por subtipo (10 maiores)</h2></header><div class="grafico grafico--alto" id="s-subtipo"></div></article>
       </div>
       <div class="grade grade--2">
-        <article class="cartao"><header class="cartao__cab"><h2>Unidades com mais empenhos (10 maiores)</h2></header><div class="grafico" id="s-unidade"></div></article>
-        <article class="cartao"><header class="cartao__cab"><h2>Situação de encerramento</h2></header><div class="grafico" id="s-situacao"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Municípios com mais ocorrências (10 maiores)</h2><span class="dica">clique numa barra para filtrar</span></header><div class="grafico grafico--alto" id="s-tipos-mun"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências nas 11 REDECs</h2><span class="dica">clique numa barra para filtrar</span></header><div class="grafico grafico--alto" id="s-tipos-redec"></div></article>
       </div>
     </section>
 

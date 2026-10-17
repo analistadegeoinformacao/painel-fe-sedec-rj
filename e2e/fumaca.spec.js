@@ -119,3 +119,17 @@ test("logo da FE no cabeçalho e lema no rodapé", async ({ page }) => {
   expect(await logo.evaluate((img) => img.complete && img.naturalWidth > 0)).toBe(true);
   await expect(page.locator(".rodape__lema")).toHaveText("FE-SEDEC: Inteligência que orienta. Apoio que fortalece. Ação que protege.");
 });
+
+test("SisGeO › Tipos e territórios: rosca de tipo, subtipo, municípios e 11 REDECs", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo&aba=tipos");
+  for (const id of ["s-tipo", "s-subtipo", "s-tipos-mun", "s-tipos-redec"]) {
+    await expect(page.locator(`#${id} svg`)).toBeVisible();
+  }
+  await expect(page.locator("#s-tipos-redec")).toContainText("11 · Noroeste");
+  await expect(page.locator("#s-unidade, #s-situacao")).toHaveCount(0);
+});
+
+test("mapa tem o contorno do estado", async ({ page }) => {
+  await abrir(page);
+  await expect(page.locator("#s-mapa .leaflet-contorno-pane path")).toHaveCount(1);
+});

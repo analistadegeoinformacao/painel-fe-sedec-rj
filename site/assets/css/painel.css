@@ -23,6 +23,9 @@
   --seq-1: #fde3d1; --seq-2: #fbc4a0; --seq-3: #f7965e;
   --seq-4: #e8590c; --seq-5: #b8420a; --seq-6: #7a2c07;
   --ok: #1f7a4d; --atencao: #b7791f; --critico: #c0392b;
+  --contorno: #5b6472;       /* limite do estado no mapa */
+  /* paleta categórica (ordem fixa, validada para daltonismo) — gráfico de rosca */
+  --cat-1: #2a78d6; --cat-2: #eb6834; --cat-3: #1baf7a; --cat-4: #eda100; --cat-5: #e87ba4; --cat-6: #008300;
   --sombra: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
   --raio: 10px;
   --fonte: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -39,6 +42,8 @@
     --seq-0: #222833; --seq-1: #4a2a1a; --seq-2: #6e3519; --seq-3: #9a4316;
     --seq-4: #d35a17; --seq-5: #f2863f; --seq-6: #ffb27a;
     --sombra: none;
+    --contorno: #aab3c2;
+    --cat-1: #3987e5; --cat-2: #d95926; --cat-3: #199e70; --cat-4: #c98500; --cat-5: #d55181; --cat-6: #008300;
   }
 }
 :root[data-theme="dark"] { color-scheme: dark; }
@@ -213,3 +218,4 @@ body[data-amb="sisgeo"] [data-so-amb="redecs"] { display: none; }
 .kpi__valor--texto { font-size: 19px; line-height: 1.25; letter-spacing: -.01em; overflow-wrap: anywhere; }
 @media (max-width: 640px) { .topo__logo { width: 44px; height: 44px; } }
 @media (min-width: 641px) { .filtros select { max-width: 210px; } .filtros input[type=date] { width: 140px; } }
+@media (max-width: 640px) { .grafico--rosca { height: 470px; } }

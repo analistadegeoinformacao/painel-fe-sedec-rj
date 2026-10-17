@@ -1,6 +1,6 @@
 import { carregar } from "./dados.js";
 import { seguro, kpis, tabela, indisponivel } from "./componentes.js";
-import { barrasH, serieDiaria, redimensionarTodos } from "./graficos.js";
+import { barrasH, serieDiaria, rosca, redimensionarTodos } from "./graficos.js";
 import { criarMapa } from "./mapa.js";
 import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, soma, rotuloRedec, titulo } from "./util.js";
 
@@ -206,10 +206,14 @@ const SISGEO = {
   },
   tipos() {
     const sis = filtrar("sisgeo");
-    seguro("s-tipo", (el) => { if (!indisponivel(el, sis)) barrasH(el, ordenar(contarPor(sis, "tipo")), { unidade: "ocorrências" }); });
+    seguro("s-tipo", (el) => { if (!indisponivel(el, sis)) rosca(el, ordenar(contarPor(sis, "tipo")), { unidade: "ocorrências" }); });
     seguro("s-subtipo", (el) => { if (!indisponivel(el, sis)) barrasH(el, ordenar(contarPor(sis, "subtipo"), 10), { unidade: "ocorrências" }); });
-    seguro("s-unidade", (el) => { if (!indisponivel(el, sis)) barrasH(el, ordenar(contarPor(sis, "unidade"), 10), { unidade: "ocorrências" }); });
-    seguro("s-situacao", (el) => { if (!indisponivel(el, sis)) barrasH(el, ordenar(contarPor(sis, "situacao"), 8), { unidade: "ocorrências" }); });
+    seguro("s-tipos-mun", (el) => {
+      if (indisponivel(el, sis)) return;
+      barrasH(el, ordenar(contarPor(sis, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
+        { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
+    });
+    seguro("s-tipos-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
   },
   registros() {
     seguro("s-tabela", (el) => tabela(el, { nome: "sisgeo", linhas: filtrar("sisgeo"), ordem: { campo: "data_ocorrencia", dir: -1 }, colunas: COLUNAS_SISGEO }));

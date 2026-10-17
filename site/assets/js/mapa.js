@@ -4,6 +4,7 @@
 import { fmt, titulo } from "./util.js";
 
 let malha = null;
+let contorno = null;
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
 // Classes fixas, para leitura consistente entre dias e entre ambientes.
@@ -27,6 +28,13 @@ async function carregarMalha() {
   return malha;
 }
 
+async function carregarContorno() {
+  if (!contorno) {
+    contorno = fetch("assets/geo/rj-contorno.geojson").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  }
+  return contorno;
+}
+
 /** Cria um mapa no elemento. Devolve { pintar(valores, rotulo, unidade), redimensionar() }. */
 export async function criarMapa(el, aoClicar) {
   if (!window.L) throw new Error("Leaflet não carregou");
@@ -44,6 +52,17 @@ export async function criarMapa(el, aoClicar) {
       lyr.on("click", () => aoClicar?.(f.properties.id));
     },
   }).addTo(mapa);
+  // Contorno do estado por cima de tudo: sem ele, municípios com 0 se confundem com o fundo claro
+  const geoContorno = await carregarContorno();
+  let linhaEstado = null;
+  if (geoContorno) {
+    mapa.createPane("contorno").style.zIndex = 450;
+    mapa.getPane("contorno").style.pointerEvents = "none";
+    linhaEstado = L.geoJSON(geoContorno, {
+      pane: "contorno", interactive: false,
+      style: () => ({ color: css("--contorno"), weight: 1.6, fill: false, opacity: 1 }),
+    }).addTo(mapa);
+  }
   const limites = camada.getBounds();
   mapa.fitBounds(limites, { padding: [8, 8] });
   new ResizeObserver(() => mapa.invalidateSize()).observe(el);
@@ -56,6 +75,7 @@ export async function criarMapa(el, aoClicar) {
     },
     /** valores: Map(cod_ibge -> número) */
     pintar(valores, rotulo, unidade, selecionado = "") {
+      linhaEstado?.setStyle({ color: css("--contorno") }); // acompanha o tema claro/escuro
       camada.eachLayer((lyr) => {
         const id = lyr.feature.properties.id;
         const v = valores.get(id) || 0;

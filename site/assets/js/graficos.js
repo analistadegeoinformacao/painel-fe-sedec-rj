@@ -92,6 +92,61 @@ export function serieDiaria(el, pontos, { unidade = "ocorrências" } = {}) {
   );
 }
 
+// "DESLIZAMENTO/DESABAMENTO" -> "Deslizamento/Desabamento" (só nomes todos em maiúsculas)
+const nomeCurto = (n) => (n === n.toUpperCase() ? n.toLowerCase().replace(/(^|[\s/(])\p{L}/gu, (m) => m.toUpperCase()) : n);
+
+/**
+ * Rosca (partes de um todo). itens: [[rotulo, valor]] já ordenados do maior
+ * para o menor. Até 6 fatias em cores de ordem fixa; acima disso, o excedente
+ * vira "Outros". Cada fatia leva nome e % escritos (não depende só da cor).
+ */
+export function rosca(el, itens, { unidade = "ocorrências", maxFatias = 6 } = {}) {
+  const t = tema();
+  const g = iniciar(el);
+  let fatias = itens.filter(([, v]) => v > 0);
+  if (fatias.length > maxFatias) {
+    const resto = fatias.slice(maxFatias - 1).reduce((s, [, v]) => s + v, 0);
+    fatias = [...fatias.slice(0, maxFatias - 1), ["Outros", resto]];
+  }
+  const total = fatias.reduce((s, [, v]) => s + v, 0);
+  const cores = [1, 2, 3, 4, 5, 6].map((i) => css(`--cat-${i}`));
+  const estreito = el.clientWidth < 520; // celular: legenda embaixo em vez de rótulos em volta
+  const valorDe = Object.fromEntries(fatias);
+  const pct = (v) => (total ? Math.round((100 * v) / total) : 0);
+  g.setOption(
+    {
+      animationDuration: 300,
+      textStyle: { fontFamily: t.fonte },
+      tooltip: { ...tooltipBase(t), trigger: "item",
+        formatter: (p) => `${p.name}<br><b>${fmt(p.value)}</b> ${unidade} (${p.percent.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)` },
+      legend: estreito ? {
+        top: "58%", left: "center", orient: "vertical", type: "plain", icon: "circle", itemWidth: 10, itemHeight: 10, itemGap: 8,
+        textStyle: { color: t.texto2, fontSize: 12, fontFamily: t.fonte },
+        formatter: (n) => `${nomeCurto(n)}  ${fmt(valorDe[n])} · ${pct(valorDe[n])}%`,
+      } : { show: false },
+      title: {
+        text: fmt(total), subtext: unidade, left: "center", top: estreito ? "22%" : "center", itemGap: 2,
+        textStyle: { color: t.texto, fontSize: 22, fontWeight: 600, fontFamily: t.fonte },
+        subtextStyle: { color: t.texto3, fontSize: 12, fontFamily: t.fonte },
+      },
+      series: [{
+        type: "pie", radius: estreito ? ["30%", "44%"] : ["48%", "70%"], center: ["50%", estreito ? "30%" : "50%"],
+        padAngle: 1.5, minAngle: 2, avoidLabelOverlap: true,
+        itemStyle: { borderColor: t.superficie, borderWidth: 2, borderRadius: 4 },
+        label: {
+          show: !estreito, color: t.texto2, fontSize: 12, lineHeight: 16, alignTo: "edge", edgeDistance: 8,
+          formatter: (p) => `${nomeCurto(p.name)}\n{v|${fmt(p.value)} · ${p.percent.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}%}`,
+          rich: { v: { color: t.texto3, fontSize: 11.5 } },
+        },
+        labelLine: { show: !estreito, length: 10, length2: 12, lineStyle: { color: t.grade } },
+        emphasis: { scaleSize: 4, label: { fontWeight: 600 } },
+        data: fatias.map(([nome, valor], i) => ({ name: nome, value: valor, itemStyle: { color: cores.at(i) } })),
+      }],
+    },
+    true
+  );
+}
+
 export function redimensionarTodos() {
   instancias.forEach((g) => !g.isDisposed() && g.resize());
 }
