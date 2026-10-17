@@ -21,7 +21,7 @@ const AMBIENTES = {
             fonte: "Fonte: REDECs / SEDEC-RJ — planilha NOVA BASE ANALISTAS · S2iD" },
 };
 
-const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", camada: "eventos" };
+const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos" };
 const ultimaAba = { sisgeo: "geral", redecs: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
@@ -60,6 +60,7 @@ function filtrar(nome, { comPeriodo = true } = {}) {
     }
     if (st.redec && (l.redec ?? redecDoCod.get(l.cod_ibge)) !== st.redec) return false;
     if (st.municipio && l.cod_ibge !== st.municipio) return false;
+    if (st.tipo && nome === "sisgeo" && l.tipo !== st.tipo) return false; // filtro só do ambiente SisGeO
     return true;
   });
 }
@@ -93,8 +94,11 @@ function montarFiltros() {
   document.getElementById("f-ate").addEventListener("change", (e) => { st.ate = e.target.value; st.periodo = ""; atualizar(); });
   selR.addEventListener("change", (e) => { st.redec = e.target.value; st.municipio = ""; preencherMunicipios(); atualizar(); });
   document.getElementById("f-municipio").addEventListener("change", (e) => { st.municipio = e.target.value; atualizar(); });
+  const selT = document.getElementById("f-tipo");
+  ordenar(contarPor(BASE.dados.sisgeo || [], "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
+  selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
-    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "" });
+    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "" });
     preencherMunicipios();
     atualizar();
   });
@@ -106,6 +110,7 @@ function sincronizarControles() {
   document.getElementById("f-ate").value = st.ate;
   document.getElementById("f-redec").value = st.redec;
   document.getElementById("f-municipio").value = st.municipio;
+  document.getElementById("f-tipo").value = st.tipo;
   document.querySelectorAll(".filtros__periodo button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.periodo === st.periodo));
   document.querySelectorAll(".ambientes a").forEach((a) => (a.dataset.amb === st.amb ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
   document.querySelectorAll(".abas [role=tab]").forEach((b) => {
@@ -175,13 +180,21 @@ const COLUNAS_SISGEO = [
 const SISGEO = {
   geral() {
     const sis = filtrar("sisgeo");
-    seguro("s-kpis", (el) => kpis(el, [
-      { rotulo: "Ocorrências", valor: sis?.length ?? "—", sub: descricaoPeriodo(), destaque: true },
-      { rotulo: "Municípios atingidos", valor: sis ? muns(sis) : "—", sub: "de 92 no estado" },
-      { rotulo: "REDECs com ocorrência", valor: sis ? new Set(sis.map((l) => l.redec).filter(Boolean)).size : "—", sub: "de 11 regionais" },
-      { rotulo: "Vítimas", valor: sis ? soma(sis, "vitimas") : "—" },
-      { rotulo: "Tipo mais frequente", valor: sis?.length ? ordenar(contarPor(sis, "tipo"), 1)[0][0] : "—" },
-    ]));
+    seguro("s-kpis", (el) => {
+      // o que mais aparece em cada dimensão, com quantidade e % do total filtrado
+      const lider = (campo, nomear = (v) => v) => {
+        if (!sis?.length) return { valor: "—", sub: "sem ocorrências no recorte" };
+        const [k, n] = ordenar(contarPor(sis, campo), 1)[0] || [];
+        if (!k) return { valor: "—", sub: "não informado" };
+        return { valor: nomear(k), sub: `${fmt(n)} de ${fmt(sis.length)} ocorrências (${Math.round((100 * n) / sis.length)}%)` };
+      };
+      kpis(el, [
+        { rotulo: "Tipo mais frequente", texto: true, destaque: true, ...lider("tipo") },
+        { rotulo: "Subtipo mais frequente", texto: true, ...lider("subtipo") },
+        { rotulo: "Município com mais ocorrências", texto: true, ...lider("cod_ibge", nomeMun) },
+        { rotulo: "REDEC com mais ocorrências", texto: true, ...lider("redec", rotuloRedec) },
+      ]);
+    });
     seguro("s-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
     seguro("s-serie", (el) => { if (!indisponivel(el, sis)) serieDiaria(el, porDia(sis, CAMPO_DATA.sisgeo)); });
     seguro("s-top-mun", (el) => {

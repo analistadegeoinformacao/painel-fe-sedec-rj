@@ -72,7 +72,6 @@ body[data-amb="redecs"] { --acento: #e8590c; --acento-suave: #fff1e8; }
   :root:not([data-theme="light"]) body[data-amb="sisgeo"] { --acento: #f0575f; --acento-suave: #3a1a1d; }
   :root:not([data-theme="light"]) body[data-amb="redecs"] { --acento: #f2763a; --acento-suave: #3a2216; }
 }
-.topo__selo { transition: background .2s; }
 .ambientes { display: flex; gap: 4px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 3px; }
 .ambientes a { display: grid; padding: 6px 14px; border-radius: 7px; text-decoration: none; color: #b9c3d3; line-height: 1.25; }
 .ambientes a:hover { color: #fff; background: rgba(255,255,255,.06); }
@@ -203,3 +202,14 @@ td .longo.aberto { -webkit-line-clamp: unset; }
 @keyframes girar { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .botao-atualizar.girando svg { animation: none; } }
 @media (max-width: 640px) { .topo__acoes { order: 2; } }
+
+/* ---------- logo, filtro por ambiente, lema ---------- */
+.topo__logo { width: 52px; height: 52px; flex: none; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.15); }
+body[data-amb="redecs"] [data-so-amb="sisgeo"],
+body[data-amb="sisgeo"] [data-so-amb="redecs"] { display: none; }
+.rodape__lema { flex-basis: 100%; margin: 0 0 4px; text-align: center; font-size: 13px; font-weight: 600;
+  color: var(--texto-2); letter-spacing: .01em; }
+.kpi__valor--texto { font-size: 19px; line-height: 1.25; letter-spacing: -.01em; overflow-wrap: anywhere; }
+@media (max-width: 640px) { .topo__logo { width: 44px; height: 44px; } }
+@media (min-width: 641px) { .filtros select { max-width: 210px; } .filtros input[type=date] { width: 140px; } }

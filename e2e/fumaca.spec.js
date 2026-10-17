@@ -58,9 +58,9 @@ test("link direto abre o ambiente e a aba certos, com o filtro aplicado", async 
 
 test("filtro de REDEC reduz os números e é mantido ao trocar de ambiente", async ({ page }) => {
   await abrir(page);
-  const total = await page.locator("#s-kpis .kpi__valor").first().innerText();
+  const total = await page.locator("#s-kpis .kpi__sub").first().innerText();
   await page.selectOption("#f-redec", { index: 1 });
-  await expect(page.locator("#s-kpis .kpi__valor").first()).not.toHaveText(total);
+  await expect(page.locator("#s-kpis .kpi__sub").first()).not.toHaveText(total);
   await page.click('.ambientes a[data-amb="redecs"]');
   await expect(page.locator("#f-redec")).not.toHaveValue("");
 });
@@ -88,4 +88,34 @@ test("botão Atualizar busca a versão mais recente e carrega dados novos", asyn
   await botao.click();
   await expect(page.locator("#status-dados")).toContainText("Dados novos carregados");
   await expect(botao).toBeEnabled();
+});
+
+test("SisGeO: indicadores de tipo, subtipo, município e REDEC", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo");
+  await expect(page.locator("#s-kpis .kpi__rotulo")).toHaveText([
+    "Tipo mais frequente", "Subtipo mais frequente", "Município com mais ocorrências", "REDEC com mais ocorrências",
+  ]);
+  await expect(page.locator("#s-kpis .kpi__sub").first()).toContainText("ocorrências (");
+});
+
+test("filtro de tipo de evento: só no SisGeO e muda os números", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo");
+  const filtro = page.locator("#f-tipo");
+  await expect(filtro).toBeVisible();
+  const opcoes = await filtro.locator("option").allInnerTexts();
+  expect(opcoes.length).toBeGreaterThan(2);
+  const ultimo = opcoes.at(-1);                       // o tipo menos frequente
+  await filtro.selectOption({ label: ultimo });
+  await expect(page.locator("#s-kpis .kpi__valor").first()).toHaveText(ultimo);
+  await expect(page).toHaveURL(/tipo=/);
+  await page.click('.ambientes a[data-amb="redecs"]');
+  await expect(filtro).toBeHidden();                  // não existe no ambiente REDECs
+});
+
+test("logo da FE no cabeçalho e lema no rodapé", async ({ page }) => {
+  await abrir(page);
+  const logo = page.locator(".topo__logo");
+  await expect(logo).toBeVisible();
+  expect(await logo.evaluate((img) => img.complete && img.naturalWidth > 0)).toBe(true);
+  await expect(page.locator(".rodape__lema")).toHaveText("FE-SEDEC: Inteligência que orienta. Apoio que fortalece. Ação que protege.");
 });

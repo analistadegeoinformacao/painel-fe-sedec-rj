@@ -31,7 +31,7 @@ export function kpis(el, itens) {
     .map(
       (k) => `<div class="kpi${k.destaque ? " kpi--destaque" : ""}">
         <div class="kpi__rotulo">${esc(k.rotulo)}</div>
-        <div class="kpi__valor">${typeof k.valor === "number" ? fmt(k.valor) : esc(k.valor ?? "—")}</div>
+        <div class="kpi__valor${k.texto ? " kpi__valor--texto" : ""}"${k.texto ? ` title="${esc(k.valor ?? "")}"` : ""}>${typeof k.valor === "number" ? fmt(k.valor) : esc(k.valor ?? "—")}</div>
         ${k.sub ? `<div class="kpi__sub">${esc(k.sub)}</div>` : ""}
       </div>`
     )

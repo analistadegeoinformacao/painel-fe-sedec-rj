@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="assets/css/painel.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="assets/vendor/echarts.min.js" defer></script>
   <script src="assets/vendor/echarts-pt-br.js" defer></script>
   <script src="assets/vendor/leaflet/leaflet.js" defer></script>
@@ -19,7 +20,7 @@
 <body data-amb="sisgeo">
   <header class="topo">
     <div class="topo__marca">
-      <div class="topo__selo" aria-hidden="true">DC</div>
+      <img class="topo__logo" src="assets/img/fe-sedec-192.png" width="52" height="52" alt="Força Especializada SEDEC-RJ">
       <div>
         <h1>Painel de Monitoramento de Defesa Civil</h1>
         <p>SEDEC-RJ · FE-SEDEC · NI²AD</p>
@@ -71,6 +72,7 @@
     <label>Até <input type="date" id="f-ate"></label>
     <label>REDEC <select id="f-redec"><option value="">Todas</option></select></label>
     <label>Município <select id="f-municipio"><option value="">Todos</option></select></label>
+    <label data-so-amb="sisgeo">Tipo de evento <select id="f-tipo"><option value="">Todos</option></select></label>
     <button class="botao-limpar" id="f-limpar">Limpar filtros</button>
   </section>
 
@@ -181,6 +183,7 @@
   </main>
 
   <footer class="rodape">
+    <p class="rodape__lema">FE-SEDEC: Inteligência que orienta. Apoio que fortalece. Ação que protege.</p>
     <span id="rodape-fonte"></span>
     <span id="rodape-versao"></span>
   </footer>
