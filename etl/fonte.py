@@ -41,7 +41,8 @@ def ler_google(planilha_id: str, abas: list[str]) -> dict[str, list[list[str]]]:
 def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
     import urllib.request
 
-    token = os.environ.get("APPS_SCRIPT_TOKEN", "")
+    token = limpar_token(os.environ.get("APPS_SCRIPT_TOKEN", ""))
+    url = url.strip()
     if not url or not token:
         raise SystemExit("APPS_SCRIPT_URL e APPS_SCRIPT_TOKEN precisam estar configurados nos segredos do GitHub.")
     pedido = urllib.request.Request(
@@ -52,6 +53,14 @@ def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
     with urllib.request.urlopen(pedido, timeout=120) as r:
         bruto = r.read().decode("utf-8")
     return abas_do_json(bruto)
+
+
+def limpar_token(bruto: str) -> str:
+    """Aceita o token colado com 'APPS_SCRIPT_TOKEN = ' na frente, aspas ou espaços."""
+    t = bruto.strip().strip('"').strip("'")
+    if "=" in t:
+        t = t.split("=", 1)[1]
+    return t.strip().strip('"').strip("'")
 
 
 def abas_do_json(bruto: str) -> dict[str, list[list[str]]]:

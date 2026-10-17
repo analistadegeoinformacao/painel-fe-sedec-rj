@@ -66,3 +66,9 @@ def test_sem_segredos_configurados(monkeypatch):
 def test_resposta_html_explica_o_problema():
     with pytest.raises(SystemExit, match="App da Web"):
         fonte.abas_do_json("<html>login</html>")
+
+
+@pytest.mark.parametrize("colado", [TOKEN, f"  {TOKEN}\n", f"APPS_SCRIPT_TOKEN = {TOKEN}", f'"{TOKEN}"'])
+def test_token_colado_de_varios_jeitos(servidor, monkeypatch, colado):
+    monkeypatch.setenv("APPS_SCRIPT_TOKEN", colado)
+    assert "SISGEO" in fonte.ler("appsscript", servidor + "  ", ["SISGEO"])
