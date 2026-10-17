@@ -50,7 +50,8 @@ def ler_appsscript(url: str, abas: list[str], planilha_id: str | None = None,
     import urllib.error
 
     ultimo_erro = None
-    for tentativa in range(1, 4):  # até 3 tentativas: o Google às vezes responde errado durante reimplantações
+    esperas = [15, 30, 60, 90]  # até 5 tentativas em ~3 min: o Google às vezes responde 404/5xx por um ou dois minutos
+    for tentativa in range(1, len(esperas) + 2):
         pedido = urllib.request.Request(
             url, data=json.dumps({"token": token, "abas": abas, "planilha": planilha_id}).encode("utf-8"),
             headers={"Content-Type": "application/json"}, method="POST",
@@ -60,7 +61,8 @@ def ler_appsscript(url: str, abas: list[str], planilha_id: str | None = None,
             with urllib.request.urlopen(pedido, timeout=120) as r:
                 return abas_do_json(r.read().decode("utf-8"), planilha_id if exigir_confirmacao else None)
         except urllib.error.HTTPError as e:
-            dica = {404: "a URL do App da Web não existe mais (implantação apagada ou URL trocada?)",
+            dica = {404: "a URL do App da Web não respondeu (instabilidade do Google, se passar sozinho; "
+                         "se repetir por horas: implantação apagada ou URL trocada)",
                     401: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'",
                     403: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'"}.get(e.code, "erro no Google")
             ultimo_erro = f"Apps Script respondeu HTTP {e.code}: {dica}."
@@ -72,9 +74,10 @@ def ler_appsscript(url: str, abas: list[str], planilha_id: str | None = None,
             if "recusou" in str(e) or "desatualizada" in str(e):  # tentar de novo não adianta
                 raise
             ultimo_erro = str(e)
-        if tentativa < 3:
-            print(f"aviso  leitura da planilha, tentativa {tentativa} falhou: {ultimo_erro} Nova tentativa em {20 * tentativa}s.")
-            time.sleep(20 * tentativa)
+        if tentativa <= len(esperas):
+            espera = esperas[tentativa - 1]
+            print(f"aviso  leitura da planilha, tentativa {tentativa} falhou: {ultimo_erro} Nova tentativa em {espera}s.")
+            time.sleep(espera)
     raise SystemExit(ultimo_erro)
 
 
