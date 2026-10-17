@@ -1,12 +1,19 @@
-# Atualizações chegam como PR; só entram se a "Verificação de PR" passar.
+# Atualizações chegam como UM PR por tipo, uma vez por mês, e só entram se a
+# "Verificação de PR" passar.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
+    groups:
+      acoes-do-github: { patterns: ["*"] }
   - package-ecosystem: pip
     directory: /
     schedule: { interval: monthly }
+    groups:
+      python: { patterns: ["*"] }
   - package-ecosystem: npm
     directory: /e2e
     schedule: { interval: monthly }
+    groups:
+      teste-navegador: { patterns: ["*"] }
