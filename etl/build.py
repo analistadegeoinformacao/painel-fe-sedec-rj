@@ -64,11 +64,22 @@ def mapear_colunas(cabecalho, spec_colunas):
     return achadas
 
 
+def higienizar_motivo(texto) -> str:
+    """Motivo da exclusão é texto livre: tira o que pode identificar alguém (telefone, CPF,
+    matrícula, e-mail) e limita o tamanho."""
+    import re
+    t = re.sub(r"\s+", " ", str(texto)).strip()
+    t = re.sub(r"[\w.+-]+@[\w-]+\.[\w.]+", "[e-mail]", t)
+    t = re.sub(r"\d[\d .\-/]{4,}\d", "[nº]", t)  # 6+ dígitos seguidos (com ou sem separadores)
+    return t if len(t) <= 120 else t[:117].rstrip() + "…"
+
+
 def depurar(nome, dep, saida, cols, rel):
     """Depuração do SisGeO: só é válida a ocorrência com situação na lista de válidas
     E sem nada escrito em "Motivo da Exclusão". As demais continuam publicadas (para a
-    aba Depuração) com o campo "depuracao" = situacao | motivo | ambos; o texto do motivo
-    nunca é publicado (é texto livre)."""
+    aba Depuração) com o campo "depuracao" = situacao | motivo | ambos. O texto do motivo
+    sai em "motivo", higienizado (texto livre: sem sequências longas de números nem e-mails,
+    no máximo 120 caracteres)."""
     validas = {N.chave(s) for s in dep["situacoes_validas"]}
     usa_sit = "situacao" in cols
     if not usa_sit:
@@ -81,6 +92,8 @@ def depurar(nome, dep, saida, cols, rel):
         tipo = "ambos" if por_sit and por_mot else "situacao" if por_sit else "motivo" if por_mot else None
         if tipo:
             reg["depuracao"] = tipo
+        if por_mot:
+            reg["motivo"] = higienizar_motivo(motivo)
         cont[tipo or "validas"] += 1
     rel.depuracao[nome] = {k: cont.get(k, 0) for k in ("validas", "situacao", "motivo", "ambos")}
 

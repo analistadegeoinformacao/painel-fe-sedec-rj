@@ -38,7 +38,7 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
 - **Depuração (SisGeO · Chuvas e SisGeO · Fogo):** só conta a ocorrência com situação "Ocorrência atendida com
   prestação de serviço" ou "Encerrada com empenho de viatura" **e** sem nada em "Motivo da Exclusão". As demais
   (excluídas por situação, por motivo ou pelos dois) ficam fora de todos os indicadores e aparecem só na aba
-  **Depuração**. A lista de situações válidas está em `config/fontes.yml` (`depuracao:`); o texto do motivo não é publicado.
+  **Depuração**. A lista de situações válidas está em `config/fontes.yml` (`depuracao:`); o motivo aparece na tabela da aba Depuração, sem números longos (telefone, CPF, matrícula) nem e-mails.
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
 ## Por que este desenho não quebra a cada commit

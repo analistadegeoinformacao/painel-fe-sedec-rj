@@ -621,7 +621,7 @@ function abaDepuracao(nome, p) {
     colunas: [
       { campo: "data_ocorrencia", titulo: "Data", formato: fmtData }, { campo: "id_evento", titulo: "Evento" },
       { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "exclusao", titulo: "Excluída por" },
-      { campo: "situacao", titulo: "Situação" }, { campo: "municipio", titulo: "Município", formato: titulo },
+      { campo: "motivo", titulo: "Motivo da exclusão", tipo: "longo" }, { campo: "situacao", titulo: "Situação" }, { campo: "municipio", titulo: "Município", formato: titulo },
       { campo: "redec", titulo: "REDEC", formato: rotuloRedec }, { campo: "subtipo", titulo: "Subtipo" },
       { campo: "unidade", titulo: "Unidade" },
     ],

@@ -173,6 +173,17 @@ def test_depuracao_por_situacao_e_por_motivo(tmp_path):
     sis = json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
     validas = [r for r in sis if "depuracao" not in r]
     assert {r["situacao"] for r in validas} <= {"Encerrada com empenho de viatura", "Ocorrência atendida com prestação de serviço"}
-    assert not any("motivo_exclusao" in r for r in sis), "texto do motivo da exclusão não pode ser publicado"
+    assert not any("motivo_exclusao" in r for r in sis), "coluna bruta do motivo não pode ser publicada"
+    com_motivo = [r for r in sis if r.get("motivo")]
+    assert len(com_motivo) == 2 and all(r["depuracao"] in ("motivo", "ambos") for r in com_motivo)
     fv = meta["conjuntos"]["fogo_sisgeo"]["depuracao"]
     assert fv["motivo"] == 1 and fv["situacao"] >= 1
+
+
+def test_motivo_higienizado():
+    from etl.build import higienizar_motivo
+    assert higienizar_motivo("Fogo no lixo") == "Fogo no lixo"
+    assert "99876" not in higienizar_motivo("ligar p/ (21) 99876-5432 Sr. fulano")
+    assert "@" not in higienizar_motivo("ver email a.b@x.com.br")
+    assert "123.456.789" not in higienizar_motivo("CPF 123.456.789-00")
+    assert len(higienizar_motivo("x" * 300)) == 118
