@@ -110,7 +110,7 @@ def datahora(v):
 def hora(v):
     if vazio(v):
         return None
-    m = re.search(r"(\d{1,2})\s*[:hH]\s*(\d{2})?", str(v))
+    m = re.search(r"(\d{1,2})\s*[:hH;.]\s*(\d{2})?", str(v))
     if not m or int(m.group(1)) > 23:
         raise ValueError(f"hora ilegível: {v!r}")
     return f"{int(m.group(1)):02d}:{m.group(2) or '00'}"

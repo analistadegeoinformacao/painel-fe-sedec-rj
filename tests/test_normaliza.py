@@ -21,7 +21,7 @@ def test_data_ilegivel():
         N.data("ontem")
 
 
-@pytest.mark.parametrize("entrada,esperado", [("21:10", "21:10"), ("16h", "16:00"), ("8h30", "08:30"), ("", None)])
+@pytest.mark.parametrize("entrada,esperado", [("21:10", "21:10"), ("16h", "16:00"), ("8h30", "08:30"), ("14;53", "14:53"), ("", None)])
 def test_hora(entrada, esperado):
     assert N.hora(entrada) == esperado
 
