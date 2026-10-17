@@ -1,7 +1,7 @@
 // Google Analytics 4 — contagem de acessos ao painel.
 // Para ligar: cole o "ID da métrica" (começa com G-) abaixo. Vazio = nada é carregado.
 // O ID não é segredo (fica visível em qualquer site que usa GA), pode ficar no repositório.
-export const GA_ID = "";
+export const GA_ID = "G-3RBS4BNN07";
 
 let ultimo = "";
 
