@@ -43,6 +43,7 @@ class Relatorio:
     def __init__(self):
         self.erros: list[str] = []
         self.avisos: dict[str, list[str]] = defaultdict(list)
+        self.excluidos: dict[str, int] = {}
 
     def erro(self, conj, msg):
         self.erros.append(f"[{conj}] {msg}")
@@ -83,6 +84,7 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
     invalidos = Counter()
     exemplos = defaultdict(list)
     redec_preenchida = 0
+    excluidos = 0
     saida, sem_mun = [], []
 
     for i, bruta in enumerate(linhas_brutas[h + 1:]):
@@ -125,6 +127,10 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
                 rel.aviso(nome, f"linha {linha_planilha}: {reg['municipio']} marcado como "
                                 f"{reg['redec']}, referência diz {oficial}")
 
+        # exclusão declarada no contrato (ex.: fogo em vegetação sai do SisGeO de chuvas)
+        if any(N.chave(reg.get(c) or "") in {N.chave(v) for v in vals} for c, vals in spec.get("excluir", {}).items()):
+            excluidos += 1
+            continue
         mun_bruto = bruta[cols["municipio"]] if "municipio" in cols and cols["municipio"] < len(bruta) else ""
         if spec.get("separar_sem_municipio") and N.vazio(mun_bruto) and reg.get("redec") is None:
             sem_mun.append({k: reg.get(k) for k in ("data", "hora", "descricao")})
@@ -157,6 +163,7 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
         if len(unicos) < len(saida):
             rel.aviso(nome, f"{len(saida) - len(unicos)} linha(s) repetida(s) (mesmo {' + '.join(chave)}) removida(s)")
         saida = unicos
+    rel.excluidos[nome] = excluidos
     if len(saida) < spec.get("min_linhas", 0):
         rel.erro(nome, f"apenas {len(saida)} linha(s); mínimo exigido {spec['min_linhas']}")
     return saida, sem_mun
@@ -217,7 +224,8 @@ def main(argv=None):
         if spec.get("publicar", True):
             resultados[nome] = dados
             meta_conj[nome] = {"titulo": spec.get("titulo", nome), "aba": spec["aba"], "linhas": len(dados),
-                               "planilha": planilhas.get(spec.get("planilha", "principal"), {}).get("titulo", "")}
+                               "planilha": planilhas.get(spec.get("planilha", "principal"), {}).get("titulo", ""),
+                               "excluidos": rel.excluidos.get(nome, 0)}
         if spec.get("separar_sem_municipio"):
             alvo = spec["separar_sem_municipio"]
             resultados[alvo] = extra

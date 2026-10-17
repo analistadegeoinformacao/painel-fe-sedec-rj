@@ -229,3 +229,22 @@ body:not([data-amb="fogo"]) [data-so-amb="fogo"] { display: none; }
   .ambientes a { padding: 8px 6px; }
   .ambientes__nome { font-size: 12.5px; line-height: 1.2; }
 }
+
+/* ---------- nível de resposta (cores institucionais NR1–NR5) ---------- */
+.nr { display: inline-flex; align-items: stretch; border-radius: 999px; overflow: hidden; font-size: 12.5px; font-weight: 600;
+  border: 1px solid rgba(255,255,255,.18); white-space: nowrap; }
+.nr[hidden] { display: none; }
+.nr__rotulo { padding: 6px 10px; color: #dfe5ee; background: rgba(255,255,255,.06); font-weight: 500; }
+.nr__valor { padding: 6px 12px; min-width: 52px; text-align: center; letter-spacing: .02em; background: #6b7280; color: #fff; }
+.nr[data-nr="1"] .nr__valor { background: #38761d; color: #fff; }
+.nr[data-nr="2"] .nr__valor { background: #ffff00; color: #111; }
+.nr[data-nr="3"] .nr__valor { background: #ff9900; color: #111; }
+.nr[data-nr="4"] .nr__valor { background: #ff0000; color: #fff; }
+.nr[data-nr="5"] .nr__valor { background: #8e7cc3; color: #fff; }
+@media (max-width: 640px) { .nr__rotulo { display: none; } }
+
+.grade--3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+.aviso-amb { margin: 0; padding: 10px 14px; border-radius: 8px; background: var(--acento-suave); color: var(--texto-2);
+  border: 1px solid color-mix(in srgb, var(--acento) 25%, transparent); font-size: 13px; }
+.aviso-amb[hidden] { display: none; }
+.aviso-amb a { color: var(--acento); font-weight: 600; }

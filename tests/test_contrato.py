@@ -140,3 +140,24 @@ def test_sem_planilha_de_fogo_o_resto_publica(tmp_path):
     assert rc == 0
     assert json.loads((saida / "fogo_sisgeo.json").read_text(encoding="utf-8")) == []
     assert json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
+
+
+def test_fogo_fica_fora_do_sisgeo_de_chuvas(tmp_path):
+    txt = AMOSTRA.read_text(encoding="utf-8")
+    # força uma linha de fogo dentro da aba SISGEO da planilha de chuvas
+    linhas = txt.split("\n")
+    i = next(n for n, l in enumerate(linhas) if l.startswith("## Sheet name: SISGEO")) + 2
+    linhas[i] = linhas[i].replace("Corte de Árvore", "Fogo em Vegetação").replace("Salvamento de Pessoa", "Fogo em Vegetação")
+    arq = tmp_path / "com_fogo.txt"
+    arq.write_text("\n".join(linhas), encoding="utf-8")
+    rc, saida = rodar(tmp_path, arq)
+    sis = json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert not any(r.get("tipo") == "Fogo em Vegetação" for r in sis)
+    assert meta["conjuntos"]["sisgeo"]["excluidos"] >= 1
+
+
+def test_nivel_de_resposta_de_cada_planilha(tmp_path):
+    rc, saida = rodar_duas(tmp_path)
+    assert json.loads((saida / "nivel_resposta.json").read_text(encoding="utf-8")) == [{"nivel": 1}]
+    assert json.loads((saida / "fogo_nivel_resposta.json").read_text(encoding="utf-8")) == [{"nivel": 2}]

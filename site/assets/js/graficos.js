@@ -65,17 +65,39 @@ export function barrasH(el, itens, { aoClicar, selecionado, unidade = "registros
 }
 
 /** Série diária. pontos: [[isoData, valor]] (dias sem registro devem vir com 0). */
-export function serieDiaria(el, pontos, { unidade = "ocorrências" } = {}) {
+/**
+ * Série diária. pontos: [[isoData, valor]] (dias sem registro com 0).
+ * Comparação opcional com o mesmo período do ano anterior:
+ *   anterior: [[isoData no eixo atual, valor, isoData real do ano anterior]]
+ * A série anterior é tracejada e cinza, com legenda (identidade não depende só da cor).
+ */
+export function serieDiaria(el, pontos, { unidade = "ocorrências", anterior = null, rotuloAtual = "", rotuloAnterior = "" } = {}) {
   const t = tema();
   const g = iniciar(el);
+  const comparar = Array.isArray(anterior) && anterior.length > 0;
+  const realAnterior = comparar ? new Map(anterior.map(([x, , real]) => [x, real])) : null;
+  const series = [{
+    name: rotuloAtual || "Período", type: "line", data: pontos, showSymbol: false, symbolSize: 8, z: 3,
+    lineStyle: { width: 2, color: t.serie }, itemStyle: { color: t.serie }, areaStyle: { color: t.serie, opacity: 0.08 },
+  }];
+  if (comparar) {
+    series.push({
+      name: rotuloAnterior || "Ano anterior", type: "line", data: anterior.map(([x, v]) => [x, v]), showSymbol: false, z: 2,
+      lineStyle: { width: 1.5, color: t.texto3, type: [5, 4] }, itemStyle: { color: t.texto3 },
+    });
+  }
   g.setOption(
     {
       animationDuration: 300,
       textStyle: { fontFamily: t.fonte },
-      grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+      legend: comparar ? { top: 0, right: 0, itemWidth: 18, itemHeight: 8, textStyle: { color: t.texto2, fontSize: 12 } } : { show: false },
+      grid: { left: 8, right: 16, top: comparar ? 32 : 16, bottom: 8, containLabel: true },
       tooltip: {
         ...tooltipBase(t), trigger: "axis", axisPointer: { type: "line", lineStyle: { color: t.texto3 } },
-        formatter: (ps) => `${fmtData(ps[0].axisValue)}<br><b>${fmt(ps[0].value[1])}</b> ${unidade}`,
+        formatter: (ps) => ps.map((p) => {
+          const dia = p.seriesIndex === 1 ? realAnterior.get(p.value[0]) : p.value[0];
+          return `${p.marker}${fmtData(dia)}: <b>${fmt(p.value[1])}</b> ${unidade}`;
+        }).join("<br>"),
       },
       xAxis: {
         type: "time", axisLine: { lineStyle: { color: t.grade } }, axisTick: { show: false },
@@ -83,10 +105,7 @@ export function serieDiaria(el, pontos, { unidade = "ocorrências" } = {}) {
       },
       yAxis: { type: "value", minInterval: 1, splitLine: { lineStyle: { color: t.grade } }, axisLabel: { color: t.texto3, fontSize: 11.5 } },
       dataZoom: pontos.length > 60 ? [{ type: "inside" }] : [],
-      series: [{
-        type: "line", data: pontos, showSymbol: false, symbolSize: 8, lineStyle: { width: 2, color: t.serie },
-        itemStyle: { color: t.serie }, areaStyle: { color: t.serie, opacity: 0.08 },
-      }],
+      series,
     },
     true
   );

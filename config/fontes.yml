@@ -123,6 +123,10 @@ conjuntos:
       duracao_s: inteiro
     # Coordenadas arredondadas (3 casas ≈ 100 m) para não expor endereço exato.
     casas_decimais_coord: 3
+    # Fogo em vegetação tem fonte própria (PLANILHA FOGO EM VEGETAÇÃO, ambiente
+    # "SisGeO · Fogo"). Fica fora daqui para não contar a mesma ocorrência duas vezes.
+    excluir:
+      tipo: ["Fogo em Vegetação"]
     # Identidade de um registro do SisGeO: número do evento + número da ocorrência.
     # Mesmo evento com várias ocorrências = unidades em apoio (não é duplicata).
     chave_unica: [id_evento, ocorrencia]
@@ -262,6 +266,15 @@ conjuntos:
 
 # Abas lidas pela automação interna e que NÃO entram no painel.
 # Listadas aqui só para documentar que foram ignoradas de propósito.
+  nivel_resposta:
+    aba: "NÍVEL DE RESPOSTA"
+    titulo: "Nível de resposta (chuvas)"
+    min_linhas: 0
+    obrigatorias: [nivel]
+    colunas:
+      nivel: ["NÍVEL DE RESPOSTA"]
+    tipos: {nivel: inteiro}
+
   # ======================= PLANILHA FOGO EM VEGETAÇÃO =======================
   # Todos opcionais (min_linhas 0): se a planilha de fogo ficar fora do ar, só o
   # ambiente "Fogo em vegetação" mostra aviso; chuvas continua publicando.
@@ -349,21 +362,15 @@ conjuntos:
       ur_pct:    ["MENOR UMIDADE %", "MENOR UMIDADE"]
     tipos: {redec: redec, data: data, municipio: municipio, ur_pct: decimal}
 
-  fogo_severidade:
+  fogo_nivel_resposta:
     planilha: fogo
-    aba: "SEVERIDADE TEMP UMID"
-    titulo: "Severidade por temperatura e umidade"
+    aba: "NÍVEL DE RESPOSTA"
+    titulo: "Nível de resposta (fogo)"
     min_linhas: 0
-    obrigatorias: [municipio]
+    obrigatorias: [nivel]
     colunas:
-      municipio:     ["MUNICÍPIO"]
-      redec:         ["REDEC"]
-      temp_hoje:     ["TEMP HOJE"]
-      ur_hoje:       ["UR HOJE"]
-      dias_temp:     ["DIAS CONSEC TEMP"]
-      dias_ur:       ["DIAS CONSEC UR"]
-      severidade:    ["SEVERIDADE"]
-    tipos: {municipio: municipio, redec: redec, temp_hoje: decimal, ur_hoje: decimal, dias_temp: inteiro, dias_ur: inteiro}
+      nivel: ["NÍVEL DE RESPOSTA"]
+    tipos: {nivel: inteiro}
 
   fogo_ultimo_dia:
     planilha: fogo
@@ -387,7 +394,6 @@ ignoradas:
   - NVScriptsProperties
   - AUTOCRAT
   - "DO NOT DELETE - AutoCrat Job Settings"
-  - "NÍVEL DE RESPOSTA"
   - "MAIORES LEITURAS PLUVIOMÉTRICAS(CEMADEN-RJ)"
   - "SISGEO 7h - 7h"       # subconjunto do SISGEO
   - "GRAC(MAQUINÁRIO)"     # layout em colunas por órgão; precisa ser reestruturada para virar tabela

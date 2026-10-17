@@ -28,19 +28,20 @@
     </div>
     <nav class="ambientes" aria-label="Ambiente">
       <a href="#amb=sisgeo" data-amb="sisgeo" aria-current="page">
-        <span class="ambientes__nome">Ocorrências SisGeO</span>
+        <span class="ambientes__nome">SisGeO · Chuvas</span>
         <span class="ambientes__fonte">CBMERJ</span>
+      </a>
+      <a href="#amb=fogo" data-amb="fogo">
+        <span class="ambientes__nome">SisGeO · Fogo</span>
+        <span class="ambientes__fonte">Fogo em vegetação</span>
       </a>
       <a href="#amb=redecs" data-amb="redecs">
         <span class="ambientes__nome">Eventos REDECs</span>
         <span class="ambientes__fonte">Defesa Civil</span>
       </a>
-      <a href="#amb=fogo" data-amb="fogo">
-        <span class="ambientes__nome">Fogo em vegetação</span>
-        <span class="ambientes__fonte">SisGeO · CBMERJ</span>
-      </a>
     </nav>
     <div class="topo__acoes">
+      <div class="nr" id="nr" hidden title="Nível de resposta"><span class="nr__rotulo">Nível de resposta</span><span class="nr__valor"></span></div>
       <div class="topo__status" id="status-dados" role="status">Carregando dados…</div>
       <button type="button" class="botao-atualizar" id="botao-atualizar" hidden title="Buscar os dados mais recentes. A planilha é consultada automaticamente a cada ~10 min.">
         <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
@@ -89,6 +90,7 @@
   <main id="conteudo">
     <!-- =============================== AMBIENTE SISGEO =============================== -->
     <section class="painel-aba" data-amb="sisgeo" data-aba="geral">
+      <p class="aviso-amb" id="s-aviso-fogo" hidden></p>
       <div class="kpis" id="s-kpis"></div>
       <div class="grade grade--mapa">
         <article class="cartao cartao--mapa">
@@ -101,7 +103,7 @@
         </article>
       </div>
       <div class="grade grade--2">
-        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por dia</h2></header><div class="grafico" id="s-serie"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por dia</h2><span class="dica" id="s-serie-nota"></span></header><div class="grafico" id="s-serie"></div></article>
         <article class="cartao"><header class="cartao__cab"><h2>Municípios com mais ocorrências</h2></header><div class="grafico" id="s-top-mun"></div></article>
       </div>
     </section>
@@ -149,7 +151,7 @@
         </article>
       </div>
       <div class="grade grade--2">
-        <article class="cartao"><header class="cartao__cab"><h2>Eventos por dia</h2></header><div class="grafico" id="r-serie"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Eventos por dia</h2><span class="dica" id="r-serie-nota"></span></header><div class="grafico" id="r-serie"></div></article>
         <article class="cartao"><header class="cartao__cab"><h2>Ocorrências informadas por natureza</h2></header><div class="grafico" id="r-natureza"></div></article>
       </div>
     </section>
@@ -205,7 +207,7 @@
         </article>
       </div>
       <div class="grade grade--2">
-        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por dia</h2></header><div class="grafico" id="fv-serie"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por dia</h2><span class="dica" id="fv-serie-nota"></span></header><div class="grafico" id="fv-serie"></div></article>
         <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por mês, ano a ano</h2></header><div class="grafico" id="fv-mes"></div></article>
       </div>
       <article class="cartao">
@@ -227,11 +229,8 @@
 
     <section class="painel-aba" data-amb="fogo" data-aba="condicoes" hidden>
       <div class="kpis" id="fv-kpis-clima"></div>
-      <div class="grade grade--2">
+      <div class="grade grade--3">
         <article class="cartao"><header class="cartao__cab"><h2>Risco de incêndio florestal por REDEC</h2></header><div id="fv-risco"></div></article>
-        <article class="cartao"><header class="cartao__cab"><h2>Severidade por temperatura e umidade</h2><span class="dica">municípios com dias consecutivos</span></header><div id="fv-sev"></div></article>
-      </div>
-      <div class="grade grade--2">
         <article class="cartao"><header class="cartao__cab"><h2>Maiores temperaturas (INMET)</h2></header><div id="fv-temp"></div></article>
         <article class="cartao"><header class="cartao__cab"><h2>Menores umidades relativas (INMET)</h2></header><div id="fv-umid"></div></article>
       </div>

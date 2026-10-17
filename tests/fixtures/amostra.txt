@@ -188,4 +188,6 @@ leitura por 24h (medida),leitura por 24h (local)
 
 ## Sheet name: 1h_maiores leituras 1h
 leitura por h (medida),leitura por h (local)
-
+## Sheet name: NÍVEL DE RESPOSTA
+NÍVEL DE RESPOSTA
+1

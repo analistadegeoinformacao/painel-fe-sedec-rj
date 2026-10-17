@@ -4,7 +4,7 @@ const VERSAO_CONTRATO = 1;
 const CONJUNTOS = [
   "sisgeo", "eventos", "boletins", "danos_humanos", "decretos", "decretos_historico",
   "alertas", "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h",
-  "fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_severidade", "fogo_ultimo_dia",
+  "nivel_resposta", "fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_nivel_resposta", "fogo_ultimo_dia",
 ];
 
 async function json(caminho) {

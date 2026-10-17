@@ -159,3 +159,37 @@ test("Fogo em vegetação: eventos x ocorrências e quadro de eventos em andamen
   await page.click('.abas [data-amb="fogo"][data-aba="condicoes"]');
   await expect(page.locator("#fv-kpis-clima .kpi")).toHaveCount(3);
 });
+
+test("nível de resposta visível em todos os ambientes, com a cor do nível", async ({ page, request }) => {
+  const nrChuva = (await (await request.get("/data/nivel_resposta.json")).json())[0]?.nivel;
+  const nrFogo = (await (await request.get("/data/fogo_nivel_resposta.json")).json())[0]?.nivel;
+  await abrir(page);
+  for (const [amb, nr] of [["sisgeo", nrChuva], ["redecs", nrChuva], ["fogo", nrFogo]]) {
+    await page.click(`.ambientes a[data-amb="${amb}"]`);
+    if (nr === undefined) { await expect(page.locator("#nr")).toBeHidden(); continue; }
+    await expect(page.locator("#nr")).toBeVisible();
+    await expect(page.locator("#nr")).toHaveAttribute("data-nr", String(nr));
+    await expect(page.locator("#nr .nr__valor")).toHaveText(`NR ${nr}`);
+  }
+});
+
+test("cartões por dia trazem a comparação com o mesmo período do ano anterior", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo");
+  await expect(page.locator("#s-serie-nota")).toContainText(/mesmo período|\d{4}:/);
+  await page.click('.ambientes a[data-amb="fogo"]');
+  const nota = page.locator("#fv-serie-nota");
+  if (await page.locator("#fv-serie .vazio").count() === 0) await expect(nota).not.toBeEmpty();
+});
+
+test("SisGeO · Chuvas avisa que o fogo tem ambiente próprio (quando houver fogo na planilha)", async ({ page, request }) => {
+  const meta = await (await request.get("/data/meta.json")).json();
+  await abrir(page, "#amb=sisgeo");
+  const aviso = page.locator("#s-aviso-fogo");
+  if (meta.conjuntos.sisgeo?.excluidos) {
+    await expect(aviso).toBeVisible();
+    await aviso.locator("a").click();
+    await expect(page.locator("body")).toHaveAttribute("data-amb", "fogo");
+  } else {
+    await expect(aviso).toBeHidden();
+  }
+});

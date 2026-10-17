@@ -14,14 +14,14 @@ import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, s
 // =====================================================================
 
 const AMBIENTES = {
-  sisgeo: { abas: ["geral", "tipos", "registros", "qualidade"], conjuntos: ["sisgeo"],
+  sisgeo: { abas: ["geral", "tipos", "registros", "qualidade"], conjuntos: ["sisgeo", "nivel_resposta"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   redecs: { abas: ["geral", "decretos", "resposta", "registros", "consulta", "qualidade"],
             conjuntos: ["eventos", "boletins", "danos_humanos", "decretos", "decretos_historico", "alertas",
-                        "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h"],
+                        "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h", "nivel_resposta"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   fogo:   { abas: ["geral", "territorios", "condicoes", "registros", "qualidade"],
-            conjuntos: ["fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_severidade", "fogo_ultimo_dia", "fogo"],
+            conjuntos: ["fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_nivel_resposta", "fogo_ultimo_dia", "fogo"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
@@ -137,6 +137,57 @@ const porDia = (linhas, fd) => {
   for (let d = st.de || dias[0], fim = st.ate || dias.at(-1); d <= fim; d = somaDias(d, 1)) out.push([d, c.get(d) || 0]);
   return out;
 };
+// ---- comparação com o mesmo período do ano anterior (cartões "por dia")
+// Janela: o período escolhido no filtro; em "Tudo", o ano mais recente dos dados (1º jan → último dia).
+// A série anterior respeita REDEC/município/tipo, mas não o filtro de período (é deslocada 1 ano).
+const menosUmAno = (iso) => {
+  const [a, m, d] = iso.split("-");
+  return `${Number(a) - 1}-${m}-${m === "02" && d === "29" ? "28" : d}`;
+};
+function comparativoDiario(nome, campoData, idNota, unidade) {
+  const linhas = filtrar(nome, { comPeriodo: false });
+  if (!linhas?.length) return null;
+  const datas = linhas.map(campoData).filter(Boolean).sort();
+  const maxData = datas.at(-1);
+  let ini, fim;
+  if (st.de || st.ate) { ini = st.de || datas[0]; fim = st.ate || maxData; }
+  else { ini = `${maxData.slice(0, 4)}-01-01`; fim = maxData; }
+  const c = contarPor(linhas, campoData);
+  const pontos = [], anterior = [];
+  let tA = 0, tB = 0;
+  for (let d = ini; d <= fim; d = somaDias(d, 1)) {
+    const a = c.get(d) || 0, dAnt = menosUmAno(d), b = c.get(dAnt) || 0;
+    tA += a; tB += b;
+    pontos.push([d, a]);
+    anterior.push([d, b, dAnt]);
+  }
+  const anos = (x, y) => (x.slice(0, 4) === y.slice(0, 4) ? x.slice(0, 4) : `${x.slice(0, 4)}–${y.slice(0, 4)}`);
+  const rotA = anos(ini, fim), rotB = anos(menosUmAno(ini), menosUmAno(fim));
+  const nota = document.getElementById(idNota);
+  if (nota) {
+    const janela = `${fmtData(ini)} a ${fmtData(fim)}`;
+    if (!tB) nota.textContent = `${janela} · sem registros no mesmo período de ${rotB}`;
+    else {
+      const var_ = Math.round((100 * (tA - tB)) / tB);
+      nota.textContent = `${janela}: ${fmt(tA)} ${unidade} · ${rotB}: ${fmt(tB)} (${var_ > 0 ? "+" : ""}${var_}%)`;
+    }
+  }
+  return { pontos, anterior: tB ? anterior : null, rotuloAtual: rotA, rotuloAnterior: `${rotB} (mesmo período)` };
+}
+
+// ---- nível de resposta (NR) do ambiente ativo, sempre visível no topo
+function mostrarNR() {
+  const el = document.getElementById("nr");
+  if (!el || !BASE) return;
+  const conj = st.amb === "fogo" ? "fogo_nivel_resposta" : "nivel_resposta";
+  const nivel = BASE.dados[conj]?.[0]?.nivel;
+  if (nivel === null || nivel === undefined) { el.hidden = true; return; }
+  el.hidden = false;
+  el.dataset.nr = String(nivel);
+  el.querySelector(".nr__valor").textContent = `NR ${nivel}`;
+  el.title = `Nível de resposta ${nivel} — ${BASE.meta.conjuntos[conj]?.planilha || ""}`;
+}
+
 const ordenar = (mapa, n = Infinity) => [...mapa.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
 const nomeMun = (cod) => titulo(BASE.meta.municipios.find((m) => m.cod_ibge === cod)?.municipio || cod);
 const alternarRedec = (r) => { st.redec = st.redec === r ? "" : r; st.municipio = ""; preencherMunicipios(); atualizar(); };
@@ -202,7 +253,17 @@ const SISGEO = {
       ]);
     });
     seguro("s-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
-    seguro("s-serie", (el) => { if (!indisponivel(el, sis)) serieDiaria(el, porDia(sis, CAMPO_DATA.sisgeo)); });
+    seguro("s-serie", (el) => {
+      if (indisponivel(el, sis)) return;
+      const c = comparativoDiario("sisgeo", CAMPO_DATA.sisgeo, "s-serie-nota", "ocorrências");
+      if (c) serieDiaria(el, c.pontos, c);
+    });
+    seguro("s-aviso-fogo", (el) => {
+      const n = BASE.meta.conjuntos.sisgeo?.excluidos || 0;
+      el.hidden = !n;
+      el.innerHTML = n ? `As ${fmt(n)} ocorrências de <b>fogo em vegetação</b> registradas nesta planilha não entram aqui: o fogo tem ambiente próprio, ` +
+        `<a href="#amb=fogo">SisGeO · Fogo</a>, alimentado pela PLANILHA FOGO EM VEGETAÇÃO.` : "";
+    });
     seguro("s-top-mun", (el) => {
       if (indisponivel(el, sis)) return;
       barrasH(el, ordenar(contarPor(sis, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
@@ -243,7 +304,11 @@ const REDECS = {
       { rotulo: "Óbitos", valor: dh ? soma(dh, "obitos") : "—", sub: "consolidado" },
     ]));
     seguro("r-redec", (el) => { if (!indisponivel(el, ev)) barrasH(el, porRedec(ev), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "eventos" }); });
-    seguro("r-serie", (el) => { if (!indisponivel(el, ev)) serieDiaria(el, porDia(ev, CAMPO_DATA.eventos), { unidade: "eventos" }); });
+    seguro("r-serie", (el) => {
+      if (indisponivel(el, ev)) return;
+      const c = comparativoDiario("eventos", CAMPO_DATA.eventos, "r-serie-nota", "eventos");
+      if (c) serieDiaria(el, c.pontos, { ...c, unidade: "eventos" });
+    });
     seguro("r-natureza", (el) => {
       if (indisponivel(el, ev)) return;
       barrasH(el, NATUREZAS.map(([k, r]) => [r, soma(ev, k)]).sort((a, b) => b[1] - a[1]), { unidade: "ocorrências" });
@@ -372,7 +437,11 @@ const FOGO = {
       ]);
     });
     seguro("fv-redec", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
-    seguro("fv-serie", (el) => { if (!indisponivel(el, fv)) serieDiaria(el, porDia(fv, CAMPO_DATA.fogo_sisgeo)); });
+    seguro("fv-serie", (el) => {
+      if (indisponivel(el, fv)) return;
+      const c = comparativoDiario("fogo_sisgeo", CAMPO_DATA.fogo_sisgeo, "fv-serie-nota", "ocorrências");
+      if (c) serieDiaria(el, c.pontos, c);
+    });
     seguro("fv-mes", (el) => {
       if (indisponivel(el, fv)) return;
       const porAno = new Map();
@@ -430,16 +499,6 @@ const FOGO = {
       colunas: [{ campo: "redec", titulo: "REDEC", formato: rotuloRedec },
         { campo: "risco", titulo: "Risco de incêndio florestal", tipo: "html", formato: chipRisco }],
     }));
-    seguro("fv-sev", (el) => {
-      const sev = filtrar("fogo_severidade", { comPeriodo: false });
-      tabela(el, {
-        nome: "severidade_temp_umid", linhas: sev && sev.filter((l) => (l.dias_temp || 0) + (l.dias_ur || 0) > 0 || (l.severidade && l.severidade !== "—")),
-        porPagina: 15, ordem: { campo: "dias_ur", dir: -1 },
-        colunas: [{ campo: "municipio", titulo: "Município", formato: titulo }, { campo: "temp_hoje", titulo: "Temp. hoje (°C)", tipo: "num" },
-          { campo: "ur_hoje", titulo: "UR hoje (%)", tipo: "num" }, { campo: "dias_temp", titulo: "Dias consec. temp.", tipo: "num" },
-          { campo: "dias_ur", titulo: "Dias consec. UR", tipo: "num" }, { campo: "severidade", titulo: "Severidade" }],
-      });
-    });
     seguro("fv-temp", (el) => tabela(el, {
       nome: "maiores_temperaturas", linhas: maisRecentes(filtrar("fogo_temperatura")), porPagina: 15,
       colunas: [{ campo: "data", titulo: "Data", formato: fmtData }, { campo: "municipio", titulo: "Município", formato: titulo },
@@ -514,6 +573,7 @@ function montarBotaoAtualizar() {
 
 function atualizar() {
   sincronizarControles();
+  mostrarNR();
   gravarURL();
   RENDER[st.amb][st.aba]?.();
 }

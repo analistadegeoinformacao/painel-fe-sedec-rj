@@ -13,9 +13,9 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
 
 | Ambiente | Planilha de origem | Link | Abas |
 |---|---|---|---|
-| **Ocorrências SisGeO** (vermelho) | NOVA BASE ANALISTAS (chuvas) | `#amb=sisgeo` | Visão geral · Tipos e territórios · Registros · Qualidade |
+| **SisGeO · Chuvas** (vermelho) | NOVA BASE ANALISTAS — sem "Fogo em Vegetação" | `#amb=sisgeo` | Visão geral · Tipos e territórios · Registros · Qualidade |
 | **Eventos REDECs** (laranja) | NOVA BASE ANALISTAS (chuvas) | `#amb=redecs` | Visão geral · Decretação · Resposta · Registros · Consulta · Qualidade |
-| **Fogo em vegetação** (âmbar) | PLANILHA FOGO EM VEGETAÇÃO | `#amb=fogo` | Visão geral · Subtipos e territórios · Condições meteorológicas · Registros · Qualidade |
+| **SisGeO · Fogo** (âmbar) | PLANILHA FOGO EM VEGETAÇÃO | `#amb=fogo` | Visão geral · Subtipos e territórios · Condições meteorológicas · Registros · Qualidade |
 
 - Cada conjunto em `config/fontes.yml` declara `planilha:` (padrão: principal). Abas de planilhas diferentes nunca se
   misturam, mesmo com o mesmo nome. A ponte do Apps Script só lê as planilhas da lista `PAINEL_PLANILHAS_PERMITIDAS`
@@ -24,6 +24,13 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
   repetições e saem da contagem; o mesmo evento com várias ocorrências = unidades em apoio (painel mostra
   "Ocorrências", "Eventos" e "Eventos com apoio").
 - A planilha de fogo é opcional para a publicação: se estiver fora do ar, só o ambiente de fogo mostra aviso.
+- Fogo em vegetação tem uma única fonte oficial: a planilha de fogo. Na NOVA BASE, o tipo "Fogo em Vegetação" é
+  excluído do SisGeO · Chuvas (`excluir:` no contrato) e o painel avisa quantas ocorrências foram para o outro ambiente.
+- **Nível de resposta (NR):** aba NÍVEL DE RESPOSTA de cada planilha, sempre visível no topo com as cores
+  institucionais (NR1 verde, NR2 amarelo, NR3 laranja, NR4 vermelho, NR5 roxo). Chuvas e REDECs usam o NR da NOVA
+  BASE; o ambiente de fogo usa o NR da planilha de fogo.
+- **Por dia × ano anterior:** os cartões diários comparam a janela escolhida (em "Tudo": do 1º de janeiro do ano mais
+  recente até o último dia com dados) com as mesmas datas do ano anterior (linha tracejada).
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
 ## Por que este desenho não quebra a cada commit
