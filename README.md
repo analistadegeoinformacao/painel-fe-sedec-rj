@@ -4,7 +4,7 @@ Painel estático (GitHub Pages) alimentado pela planilha **NOVA BASE ANALISTAS**
 SEDEC-RJ · FE-SEDEC · NI²AD.
 
 ```
-Google Sheets ──(GitHub Actions, a cada 30 min)──► ETL Python ──► validação ──► JSON ──► teste no navegador ──► GitHub Pages
+Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──► validação ──► JSON ──► teste no navegador ──► GitHub Pages
                                                        │ falhou?
                                                        └─► nada é publicado; o site continua com a última versão boa
 ```
@@ -65,14 +65,14 @@ sem período de teste. O GitHub Pages é gratuito para repositórios públicos.
 
 Já configurado no repositório: Pages via GitHub Actions e proteção da branch `main` (exige PR com testes verdes).
 
-### Atualizar o painel logo após editar a planilha (opcional)
+### Frequência de atualização
 
-Sem configurar nada, o painel se atualiza a cada 30 min. Para forçar na hora: botão **Atualizar** no topo do
-painel (funciona quando a ponte do Apps Script tem o `GITHUB_TOKEN` e a versão atual do código está implantada), ou *Actions › Atualizar e
-publicar painel › Run workflow*. O botão aceita no máximo um pedido a cada 3 min; a página recarrega sozinha quando
-os dados novos chegam, e um painel deixado aberto confere a cada 5 min se há dados novos. Para que **cada edição** na planilha republique o painel sozinha (2 a 7 min depois que a
-edição para), siga a seção *ATUALIZAÇÃO AUTOMÁTICA* no topo de `apps-script/Codigo.gs`: um token do GitHub com
-permissão só de *Actions* neste repositório + executar `ativarAtualizacaoAutomatica` uma vez.
+O GitHub consulta a planilha **a cada 10 min** (horários de pico podem atrasar execuções agendadas) e só
+republica o site quando os dados mudaram — ou 1x por hora, como sinal de vida. Sem tokens e sem nada a renovar.
+
+- **Botão Atualizar** (topo do painel): carrega na hora a versão mais recente já publicada.
+- **Painel aberto numa tela**: confere sozinho a cada 5 min e recarrega quando há dados novos.
+- **Publicar imediatamente** (sem esperar os 10 min): *Actions › Atualizar e publicar painel › Run workflow*.
 
 > Alternativa sem Apps Script: `--fonte google` com conta de serviço do Google Cloud (a Sheets API também é gratuita,
 > mas exige criar um projeto no Cloud). Ver `etl/fonte.py`.

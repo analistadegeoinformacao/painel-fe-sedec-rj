@@ -80,3 +80,14 @@ def test_data_fora_do_periodo_vira_aviso(tmp_path):
     assert all(e["data"] is None or e["data"] >= "2025-10-01" for e in ev)
     meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
     assert any("fora do período" in a for a in meta["avisos"]["eventos"])
+
+
+def test_impressao_digital_so_muda_com_os_dados(tmp_path):
+    rc, saida = rodar(tmp_path)
+    v1 = (saida / "versao.txt").read_text()
+    rc, saida = rodar(tmp_path)                       # mesma planilha, outra hora
+    assert (saida / "versao.txt").read_text() == v1
+    outra = tmp_path / "outra.txt"
+    outra.write_text(AMOSTRA.read_text(encoding="utf-8").replace("Corte de Árvore", "Corte de Arvore", 1), encoding="utf-8")
+    rc, saida = rodar(tmp_path, outra)
+    assert (saida / "versao.txt").read_text() != v1

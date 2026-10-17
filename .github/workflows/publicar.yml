@@ -1,5 +1,7 @@
 # Atualiza e publica o painel.
-# Roda: a cada 30 min, a cada push na main, ou manualmente (botão "Run workflow").
+# Roda: a cada 10 min, a cada push na main, ou manualmente (botão "Run workflow").
+# Nas execuções agendadas, só republica se os dados mudaram (ou 1x por hora,
+# como sinal de vida) — ver etl/precisa_publicar.py.
 # Se QUALQUER etapa falhar (planilha fora do contrato, teste quebrado), a etapa
 # de publicação não roda e o site continua com a última versão boa.
 name: Atualizar e publicar painel
@@ -8,7 +10,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "*/30 * * * *"      # horário UTC; o GitHub pode atrasar alguns minutos
+    - cron: "*/10 * * * *"      # o GitHub pode atrasar execuções agendadas em horários de pico
   workflow_dispatch:
 
 permissions:
@@ -44,6 +46,8 @@ jobs:
     needs: verificar
     if: needs.verificar.outputs.pronto == 'true'
     runs-on: ubuntu-24.04
+    outputs:
+      publicar: ${{ steps.decidir.outputs.publicar }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -72,12 +76,21 @@ jobs:
             exit 1
           }
 
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Precisa republicar?
+        id: decidir
+        run: python -m etl.precisa_publicar --base "${{ steps.pages.outputs.base_url }}" --evento "${{ github.event_name }}"
+
       - uses: actions/setup-node@v4
+        if: steps.decidir.outputs.publicar == 'true'
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: e2e/package-lock.json
       - name: Teste de fumaça no navegador (com os dados recém-gerados)
+        if: steps.decidir.outputs.publicar == 'true'
         working-directory: e2e
         run: |
           npm ci
@@ -85,20 +98,21 @@ jobs:
           npx playwright test
 
       - name: Guardar print do painel
-        if: always()
+        if: always() && steps.decidir.outputs.publicar == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: print-painel
           path: e2e/test-results/
           retention-days: 7
 
-      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
+        if: steps.decidir.outputs.publicar == 'true'
         with:
           path: site
 
   publicar:
     needs: construir
+    if: needs.construir.outputs.publicar == 'true'
     runs-on: ubuntu-24.04
     environment:
       name: github-pages

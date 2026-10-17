@@ -20,41 +20,17 @@
  *       APPS_SCRIPT_URL   = a URL do passo 3
  *       APPS_SCRIPT_TOKEN = o token do passo 2
  *
- * ATUALIZAÇÃO AUTOMÁTICA AO EDITAR A PLANILHA (opcional, também gratuita):
- *  A. No GitHub: Settings (da sua conta) > Developer settings > Personal access
- *     tokens > Fine-grained tokens > Generate new token.
- *       Repository access: Only select repositories > painel-fe-sedec-rj
- *       Permissions > Repository > Actions: Read and write   (só isso)
- *     Copie o token (começa com github_pat_).
- *  B. Neste projeto: Configurações do projeto (engrenagem) > Propriedades do
- *     script > Adicionar propriedade:  GITHUB_TOKEN = o token do passo A.
- *  C. Selecione a função ativarAtualizacaoAutomatica e clique em Executar.
- *     Autorize (pede acesso a gatilhos e a serviços externos).
- *  Pronto: ~2 a 7 minutos depois que alguém PARA de editar a planilha, o
- *  painel é republicado. Edições seguidas viram uma publicação só.
- *  Para publicar na hora: execute atualizarPainelAgora, ou use o botão
- *  "Atualizar" no topo do painel (o botão aparece quando o GITHUB_TOKEN existe
- *  e esta versão do código está implantada — ver passo D).
- *  D. Depois de colar uma versão nova deste arquivo: Implantar > Gerenciar
- *     implantações > lápis (editar) > Versão: "Nova versão" > Implantar.
- *     A URL continua a mesma.
- *  Para desligar: execute desativarAtualizacaoAutomatica.
+ * ATUALIZAÇÃO: o GitHub consulta esta ponte a cada ~10 min e só republica o
+ * painel quando os dados mudaram. Não há nada para configurar aqui.
  *
  * SEGURANÇA: sem o token a resposta é "não autorizado". O token fica só nas
  * Propriedades deste projeto e no segredo do GitHub. Para trocar, rode
  * gerarToken de novo e atualize o segredo. A planilha é só lida, nunca
- * alterada. O GITHUB_TOKEN só permite disparar o fluxo de publicação.
+ * alterada.
  */
 
 // ID da planilha NOVA BASE ANALISTAS (o trecho entre /d/ e /edit no endereço)
 var PAINEL_PLANILHA_ID = '1SN6hpLNlyKrSYUSu0gUlzF8OaIUeuDMA4i0Gq3bpeGY';
-// Repositório e fluxo que publicam o painel
-var PAINEL_REPO = 'analistadegeoinformacao/painel-fe-sedec-rj';
-var PAINEL_FLUXO = 'publicar.yml';
-// Espera após a última edição antes de publicar (junta várias edições em uma)
-var PAINEL_ESPERA_MIN = 2;
-// Botão "Atualizar" do site: no máximo 1 publicação a cada N minutos
-var PAINEL_INTERVALO_BOTAO_MIN = 3;
 
 function doPost(e) {
   var corpo = {};
@@ -76,35 +52,8 @@ function doPost(e) {
   return painelJson_({ planilha: livro.getName(), lido_em: new Date().toISOString(), abas: abas });
 }
 
-/**
- * GET ?acao=atualizar  -> usado pelo botão "Atualizar" do painel.
- * Não devolve dados; só pede uma publicação. Limite: 1 pedido a cada
- * PAINEL_INTERVALO_BOTAO_MIN minutos (cliques repetidos são ignorados).
- */
-function doGet(e) {
-  var acao = e && e.parameter && e.parameter.acao;
-  if (acao !== 'atualizar') return painelJson_({ ok: true });
-  var props = PropertiesService.getScriptProperties();
-  if (!props.getProperty('GITHUB_TOKEN')) {
-    return painelJson_({ ok: false, erro: 'Atualização pelo site não configurada (GITHUB_TOKEN ausente).' });
-  }
-  var trava = LockService.getScriptLock();
-  if (!trava.tryLock(10000)) return painelJson_({ ok: true, status: 'em_andamento' });
-  try {
-    var ultimo = Number(props.getProperty('PAINEL_ULTIMO_DISPARO') || 0);
-    var intervalo = PAINEL_INTERVALO_BOTAO_MIN * 60 * 1000;
-    if (Date.now() - ultimo < intervalo) {
-      return painelJson_({ ok: true, status: 'em_andamento', desde: new Date(ultimo).toISOString() });
-    }
-    painelDisparar_();
-    props.setProperty('PAINEL_ULTIMO_DISPARO', String(Date.now()));
-    props.deleteProperty('PAINEL_PENDENTE'); // a edição pendente já vai junto
-    return painelJson_({ ok: true, status: 'disparado' });
-  } catch (err) {
-    return painelJson_({ ok: false, erro: String(err.message || err).slice(0, 200) });
-  } finally {
-    trava.releaseLock();
-  }
+function doGet() {
+  return painelJson_({ ok: true, uso: 'POST com {token, abas}' });
 }
 
 function gerarToken() {
@@ -119,65 +68,19 @@ function testarLeitura() {
   Logger.log('Planilha: ' + livro.getName() + ' — ' + livro.getSheets().length + ' abas');
 }
 
-// ------------------------------------------------ atualização automática
-
-function ativarAtualizacaoAutomatica() {
-  if (!PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN')) {
-    throw new Error('Cadastre GITHUB_TOKEN em Configurações do projeto > Propriedades do script (ver instruções no topo).');
-  }
-  desativarAtualizacaoAutomatica();
-  ScriptApp.newTrigger('painelAoAlterar').forSpreadsheet(PAINEL_PLANILHA_ID).onChange().create();
-  ScriptApp.newTrigger('painelVerificarPendencia').timeBased().everyMinutes(5).create();
-  Logger.log('Atualização automática ATIVADA. O painel será republicado alguns minutos após cada edição.');
-}
-
+/**
+ * Limpeza: se a "atualização automática" de uma versão anterior deste código
+ * chegou a ser ativada, rode esta função UMA vez para remover os gatilhos e o
+ * GITHUB_TOKEN. Não faz nada se nunca foi ativada.
+ */
 function desativarAtualizacaoAutomatica() {
   ScriptApp.getProjectTriggers().forEach(function (g) {
     var f = g.getHandlerFunction();
     if (f === 'painelAoAlterar' || f === 'painelVerificarPendencia') ScriptApp.deleteTrigger(g);
   });
-  PropertiesService.getScriptProperties().deleteProperty('PAINEL_PENDENTE');
-  Logger.log('Atualização automática desativada.');
-}
-
-/** Publica agora, sem esperar. */
-function atualizarPainelAgora() {
-  painelDisparar_();
-  Logger.log('Publicação solicitada. O painel atualiza em cerca de 2 minutos.');
-}
-
-/** Gatilho: a planilha mudou. Só anota a hora; quem publica é o verificador. */
-function painelAoAlterar(e) {
-  PropertiesService.getScriptProperties().setProperty('PAINEL_PENDENTE', String(Date.now()));
-}
-
-/** Gatilho a cada 5 min: publica se houve edição e ela já "assentou". */
-function painelVerificarPendencia() {
   var props = PropertiesService.getScriptProperties();
-  var pendente = Number(props.getProperty('PAINEL_PENDENTE') || 0);
-  if (!pendente) return;
-  if (Date.now() - pendente < PAINEL_ESPERA_MIN * 60 * 1000) return; // ainda editando
-  props.deleteProperty('PAINEL_PENDENTE');
-  painelDisparar_();
-}
-
-function painelDisparar_() {
-  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
-  if (!token) throw new Error('GITHUB_TOKEN não cadastrado nas Propriedades do script.');
-  var r = UrlFetchApp.fetch('https://api.github.com/repos/' + PAINEL_REPO + '/actions/workflows/' + PAINEL_FLUXO + '/dispatches', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + token.trim(), Accept: 'application/vnd.github+json' },
-    payload: JSON.stringify({ ref: 'main' }),
-    muteHttpExceptions: true
-  });
-  if (r.getResponseCode() === 204) {
-    PropertiesService.getScriptProperties().setProperty('PAINEL_ULTIMO_DISPARO', String(Date.now()));
-  }
-  if (r.getResponseCode() !== 204) {
-    throw new Error('GitHub recusou (' + r.getResponseCode() + '): ' + r.getContentText().slice(0, 300) +
-                    ' — confira se o GITHUB_TOKEN tem "Actions: Read and write" neste repositório.');
-  }
+  ['GITHUB_TOKEN', 'PAINEL_PENDENTE', 'PAINEL_ULTIMO_DISPARO'].forEach(function (k) { props.deleteProperty(k); });
+  Logger.log('Gatilhos e GITHUB_TOKEN removidos (se existiam).');
 }
 
 function painelJson_(obj) {

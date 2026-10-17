@@ -328,15 +328,13 @@ const REDECS = {
 
 const RENDER = { sisgeo: SISGEO, redecs: REDECS };
 
-// ------------------------------------------------ atualização sob demanda
-// O botão chama a ponte do Apps Script (meta.atualizar_url), que dispara a
-// publicação no GitHub. A página então observa meta.json e recarrega sozinha
-// quando os dados novos chegam. Sem atualizar_url, o botão não aparece.
-const ESPERA_MAX_MS = 8 * 60 * 1000;
-
+// ------------------------------------------------ dados novos
+// O GitHub consulta a planilha a cada ~10 min e só republica quando algo mudou.
+// O botão "Atualizar" busca na hora a versão mais recente publicada; um painel
+// deixado aberto também confere sozinho a cada 5 min.
 async function verificarDadosNovos() {
   const r = await fetch(`data/meta.json?t=${Date.now()}`, { cache: "no-store" });
-  if (!r.ok) return false;
+  if (!r.ok) throw new Error(`meta.json: HTTP ${r.status}`);
   const meta = await r.json();
   if (meta.gerado_em === BASE.meta.gerado_em) return false;
   const nova = await carregar();
@@ -350,49 +348,25 @@ async function verificarDadosNovos() {
 
 function montarBotaoAtualizar() {
   const botao = document.getElementById("botao-atualizar");
-  const url = BASE.meta.atualizar_url;
-  if (!url) return;
-  botao.hidden = false;
   const rotulo = botao.querySelector("span");
   const el = document.getElementById("status-dados");
-  const estado = (texto, girando) => {
-    rotulo.textContent = texto;
-    botao.disabled = girando;
-    botao.classList.toggle("girando", girando);
-  };
-
+  botao.hidden = false;
   botao.addEventListener("click", async () => {
-    estado("Solicitando…", true);
+    rotulo.textContent = "Buscando…";
+    botao.disabled = true;
+    botao.classList.add("girando");
+    let msg;
     try {
-      const r = await fetch(`${url}?acao=atualizar&t=${Date.now()}`);
-      const resp = await r.json();
-      if (!resp.ok) throw new Error(resp.erro || "pedido recusado");
-      // ponte antiga (sem a ação "atualizar") responde ok sem status
-      if (!["disparado", "em_andamento"].includes(resp.status)) throw new Error("ponte do Apps Script desatualizada: implante a nova versão");
+      msg = (await verificarDadosNovos()) ? "Dados novos carregados" : "Já está com os dados mais recentes";
     } catch (e) {
       console.error("[painel] atualizar:", e);
-      estado("Atualizar", false);
-      el.textContent = "Não foi possível pedir a atualização agora";
-      el.dataset.estado = "erro";
-      setTimeout(() => status(BASE.meta), 6000);
-      return;
+      msg = "Sem conexão com o site agora";
     }
-    estado("Atualizando…", true);
-    el.textContent = "Buscando dados na planilha (≈2 min)…";
-    const inicio = Date.now();
-    const espiar = async () => {
-      let chegou = false;
-      try { chegou = await verificarDadosNovos(); } catch {}
-      if (chegou) { estado("Atualizado", false); setTimeout(() => estado("Atualizar", false), 4000); return; }
-      if (Date.now() - inicio > ESPERA_MAX_MS) {
-        estado("Atualizar", false);
-        status(BASE.meta);
-        el.textContent += " · sem dados novos ainda";
-        return;
-      }
-      setTimeout(espiar, 15000);
-    };
-    setTimeout(espiar, 30000);
+    botao.classList.remove("girando");
+    botao.disabled = false;
+    rotulo.textContent = "Atualizar";
+    el.textContent = msg;
+    setTimeout(() => status(BASE.meta), 4000);
   });
 }
 

@@ -196,8 +196,6 @@ def main(argv=None):
         "conjuntos": meta_conj,
         "avisos": {k: v[:50] for k, v in rel.avisos.items()},
         "redecs": ref.redecs,
-        # endereço do botão "Atualizar" (Apps Script). Sem ele, o botão não aparece.
-        "atualizar_url": os.environ.get("APPS_SCRIPT_URL", "").strip() or None,
         "municipios": ref.linhas,
     }
 
@@ -206,6 +204,12 @@ def main(argv=None):
     tmp = Path(tempfile.mkdtemp(prefix="dados_", dir=destino.parent))
     for nome, dados in resultados.items():
         (tmp / f"{nome}.json").write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    # impressão digital só dos dados (sem a hora): muda apenas se a planilha mudou
+    import hashlib
+    h = hashlib.sha256()
+    for nome in sorted(resultados):
+        h.update(nome.encode()); h.update((tmp / f"{nome}.json").read_bytes())
+    (tmp / "versao.txt").write_text(h.hexdigest() + "\n", encoding="utf-8")
     (tmp / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
     if destino.exists():
         shutil.rmtree(destino)
