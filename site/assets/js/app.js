@@ -245,6 +245,14 @@ const COLUNAS_SISGEO = [
   { campo: "situacao", titulo: "Situação" }, { campo: "vitimas", titulo: "Vítimas", tipo: "num" },
 ];
 
+// O que mais aparece numa dimensão, com quantidade e % do total filtrado (cartões "mais frequente")
+function liderDe(linhas, campo, nomear = (v) => v) {
+  if (!linhas?.length) return { valor: "—", sub: "sem ocorrências no recorte" };
+  const [k, n] = ordenar(contarPor(linhas, campo), 1)[0] || [];
+  if (!k) return { valor: "—", sub: "não informado" };
+  return { valor: nomear(k), sub: `${fmt(n)} de ${fmt(linhas.length)} ocorrências (${Math.round((100 * n) / linhas.length)}%)` };
+}
+
 // Tipos com cartão numérico no SisGeO · Chuvas (grafia comparada sem acento/maiúscula)
 const TIPOS_PRINCIPAIS = ["Corte de Árvore", "Deslizamento/Desabamento", "Inundação/Alagamento", "Salvamento de Pessoa"];
 
@@ -272,13 +280,7 @@ const SISGEO = {
       ]);
     });
     seguro("s-kpis", (el) => {
-      // o que mais aparece em cada dimensão, com quantidade e % do total filtrado
-      const lider = (campo, nomear = (v) => v) => {
-        if (!sis?.length) return { valor: "—", sub: "sem ocorrências no recorte" };
-        const [k, n] = ordenar(contarPor(sis, campo), 1)[0] || [];
-        if (!k) return { valor: "—", sub: "não informado" };
-        return { valor: nomear(k), sub: `${fmt(n)} de ${fmt(sis.length)} ocorrências (${Math.round((100 * n) / sis.length)}%)` };
-      };
+      const lider = (campo, nomear) => liderDe(sis, campo, nomear);
       kpis(el, [
         { rotulo: "Tipo mais frequente", texto: true, destaque: true, ...lider("tipo") },
         { rotulo: "Subtipo mais frequente", texto: true, ...lider("subtipo") },
@@ -473,6 +475,11 @@ const FOGO = {
         { rotulo: "Em andamento", valor: ab ? ab.length : "—", sub: "aba EVENTOS ABERTOS" },
       ]);
     });
+    seguro("fv-kpis-lider", (el) => kpis(el, [
+      { rotulo: "Subtipo mais frequente", texto: true, ...liderDe(fv, "subtipo") },
+      { rotulo: "Município com mais ocorrências", texto: true, ...liderDe(fv, "cod_ibge", nomeMun) },
+      { rotulo: "REDEC com mais ocorrências", texto: true, ...liderDe(fv, "redec", rotuloRedec) },
+    ]));
     seguro("fv-redec", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
     seguro("fv-serie", (el) => {
       if (indisponivel(el, fv)) return;
