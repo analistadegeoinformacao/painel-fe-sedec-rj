@@ -63,7 +63,14 @@ jobs:
         env:
           APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
           APPS_SCRIPT_TOKEN: ${{ secrets.APPS_SCRIPT_TOKEN }}
-        run: python -m etl.build --fonte appsscript
+        # em caso de erro, a mensagem vira uma anotação visível no resumo da execução
+        run: |
+          set -o pipefail
+          python -m etl.build --fonte appsscript 2>&1 | tee etl.log || {
+            msg=$(grep -E "ERRO|Error|recusou|SystemExit|HTTP|não devolveu|precisam" etl.log | tail -5 | tr '\n' ' ')
+            echo "::error title=Leitura da planilha falhou::${msg:-$(tail -3 etl.log | tr '\n' ' ')}"
+            exit 1
+          }
 
       - uses: actions/setup-node@v4
         with:

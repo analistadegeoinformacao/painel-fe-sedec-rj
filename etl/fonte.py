@@ -50,8 +50,17 @@ def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
         headers={"Content-Type": "application/json"}, method="POST",
     )
     # o Apps Script responde com um redirecionamento; o urllib segue sozinho
-    with urllib.request.urlopen(pedido, timeout=120) as r:
-        bruto = r.read().decode("utf-8")
+    import urllib.error
+    try:
+        with urllib.request.urlopen(pedido, timeout=120) as r:
+            bruto = r.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        dica = {404: "a URL do App da Web não existe mais (implantação apagada ou URL trocada?)",
+                401: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'",
+                403: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'"}.get(e.code, "erro no Google")
+        raise SystemExit(f"Apps Script respondeu HTTP {e.code}: {dica}.")
+    except urllib.error.URLError as e:
+        raise SystemExit(f"Não foi possível falar com o Apps Script: {e.reason}.")
     return abas_do_json(bruto)
 
 
