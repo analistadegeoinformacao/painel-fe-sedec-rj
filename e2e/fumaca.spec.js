@@ -103,6 +103,21 @@ test("botão Atualizar pede a publicação à ponte do Apps Script", async ({ pa
   expect(pedidos).toBe(1);
 });
 
+test("ponte antiga (sem a ação atualizar) é tratada como falha, não fica girando", async ({ page }) => {
+  await page.route(/data\/meta\.json/, async (route) => {
+    const r = await route.fetch();
+    const meta = await r.json();
+    meta.atualizar_url = "https://ponte.exemplo/exec";
+    await route.fulfill({ response: r, json: meta });
+  });
+  await page.route(/ponte\.exemplo/, (route) =>
+    route.fulfill({ json: { ok: true, uso: "POST com {token, abas}" }, headers: { "Access-Control-Allow-Origin": "*" } }));
+  await abrir(page);
+  await page.click("#botao-atualizar");
+  await expect(page.locator("#status-dados")).toContainText("Não foi possível");
+  await expect(page.locator("#botao-atualizar")).toBeEnabled();
+});
+
 test("falha da ponte mostra aviso e libera o botão", async ({ page }) => {
   await page.route(/data\/meta\.json/, async (route) => {
     const r = await route.fetch();

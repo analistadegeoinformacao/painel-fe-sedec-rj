@@ -367,6 +367,8 @@ function montarBotaoAtualizar() {
       const r = await fetch(`${url}?acao=atualizar&t=${Date.now()}`);
       const resp = await r.json();
       if (!resp.ok) throw new Error(resp.erro || "pedido recusado");
+      // ponte antiga (sem a ação "atualizar") responde ok sem status
+      if (!["disparado", "em_andamento"].includes(resp.status)) throw new Error("ponte do Apps Script desatualizada: implante a nova versão");
     } catch (e) {
       console.error("[painel] atualizar:", e);
       estado("Atualizar", false);
