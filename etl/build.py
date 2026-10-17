@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -195,6 +196,8 @@ def main(argv=None):
         "conjuntos": meta_conj,
         "avisos": {k: v[:50] for k, v in rel.avisos.items()},
         "redecs": ref.redecs,
+        # endereço do botão "Atualizar" (Apps Script). Sem ele, o botão não aparece.
+        "atualizar_url": os.environ.get("APPS_SCRIPT_URL", "").strip() or None,
         "municipios": ref.linhas,
     }
 

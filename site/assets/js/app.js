@@ -328,6 +328,72 @@ const REDECS = {
 
 const RENDER = { sisgeo: SISGEO, redecs: REDECS };
 
+// ------------------------------------------------ atualização sob demanda
+// O botão chama a ponte do Apps Script (meta.atualizar_url), que dispara a
+// publicação no GitHub. A página então observa meta.json e recarrega sozinha
+// quando os dados novos chegam. Sem atualizar_url, o botão não aparece.
+const ESPERA_MAX_MS = 8 * 60 * 1000;
+
+async function verificarDadosNovos() {
+  const r = await fetch(`data/meta.json?t=${Date.now()}`, { cache: "no-store" });
+  if (!r.ok) return false;
+  const meta = await r.json();
+  if (meta.gerado_em === BASE.meta.gerado_em) return false;
+  const nova = await carregar();
+  BASE.meta = nova.meta;
+  BASE.dados = nova.dados;
+  BASE.falhas = nova.falhas;
+  status(BASE.meta);
+  atualizar();
+  return true;
+}
+
+function montarBotaoAtualizar() {
+  const botao = document.getElementById("botao-atualizar");
+  const url = BASE.meta.atualizar_url;
+  if (!url) return;
+  botao.hidden = false;
+  const rotulo = botao.querySelector("span");
+  const el = document.getElementById("status-dados");
+  const estado = (texto, girando) => {
+    rotulo.textContent = texto;
+    botao.disabled = girando;
+    botao.classList.toggle("girando", girando);
+  };
+
+  botao.addEventListener("click", async () => {
+    estado("Solicitando…", true);
+    try {
+      const r = await fetch(`${url}?acao=atualizar&t=${Date.now()}`);
+      const resp = await r.json();
+      if (!resp.ok) throw new Error(resp.erro || "pedido recusado");
+    } catch (e) {
+      console.error("[painel] atualizar:", e);
+      estado("Atualizar", false);
+      el.textContent = "Não foi possível pedir a atualização agora";
+      el.dataset.estado = "erro";
+      setTimeout(() => status(BASE.meta), 6000);
+      return;
+    }
+    estado("Atualizando…", true);
+    el.textContent = "Buscando dados na planilha (≈2 min)…";
+    const inicio = Date.now();
+    const espiar = async () => {
+      let chegou = false;
+      try { chegou = await verificarDadosNovos(); } catch {}
+      if (chegou) { estado("Atualizado", false); setTimeout(() => estado("Atualizar", false), 4000); return; }
+      if (Date.now() - inicio > ESPERA_MAX_MS) {
+        estado("Atualizar", false);
+        status(BASE.meta);
+        el.textContent += " · sem dados novos ainda";
+        return;
+      }
+      setTimeout(espiar, 15000);
+    };
+    setTimeout(espiar, 30000);
+  });
+}
+
 function atualizar() {
   sincronizarControles();
   gravarURL();
@@ -377,6 +443,9 @@ async function iniciar() {
   redecDoCod = new Map(BASE.meta.municipios.map((m) => [m.cod_ibge, m.redec]));
   status(BASE.meta);
   montarFiltros();
+  montarBotaoAtualizar();
+  // painel aberto numa tela: confere a cada 5 min se há dados novos e recarrega sozinho
+  setInterval(() => verificarDadosNovos().catch(() => {}), 5 * 60 * 1000);
 
   document.querySelector(".ambientes").addEventListener("click", (e) => {
     const a = e.target.closest("a[data-amb]");

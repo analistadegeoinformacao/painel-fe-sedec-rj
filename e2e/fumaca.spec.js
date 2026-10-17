@@ -70,3 +70,50 @@ test("nenhum dado pessoal no JSON publicado", async ({ request }) => {
   expect(txt).not.toMatch(/\(#?\d{5,7}\)/);
   expect(txt.toLowerCase()).not.toContain("efetivo");
 });
+
+test("botão Atualizar só aparece quando a ponte está configurada", async ({ page, request }) => {
+  const meta = await (await request.get("/data/meta.json")).json();
+  await abrir(page);
+  // na publicação real (meta com atualizar_url) aparece; na amostra de teste, não
+  if (meta.atualizar_url) await expect(page.locator("#botao-atualizar")).toBeVisible();
+  else await expect(page.locator("#botao-atualizar")).toBeHidden();
+});
+
+test("botão Atualizar pede a publicação à ponte do Apps Script", async ({ page }) => {
+  const PONTE = "https://ponte.exemplo/exec";
+  let pedidos = 0;
+  await page.route(/data\/meta\.json/, async (route) => {
+    const r = await route.fetch();
+    const meta = await r.json();
+    meta.atualizar_url = PONTE;
+    await route.fulfill({ response: r, json: meta });
+  });
+  await page.route(/ponte\.exemplo/, (route) => {
+    pedidos++;
+    expect(route.request().url()).toContain("acao=atualizar");
+    route.fulfill({ json: { ok: true, status: "disparado" }, headers: { "Access-Control-Allow-Origin": "*" } });
+  });
+  await abrir(page);
+  const botao = page.locator("#botao-atualizar");
+  await expect(botao).toBeVisible();
+  await botao.click();
+  await expect(botao).toContainText("Atualizando");
+  await expect(botao).toBeDisabled();
+  await expect(page.locator("#status-dados")).toContainText("Buscando dados");
+  expect(pedidos).toBe(1);
+});
+
+test("falha da ponte mostra aviso e libera o botão", async ({ page }) => {
+  await page.route(/data\/meta\.json/, async (route) => {
+    const r = await route.fetch();
+    const meta = await r.json();
+    meta.atualizar_url = "https://ponte.exemplo/exec";
+    await route.fulfill({ response: r, json: meta });
+  });
+  await page.route(/ponte\.exemplo/, (route) =>
+    route.fulfill({ json: { ok: false, erro: "GITHUB_TOKEN ausente" }, headers: { "Access-Control-Allow-Origin": "*" } }));
+  await abrir(page);
+  await page.click("#botao-atualizar");
+  await expect(page.locator("#status-dados")).toContainText("Não foi possível");
+  await expect(page.locator("#botao-atualizar")).toBeEnabled();
+});

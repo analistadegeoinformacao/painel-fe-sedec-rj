@@ -35,7 +35,13 @@
         <span class="ambientes__fonte">Defesa Civil</span>
       </a>
     </nav>
-    <div class="topo__status" id="status-dados" role="status">Carregando dados…</div>
+    <div class="topo__acoes">
+      <div class="topo__status" id="status-dados" role="status">Carregando dados…</div>
+      <button type="button" class="botao-atualizar" id="botao-atualizar" hidden title="Buscar os dados mais recentes da planilha">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        <span>Atualizar</span>
+      </button>
+    </div>
   </header>
 
   <!-- Abas de cada ambiente: só as do ambiente ativo aparecem -->

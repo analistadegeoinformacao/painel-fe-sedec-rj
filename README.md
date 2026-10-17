@@ -67,8 +67,10 @@ Já configurado no repositório: Pages via GitHub Actions e proteção da branch
 
 ### Atualizar o painel logo após editar a planilha (opcional)
 
-Sem configurar nada, o painel se atualiza a cada 30 min. Para forçar na hora: *Actions › Atualizar e publicar
-painel › Run workflow*. Para que **cada edição** na planilha republique o painel sozinha (2 a 7 min depois que a
+Sem configurar nada, o painel se atualiza a cada 30 min. Para forçar na hora: botão **Atualizar** no topo do
+painel (aparece quando o `GITHUB_TOKEN` está cadastrado na ponte do Apps Script), ou *Actions › Atualizar e
+publicar painel › Run workflow*. O botão aceita no máximo um pedido a cada 3 min; a página recarrega sozinha quando
+os dados novos chegam, e um painel deixado aberto confere a cada 5 min se há dados novos. Para que **cada edição** na planilha republique o painel sozinha (2 a 7 min depois que a
 edição para), siga a seção *ATUALIZAÇÃO AUTOMÁTICA* no topo de `apps-script/Codigo.gs`: um token do GitHub com
 permissão só de *Actions* neste repositório + executar `ativarAtualizacaoAutomatica` uma vez.
 

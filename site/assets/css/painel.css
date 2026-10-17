@@ -57,7 +57,7 @@ button, input, select { font: inherit; color: inherit; }
   font-weight: 700; letter-spacing: .5px; flex: none; }
 .topo h1 { font-size: clamp(16px, 2vw, 20px); letter-spacing: -.01em; }
 .topo p { margin: 2px 0 0; font-size: 12.5px; color: #b9c3d3; }
-@media (max-width: 1100px) { .topo { flex-wrap: wrap; } .topo__status { order: 2; } }
+@media (max-width: 1100px) { .topo { flex-wrap: wrap; } .topo__acoes { order: 2; } }
 .topo__status { font-size: 12.5px; background: rgba(255,255,255,.08); border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
 .topo__status::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: #9aa3b2; vertical-align: 1px; }
 .topo__status[data-estado="ok"]::before { background: #34c27a; }
@@ -191,3 +191,15 @@ td .longo.aberto { -webkit-line-clamp: unset; }
   .painel-aba[hidden] { display: none; }
   body { background: #fff; }
 }
+
+/* ---------- botão Atualizar ---------- */
+.topo__acoes { display: flex; align-items: center; gap: 8px; }
+.botao-atualizar { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
+  color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.botao-atualizar:hover:not(:disabled) { background: rgba(255,255,255,.14); }
+.botao-atualizar:disabled { opacity: .75; cursor: progress; }
+.botao-atualizar[hidden] { display: none; }
+.botao-atualizar.girando svg { animation: girar 1s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .botao-atualizar.girando svg { animation: none; } }
+@media (max-width: 640px) { .topo__acoes { order: 2; } }
