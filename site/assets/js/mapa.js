@@ -7,15 +7,31 @@ let malha = null;
 let contorno = null;
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-// Classes fixas, para leitura consistente entre dias e entre ambientes.
-const CLASSES = [
-  { min: 1, max: 1 }, { min: 2, max: 4 }, { min: 5, max: 9 }, { min: 10, max: 24 },
-  { min: 25, max: 49 }, { min: 50, max: 99 }, { min: 100, max: Infinity },
-];
-const passo = (i) => css(`--seq-${Math.min(i + 1, 6)}`);
-function cor(v) {
+// Faixas ajustadas ao recorte: um intervalo fixo não serve para "7 dias" e para "o ano todo" (no ano,
+// muitos municípios passam de 100 e o mapa satura). As faixas crescem em progressão geométrica de 1 até
+// o maior valor do recorte (cada faixa ~2–4× a anterior) e são arredondadas para números "redondos"
+// (1, 2, 5, 10, 20, 25, 50, 100…), então a legenda continua fácil de ler. 0 tem cor própria.
+function redondo(x) {
+  const p = 10 ** Math.floor(Math.log10(x));
+  const cands = [1, 2, 2.5, 5, 10].map((r) => r * p).filter(Number.isInteger);
+  return cands.reduce((a, b) => (Math.abs(Math.log(b / x)) < Math.abs(Math.log(a / x)) ? b : a));
+}
+export function classesPara(valores, n = 6) {
+  const max = Math.max(0, ...valores);
+  if (max < 1) return [];
+  const cortes = [1];
+  for (let i = 1; i < n; i++) {
+    const c = redondo(max ** (i / n));
+    if (c > cortes.at(-1) && c <= max) cortes.push(c);
+  }
+  return cortes.map((min, i) => ({ min, max: i + 1 < cortes.length ? cortes[i + 1] - 1 : Infinity }));
+}
+// com menos classes, as cores se espalham pela rampa (a mais alta sempre é --seq-6)
+const corDaClasse = (i, total) => css(`--seq-${total <= 1 ? 6 : Math.round(1 + (i * 5) / (total - 1))}`);
+function cor(v, classes) {
   if (!v) return css("--seq-0");
-  return passo(CLASSES.findIndex((c) => v >= c.min && v <= c.max));
+  const i = classes.findIndex((c) => v >= c.min && v <= c.max);
+  return corDaClasse(i < 0 ? classes.length - 1 : i, classes.length);
 }
 
 async function carregarMalha() {
@@ -76,10 +92,12 @@ export async function criarMapa(el, aoClicar) {
     /** valores: Map(cod_ibge -> número) */
     pintar(valores, rotulo, unidade, selecionado = "") {
       linhaEstado?.setStyle({ color: css("--contorno") }); // acompanha o tema claro/escuro
+      const classes = classesPara(valores.values());
+      const maior = Math.max(0, ...valores.values());
       camada.eachLayer((lyr) => {
         const id = lyr.feature.properties.id;
         const v = valores.get(id) || 0;
-        lyr.setStyle({ fillColor: cor(v), weight: id === selecionado ? 2.5 : 0.9, color: id === selecionado ? css("--texto") : css("--limite-mun") });
+        lyr.setStyle({ fillColor: cor(v, classes), weight: id === selecionado ? 2.5 : 0.9, color: id === selecionado ? css("--texto") : css("--limite-mun") });
         lyr.bindTooltip(`<b>${titulo(lyr.feature.properties.name)}</b><br>${fmt(v)} ${unidade}`, { sticky: true, className: "dica-mapa" });
       });
       legenda?.remove();
@@ -87,7 +105,10 @@ export async function criarMapa(el, aoClicar) {
       legenda.onAdd = () => {
         const d = L.DomUtil.create("div", "legenda-mapa");
         d.innerHTML = `<b>${rotulo}</b><div><i style="background:${css("--seq-0")}"></i>0</div>` +
-          CLASSES.map((c, i) => `<div><i style="background:${passo(i)}"></i>${c.max === Infinity ? c.min + "+" : c.min === c.max ? c.min : c.min + "–" + c.max}</div>`).join("");
+          classes.map((c, i) => {
+            const ate = c.max === Infinity ? maior : c.max;
+            return `<div><i style="background:${corDaClasse(i, classes.length)}"></i>${c.min === ate ? fmt(c.min) : fmt(c.min) + "–" + fmt(ate)}</div>`;
+          }).join("") + (classes.length ? `<small>faixas ajustadas ao filtro</small>` : "");
         return d;
       };
       legenda.addTo(mapa);

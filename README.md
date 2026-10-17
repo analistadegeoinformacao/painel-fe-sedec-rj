@@ -30,7 +30,11 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
   institucionais (NR1 verde, NR2 amarelo, NR3 laranja, NR4 vermelho, NR5 roxo). Chuvas e REDECs usam o NR da NOVA
   BASE; o ambiente de fogo usa o NR da planilha de fogo.
 - **Por dia × ano anterior:** os cartões diários comparam a janela escolhida (em "Tudo": do 1º de janeiro do ano mais
-  recente até o último dia com dados) com as mesmas datas do ano anterior (linha tracejada).
+  recente até hoje) com as mesmas datas do ano anterior (linha cinza). Até 31 dias, cada ponto mostra o número.
+  No fogo, a linha vermelha tracejada marca o **Indicativo Extinctus (70 ocorrências/dia)** — só aparece sem filtro
+  de REDEC/município, porque é uma referência estadual (`INDICATIVO_EXTINCTUS` em `site/assets/js/app.js`).
+- **Mapas:** as faixas de cor se ajustam ao recorte (progressão geométrica de 1 até o maior valor, em números
+  redondos), para o mapa não saturar quando muitos municípios passam de 100.
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
 ## Por que este desenho não quebra a cada commit

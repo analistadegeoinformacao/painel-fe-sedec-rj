@@ -17,6 +17,7 @@
   --texto-3: #8a919c;
   --serie: #2f5b8f;          /* cor única das barras/linhas */
   --serie-destaque: #e8590c;
+  --referencia: #f0857d;     /* linha de referência (ex.: Indicativo Extinctus) */
   --grade: #eceef1;
   /* rampa sequencial (um matiz, claro -> escuro) para o mapa */
   --seq-0: #f1f2f4;
@@ -39,7 +40,7 @@
     --acento: #f2763a; --acento-suave: #3a2216;
     --fundo: #0e1117; --superficie: #161b24; --superficie-2: #1b212c; --borda: #2a313d;
     --texto: #e9ecf1; --texto-2: #b3bac6; --texto-3: #7d8594;
-    --serie: #6f9fd8; --serie-destaque: #f2763a; --grade: #252c37;
+    --serie: #6f9fd8; --serie-destaque: #f2763a; --referencia: #ff8a80; --grade: #252c37;
     --seq-0: #222833; --seq-1: #4a2a1a; --seq-2: #6e3519; --seq-3: #9a4316;
     --seq-4: #d35a17; --seq-5: #f2863f; --seq-6: #ffb27a;
     --sombra: none;
@@ -147,6 +148,7 @@ main { padding: 18px clamp(16px, 3vw, 32px) 32px; display: block; }
   border: 1px solid var(--borda); font: 12px var(--fonte); line-height: 1.6; }
 .legenda-mapa b { display: block; margin-bottom: 2px; }
 .legenda-mapa i { display: inline-block; width: 14px; height: 10px; margin-right: 6px; vertical-align: -1px; border-radius: 2px; }
+.legenda-mapa small { display: block; margin-top: 4px; color: var(--texto-3); font-size: 11px; }
 .leaflet-tooltip.dica-mapa { font: 12.5px var(--fonte); border-radius: 6px; }
 .leaflet-container { font-family: var(--fonte); background: var(--superficie-2); }
 

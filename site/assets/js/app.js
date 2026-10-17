@@ -137,6 +137,8 @@ const porDia = (linhas, fd) => {
   for (let d = st.de || dias[0], fim = st.ate || dias.at(-1); d <= fim; d = somaDias(d, 1)) out.push([d, c.get(d) || 0]);
   return out;
 };
+// Fogo em vegetação: ocorrências/dia no estado que indicam a Operação Extinctus (linha de referência)
+const INDICATIVO_EXTINCTUS = 70;
 // ---- comparação com o mesmo período do ano anterior (cartões "por dia")
 // Janela: o período escolhido no filtro; em "Tudo", o ano mais recente dos dados (1º jan → último dia).
 // A série anterior respeita REDEC/município/tipo, mas não o filtro de período (é deslocada 1 ano).
@@ -151,13 +153,18 @@ function comparativoDiario(nome, campoData, idNota, unidade) {
   const maxData = datas.at(-1);
   let ini, fim;
   if (st.de || st.ate) { ini = st.de || datas[0]; fim = st.ate || maxData; }
-  else { ini = `${maxData.slice(0, 4)}-01-01`; fim = maxData; }
+  else {
+    // até hoje (se o ano for o atual): dias após o último dado ficam sem ponto, como "ainda sem dados"
+    const hoje = hojeBRT();
+    ini = `${maxData.slice(0, 4)}-01-01`;
+    fim = hoje.slice(0, 4) === maxData.slice(0, 4) && hoje > maxData ? hoje : maxData;
+  }
   const c = contarPor(linhas, campoData);
   const pontos = [], anterior = [];
   let tA = 0, tB = 0;
   for (let d = ini; d <= fim; d = somaDias(d, 1)) {
-    const a = c.get(d) || 0, dAnt = menosUmAno(d), b = c.get(dAnt) || 0;
-    tA += a; tB += b;
+    const a = d > maxData ? null : c.get(d) || 0, dAnt = menosUmAno(d), b = c.get(dAnt) || 0;
+    tA += a || 0; tB += b;
     pontos.push([d, a]);
     anterior.push([d, b, dAnt]);
   }
@@ -172,7 +179,7 @@ function comparativoDiario(nome, campoData, idNota, unidade) {
       nota.textContent = `${janela}: ${fmt(tA)} ${unidade} · ${rotB}: ${fmt(tB)} (${var_ > 0 ? "+" : ""}${var_}%)`;
     }
   }
-  return { pontos, anterior: tB ? anterior : null, rotuloAtual: rotA, rotuloAnterior: `${rotB} (mesmo período)` };
+  return { pontos, anterior: tB ? anterior : null, rotuloAtual: rotA, rotuloAnterior: rotB };
 }
 
 // ---- nível de resposta (NR) do ambiente ativo, sempre visível no topo
@@ -440,7 +447,9 @@ const FOGO = {
     seguro("fv-serie", (el) => {
       if (indisponivel(el, fv)) return;
       const c = comparativoDiario("fogo_sisgeo", CAMPO_DATA.fogo_sisgeo, "fv-serie-nota", "ocorrências");
-      if (c) serieDiaria(el, c.pontos, c);
+      // Indicativo Extinctus: referência estadual de ocorrências/dia — só faz sentido sem filtro de território
+      const referencia = !st.redec && !st.municipio ? { valor: INDICATIVO_EXTINCTUS, rotulo: "Indicativo Extinctus" } : null;
+      if (c) serieDiaria(el, c.pontos, { ...c, referencia });
     });
     seguro("fv-mes", (el) => {
       if (indisponivel(el, fv)) return;

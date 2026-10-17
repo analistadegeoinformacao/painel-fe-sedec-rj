@@ -64,52 +64,85 @@ export function barrasH(el, itens, { aoClicar, selecionado, unidade = "registros
   if (aoClicar) g.on("click", (p) => aoClicar(p.data.chave));
 }
 
-/** Série diária. pontos: [[isoData, valor]] (dias sem registro devem vir com 0). */
+const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const diaMes = (iso) => `${Number(iso.slice(8, 10))} de ${MESES[Number(iso.slice(5, 7)) - 1]}.`;
+
 /**
- * Série diária. pontos: [[isoData, valor]] (dias sem registro com 0).
+ * Evolução diária. pontos: [[isoData, valor | null]] (0 = dia sem registro; null = dia ainda sem dados).
  * Comparação opcional com o mesmo período do ano anterior:
  *   anterior: [[isoData no eixo atual, valor, isoData real do ano anterior]]
- * A série anterior é tracejada e cinza, com legenda (identidade não depende só da cor).
+ * referencia: { valor, rotulo } — linha horizontal tracejada (ex.: Indicativo Extinctus).
+ * Até 31 dias, cada ponto leva o número escrito; acima disso, só a linha (com zoom).
  */
-export function serieDiaria(el, pontos, { unidade = "ocorrências", anterior = null, rotuloAtual = "", rotuloAnterior = "" } = {}) {
+export function serieDiaria(el, pontos, { unidade = "ocorrências", anterior = null, rotuloAtual = "", rotuloAnterior = "", referencia = null } = {}) {
   const t = tema();
   const g = iniciar(el);
   const comparar = Array.isArray(anterior) && anterior.length > 0;
-  const realAnterior = comparar ? new Map(anterior.map(([x, , real]) => [x, real])) : null;
-  const series = [{
-    name: rotuloAtual || "Período", type: "line", data: pontos, showSymbol: false, symbolSize: 8, z: 3,
-    lineStyle: { width: 2, color: t.serie }, itemStyle: { color: t.serie }, areaStyle: { color: t.serie, opacity: 0.08 },
-  }];
+  const realAnterior = comparar ? anterior.map(([, , real]) => real) : null;
+  const curto = pontos.length <= 31;
+  const corRef = css("--referencia") || "#e5484d";
+  const nomeAtual = `${titulo1(unidade)} ${rotuloAtual}`.trim();
+  const nomeAnterior = `${titulo1(unidade)} (ano anterior) ${rotuloAnterior}`.trim();
+  const rotulo = (cor, peso) => ({ show: curto, position: "top", distance: 6, color: cor, fontSize: 12, fontWeight: peso,
+    formatter: (p) => (p.value === null || p.value === undefined ? "" : fmt(p.value)) });
+  const series = [];
   if (comparar) {
     series.push({
-      name: rotuloAnterior || "Ano anterior", type: "line", data: anterior.map(([x, v]) => [x, v]), showSymbol: false, z: 2,
-      lineStyle: { width: 1.5, color: t.texto3, type: [5, 4] }, itemStyle: { color: t.texto3 },
+      name: nomeAnterior, type: "line", smooth: 0.35, z: 2,
+      // número do ano anterior vai embaixo do ponto quando a linha atual passa por cima (não se sobrepõem)
+      data: anterior.map(([, v], i) => ({ value: v, label: { position: (pontos[i][1] ?? -1) >= v ? "bottom" : "top" } })),
+      showSymbol: curto, symbol: "circle", symbolSize: 7,
+      lineStyle: { width: 1.5, color: t.texto3 }, itemStyle: { color: t.texto3 },
+      areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1,
+        colorStops: [{ offset: 0, color: t.texto3 + "40" }, { offset: 1, color: t.texto3 + "00" }] } },
+      label: rotulo(t.texto3, 600), labelLayout: { hideOverlap: true },
     });
   }
+  series.push({
+    name: nomeAtual, type: "line", smooth: 0.35, data: pontos.map(([, v]) => v), z: 3, connectNulls: false,
+    showSymbol: curto, symbol: "circle", symbolSize: 7,
+    lineStyle: { width: 2, color: t.serie }, itemStyle: { color: t.serie },
+    areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1,
+      colorStops: [{ offset: 0, color: t.serie + "33" }, { offset: 1, color: t.serie + "00" }] } },
+    label: rotulo(t.texto, 700), labelLayout: { hideOverlap: true },
+    markLine: referencia ? {
+      silent: true, symbol: "none",
+      lineStyle: { color: corRef, type: [8, 5], width: 2 },
+      label: { position: "insideEndTop", formatter: `${referencia.rotulo} (${fmt(referencia.valor)})`,
+        color: "#111", backgroundColor: corRef + "cc", padding: [3, 6], borderRadius: 3, fontSize: 12 },
+      data: [{ yAxis: referencia.valor }],
+    } : undefined,
+  });
   g.setOption(
     {
       animationDuration: 300,
       textStyle: { fontFamily: t.fonte },
-      legend: comparar ? { top: 0, right: 0, itemWidth: 18, itemHeight: 8, textStyle: { color: t.texto2, fontSize: 12 } } : { show: false },
-      grid: { left: 8, right: 16, top: comparar ? 32 : 16, bottom: 8, containLabel: true },
+      legend: { show: comparar || !!rotuloAtual, top: 0, right: 0, icon: "circle", itemWidth: 10, itemHeight: 10,
+        data: series.map((s) => s.name).reverse(), textStyle: { color: t.texto2, fontSize: 12 } },
+      grid: { left: 8, right: 16, top: 40, bottom: 8, containLabel: true },
       tooltip: {
         ...tooltipBase(t), trigger: "axis", axisPointer: { type: "line", lineStyle: { color: t.texto3 } },
-        formatter: (ps) => ps.map((p) => {
-          const dia = p.seriesIndex === 1 ? realAnterior.get(p.value[0]) : p.value[0];
-          return `${p.marker}${fmtData(dia)}: <b>${fmt(p.value[1])}</b> ${unidade}`;
+        formatter: (ps) => ps.slice().reverse().filter((p) => p.value !== null && p.value !== undefined).map((p) => {
+          const dia = p.seriesName === nomeAnterior ? realAnterior[p.dataIndex] : pontos[p.dataIndex][0];
+          return `${p.marker}${fmtData(dia)}: <b>${fmt(p.value)}</b> ${unidade}`;
         }).join("<br>"),
       },
       xAxis: {
-        type: "time", axisLine: { lineStyle: { color: t.grade } }, axisTick: { show: false },
-        axisLabel: { color: t.texto3, fontSize: 11.5, formatter: { day: "{dd}/{MM}", month: "{MMM}", year: "{yyyy}" } },
+        type: "category", boundaryGap: curto, data: pontos.map(([d]) => d),
+        axisLine: { lineStyle: { color: t.grade } }, axisTick: { show: false },
+        axisLabel: { color: t.texto3, fontSize: 11.5, rotate: curto ? 45 : 0, formatter: diaMes, hideOverlap: true },
       },
-      yAxis: { type: "value", minInterval: 1, splitLine: { lineStyle: { color: t.grade } }, axisLabel: { color: t.texto3, fontSize: 11.5 } },
+      yAxis: {
+        type: "value", minInterval: 1, splitLine: { lineStyle: { color: t.grade } }, axisLabel: { color: t.texto3, fontSize: 11.5 },
+        max: referencia ? (v) => Math.ceil(Math.max(v.max, referencia.valor * 1.1) / 10) * 10 : null,
+      },
       dataZoom: pontos.length > 60 ? [{ type: "inside" }] : [],
       series,
     },
     true
   );
 }
+const titulo1 = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // "DESLIZAMENTO/DESABAMENTO" -> "Deslizamento/Desabamento" (só nomes todos em maiúsculas)
 const nomeCurto = (n) => (n === n.toUpperCase() ? n.toLowerCase().replace(/(^|[\s/(])\p{L}/gu, (m) => m.toUpperCase()) : n);
