@@ -14,11 +14,11 @@ import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, s
 
 const AMBIENTES = {
   sisgeo: { abas: ["geral", "tipos", "registros", "qualidade"], conjuntos: ["sisgeo"],
-            fonte: "Fonte: SisGeO / CBMERJ — aba SISGEO da planilha NOVA BASE ANALISTAS" },
+            fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   redecs: { abas: ["geral", "decretos", "resposta", "registros", "consulta", "qualidade"],
             conjuntos: ["eventos", "boletins", "danos_humanos", "decretos", "decretos_historico", "alertas",
                         "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h"],
-            fonte: "Fonte: REDECs / SEDEC-RJ — planilha NOVA BASE ANALISTAS · S2iD" },
+            fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
 const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos" };

@@ -23,7 +23,8 @@
   --seq-1: #fde3d1; --seq-2: #fbc4a0; --seq-3: #f7965e;
   --seq-4: #e8590c; --seq-5: #b8420a; --seq-6: #7a2c07;
   --ok: #1f7a4d; --atencao: #b7791f; --critico: #c0392b;
-  --contorno: #5b6472;       /* limite do estado no mapa */
+  --contorno: #4b5563;       /* limite do estado no mapa */
+  --limite-mun: #a9b0bb;     /* limite entre municípios */
   /* paleta categórica (ordem fixa, validada para daltonismo) — gráfico de rosca */
   --cat-1: #2a78d6; --cat-2: #eb6834; --cat-3: #1baf7a; --cat-4: #eda100; --cat-5: #e87ba4; --cat-6: #008300;
   --sombra: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
@@ -43,6 +44,7 @@
     --seq-4: #d35a17; --seq-5: #f2863f; --seq-6: #ffb27a;
     --sombra: none;
     --contorno: #aab3c2;
+    --limite-mun: #3b4452;
     --cat-1: #3987e5; --cat-2: #d95926; --cat-3: #199e70; --cat-4: #c98500; --cat-5: #d55181; --cat-6: #008300;
   }
 }

@@ -45,10 +45,10 @@ export async function criarMapa(el, aoClicar) {
     maxZoom: 13, attribution: "Tiles © Esri · Malha municipal IBGE",
   }).addTo(mapa);
   const camada = L.geoJSON(geo, {
-    style: () => ({ weight: 0.8, color: css("--superficie"), fillOpacity: 0.9, fillColor: css("--seq-0") }),
+    style: () => ({ weight: 0.9, color: css("--limite-mun"), fillOpacity: 0.9, fillColor: css("--seq-0") }),
     onEachFeature: (f, lyr) => {
       lyr.on("mouseover", () => lyr.setStyle({ weight: 2, color: css("--texto") }).bringToFront());
-      lyr.on("mouseout", () => lyr.setStyle({ weight: 0.8, color: css("--superficie") }));
+      lyr.on("mouseout", () => lyr.setStyle({ weight: 0.9, color: css("--limite-mun") }));
       lyr.on("click", () => aoClicar?.(f.properties.id));
     },
   }).addTo(mapa);
@@ -79,7 +79,7 @@ export async function criarMapa(el, aoClicar) {
       camada.eachLayer((lyr) => {
         const id = lyr.feature.properties.id;
         const v = valores.get(id) || 0;
-        lyr.setStyle({ fillColor: cor(v), weight: id === selecionado ? 2.5 : 0.8, color: id === selecionado ? css("--texto") : css("--superficie") });
+        lyr.setStyle({ fillColor: cor(v), weight: id === selecionado ? 2.5 : 0.9, color: id === selecionado ? css("--texto") : css("--limite-mun") });
         lyr.bindTooltip(`<b>${titulo(lyr.feature.properties.name)}</b><br>${fmt(v)} ${unidade}`, { sticky: true, className: "dica-mapa" });
       });
       legenda?.remove();
