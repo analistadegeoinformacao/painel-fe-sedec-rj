@@ -2,6 +2,7 @@ import { carregar } from "./dados.js";
 import { seguro, kpis, tabela, indisponivel } from "./componentes.js";
 import { barrasH, serieDiaria, rosca, colunasPorMes, redimensionarTodos } from "./graficos.js";
 import { criarMapa } from "./mapa.js";
+import { iniciarAnalytics, registrarAba } from "./analytics.js";
 import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, soma, rotuloRedec, titulo } from "./util.js";
 
 // =====================================================================
@@ -700,6 +701,7 @@ function atualizar() {
   sincronizarControles();
   mostrarNR();
   gravarURL();
+  registrarAba(st.amb, st.aba);
   RENDER[st.amb][st.aba]?.();
 }
 
@@ -773,6 +775,7 @@ async function iniciar() {
     if (amb !== st.amb) trocarAmbiente(amb);
   });
 
+  try { iniciarAnalytics(); } catch (e) { console.error(e); } // contagem de acessos nunca derruba o painel
   montarBotaoTema();
   atualizar();
   window.__painelPronto = true; // usado pelo teste automatizado

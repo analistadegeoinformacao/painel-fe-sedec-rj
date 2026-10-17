@@ -98,6 +98,12 @@ republica o site quando os dados mudaram — ou 1x por hora, como sinal de vida.
 > Alternativa sem Apps Script: `--fonte google` com conta de serviço do Google Cloud (a Sheets API também é gratuita,
 > mas exige criar um projeto no Cloud). Ver `etl/fonte.py`.
 
+## Acessos (Google Analytics 4)
+
+`site/assets/js/analytics.js` → `GA_ID = "G-…"`. Vazio = desligado. Conta só o site publicado (não conta testes nem
+cópias locais). Além das visitas, envia o evento `ver_aba` com `ambiente` e `aba` (cadastre os dois como dimensões
+personalizadas no GA para ver as abas mais consultadas). Sem Google Signals nem personalização de anúncios.
+
 ## Rodar no computador
 
 ```bash
