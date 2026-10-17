@@ -27,15 +27,18 @@ export function indisponivel(el, dados) {
 
 /** kpis: [{rotulo, valor, sub?, destaque?}] */
 export function kpis(el, itens) {
+  // item com acao: o cartão vira botão (ex.: "Eventos com apoio" abre a tabela já filtrada)
   el.innerHTML = itens
     .map(
-      (k) => `<div class="kpi${k.destaque ? " kpi--destaque" : ""}">
+      (k, i) => `<${k.acao ? `button type="button" data-kpi="${i}" title="${esc(k.dicaAcao || "")}"` : "div"} class="kpi${k.destaque ? " kpi--destaque" : ""}${k.acao ? " kpi--acao" : ""}">
         <div class="kpi__rotulo">${esc(k.rotulo)}</div>
         <div class="kpi__valor${k.texto ? " kpi__valor--texto" : ""}"${k.texto ? ` title="${esc(k.valor ?? "")}"` : ""}>${typeof k.valor === "number" ? fmt(k.valor) : esc(k.valor ?? "—")}</div>
         ${k.sub ? `<div class="kpi__sub">${esc(k.sub)}</div>` : ""}
-      </div>`
+        ${k.acao ? `<div class="kpi__acao">${esc(k.rotuloAcao || "Ver lista")} →</div>` : ""}
+      </${k.acao ? "button" : "div"}>`
     )
     .join("");
+  el.querySelectorAll("[data-kpi]").forEach((b) => b.addEventListener("click", () => itens[b.dataset.kpi].acao()));
 }
 
 /**

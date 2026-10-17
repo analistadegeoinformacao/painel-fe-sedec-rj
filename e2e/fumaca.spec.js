@@ -207,3 +207,18 @@ test("gráfico volta a aparecer depois de um filtro sem registros", async ({ pag
     await expect(page.locator(`${id} svg`).first()).toBeVisible();
   }
 });
+
+test("cartão Eventos com apoio abre a tabela filtrada", async ({ page }) => {
+  await page.goto("/#amb=fogo");
+  await page.waitForFunction(() => window.__painelPronto);
+  const cartao = page.locator("#fv-kpis button.kpi", { hasText: "Eventos com apoio" });
+  test.skip(await cartao.count() === 0, "amostra sem eventos com apoio");
+  await cartao.click();
+  await expect(page).toHaveURL(/aba=registros/);
+  await expect(page).toHaveURL(/apoio=1/);
+  await expect(page.locator("#fv-tabela-filtro")).toContainText("Só eventos com apoio");
+  const linhas = page.locator("#fv-tabela tbody tr");
+  expect(await linhas.count()).toBeGreaterThanOrEqual(2);
+  await page.click("#fv-tabela-filtro button");
+  await expect(page.locator("#fv-tabela-filtro")).toContainText("Mostrar só eventos com apoio");
+});

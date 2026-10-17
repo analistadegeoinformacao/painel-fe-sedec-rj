@@ -25,7 +25,7 @@ const AMBIENTES = {
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
-const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos" };
+const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "" };
 const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
@@ -104,7 +104,7 @@ function montarFiltros() {
   ordenar(contarPor(BASE.dados.sisgeo || [], "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
-    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "" });
+    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "" });
     preencherMunicipios();
     atualizar();
   });
@@ -438,7 +438,9 @@ const FOGO = {
       kpis(el, [
         { rotulo: "Ocorrências", valor: fv?.length ?? "—", sub: descricaoPeriodo(), destaque: true },
         { rotulo: "Eventos", valor: ev ? ev.size : "—", sub: "números de evento distintos" },
-        { rotulo: "Eventos com apoio", valor: apoio ?? "—", sub: "mais de uma unidade no mesmo evento" },
+        { rotulo: "Eventos com apoio", valor: apoio ?? "—", sub: "mais de uma unidade no mesmo evento",
+          ...(apoio ? { acao: () => { st.apoio = "1"; st.aba = "registros"; atualizar(); window.scrollTo({ top: 0 }); },
+            rotuloAcao: "Ver eventos", dicaAcao: "Abrir a tabela só com os eventos com apoio" } : {}) },
         { rotulo: "Municípios atingidos", valor: fv ? muns(fv) : "—", sub: "de 92 no estado" },
         { rotulo: "Em andamento", valor: ab ? ab.length : "—", sub: "aba EVENTOS ABERTOS" },
       ]);
@@ -521,11 +523,26 @@ const FOGO = {
   },
 
   registros() {
+    const todas = filtrar("fogo_sisgeo");
+    // "Eventos com apoio": só eventos com 2+ ocorrências, agrupados por evento (aberto pelo cartão da Visão geral)
+    const ev = todas ? eventosDe(todas) : new Map();
+    const soApoio = st.apoio === "1";
+    const linhas = !todas ? todas : (soApoio ? todas.filter((l) => ev.get(l.id_evento) > 1) : todas)
+      .map((l) => ({ ...l, n_ocorrencias: ev.get(l.id_evento) || 1 }));
+    seguro("fv-tabela-filtro", (el) => {
+      const nEv = [...ev.values()].filter((n) => n > 1).length;
+      el.innerHTML = soApoio
+        ? `<span class="chip chip--atencao">Só eventos com apoio: ${fmt(nEv)} eventos · ${fmt(linhas?.length || 0)} ocorrências</span> <button type="button" class="botao-texto" data-apoio="">Mostrar todas</button>`
+        : nEv ? `<button type="button" class="botao-texto" data-apoio="1">Mostrar só eventos com apoio (${fmt(nEv)})</button>` : "";
+      el.querySelector("[data-apoio]")?.addEventListener("click", (e) => { st.apoio = e.currentTarget.dataset.apoio; atualizar(); });
+    });
     seguro("fv-tabela", (el) => tabela(el, {
-      nome: "fogo_em_vegetacao", linhas: filtrar("fogo_sisgeo"), ordem: { campo: "data_ocorrencia", dir: -1 },
+      nome: soApoio ? "fogo_eventos_com_apoio" : "fogo_em_vegetacao", linhas,
+      ordem: soApoio ? { campo: "id_evento", dir: -1 } : { campo: "data_ocorrencia", dir: -1 },
       colunas: [
         { campo: "data_ocorrencia", titulo: "Data", formato: fmtData }, { campo: "id_evento", titulo: "Evento" },
-        { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "municipio", titulo: "Município", formato: titulo },
+        { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "n_ocorrencias", titulo: "Ocorr. no evento", tipo: "num" },
+        { campo: "municipio", titulo: "Município", formato: titulo },
         { campo: "redec", titulo: "REDEC", formato: rotuloRedec }, { campo: "subtipo", titulo: "Subtipo" },
         { campo: "unidade", titulo: "Unidade" }, { campo: "situacao", titulo: "Situação" },
         { campo: "vitimas", titulo: "Vítimas", tipo: "num" },
