@@ -22,6 +22,16 @@
 #  dados pessoais (nomes e matrículas do efetivo, endereços) ficam de fora.
 # =====================================================================
 
+# Planilhas de origem. Cada conjunto abaixo diz de qual vem ("planilha:");
+# sem essa chave, vem da principal. Abas de planilhas diferentes nunca se misturam.
+planilhas:
+  principal:
+    titulo: "NOVA BASE ANALISTAS (chuvas)"
+    id: "1SN6hpLNlyKrSYUSu0gUlzF8OaIUeuDMA4i0Gq3bpeGY"
+  fogo:
+    titulo: "PLANILHA FOGO EM VEGETAÇÃO"
+    id: "1rlC6lxivHTj0xLmjDzENe4NEHMN6EFI6d8d2QSDXPVA"
+
 conjuntos:
 
   eventos:
@@ -90,6 +100,7 @@ conjuntos:
     obrigatorias: [ocorrencia, data_ocorrencia, tipo, municipio]
     colunas:
       redec:           ["REDEC"]
+      id_evento:       ["IdEvento"]
       ocorrencia:      ["Ocorrência"]
       data_ocorrencia: ["Data Ocorrência"]
       unidade:         ["Unidade"]
@@ -112,6 +123,9 @@ conjuntos:
       duracao_s: inteiro
     # Coordenadas arredondadas (3 casas ≈ 100 m) para não expor endereço exato.
     casas_decimais_coord: 3
+    # Identidade de um registro do SisGeO: número do evento + número da ocorrência.
+    # Mesmo evento com várias ocorrências = unidades em apoio (não é duplicata).
+    chave_unica: [id_evento, ocorrencia]
 
   danos_humanos:
     aba: "DANOS HUMANOS"
@@ -248,6 +262,124 @@ conjuntos:
 
 # Abas lidas pela automação interna e que NÃO entram no painel.
 # Listadas aqui só para documentar que foram ignoradas de propósito.
+  # ======================= PLANILHA FOGO EM VEGETAÇÃO =======================
+  # Todos opcionais (min_linhas 0): se a planilha de fogo ficar fora do ar, só o
+  # ambiente "Fogo em vegetação" mostra aviso; chuvas continua publicando.
+
+  fogo_sisgeo:
+    planilha: fogo
+    aba: "SISGEO_FV"
+    titulo: "Ocorrências de fogo em vegetação (SisGeO)"
+    min_linhas: 0
+    obrigatorias: [id_evento, ocorrencia, data_ocorrencia, municipio]
+    data_minima: "2025-01-01"
+    colunas:
+      redec:           ["REDEC"]
+      id_evento:       ["IdEvento"]
+      ocorrencia:      ["Ocorrência"]
+      data_ocorrencia: ["Data Ocorrência"]
+      unidade:         ["Unidade"]
+      subtipo:         ["Subtipo"]
+      situacao:        ["Situação"]
+      vitimas:         ["VítimaQtd"]
+      municipio:       ["Município"]
+      # DE FORA DE PROPÓSITO: Efetivo, Endereço, Viatura, Avaliação/Atualização Cenário
+    tipos: {redec: redec, data_ocorrencia: datahora, vitimas: inteiro, municipio: municipio}
+    chave_unica: [id_evento, ocorrencia]
+    compactar: true     # ~17 mil linhas: município/REDEC saem do JSON e voltam pelo código IBGE
+
+  fogo_abertos:
+    planilha: fogo
+    aba: "EVENTOS ABERTOS"
+    titulo: "Eventos de fogo em andamento"
+    min_linhas: 0
+    obrigatorias: []
+    data_minima: "2025-01-01"
+    colunas:
+      redec:           ["REDEC"]
+      id_evento:       ["IdEvento"]
+      ocorrencia:      ["Ocorrência"]
+      data_ocorrencia: ["Data Ocorrência"]
+      unidade:         ["Unidade"]
+      subtipo:         ["Subtipo"]
+      situacao:        ["Situação"]
+      bairro:          ["Bairro"]
+      municipio:       ["Município"]
+      latlon:          ["Latitude/Longitude"]
+    tipos: {redec: redec, data_ocorrencia: datahora, municipio: municipio, latlon: latlon}
+    casas_decimais_coord: 3
+    chave_unica: [id_evento, ocorrencia]
+
+  fogo_risco:
+    planilha: fogo
+    aba: "RISCO DE INCÊNDIO FLORESTAL"
+    titulo: "Risco de incêndio florestal por REDEC"
+    min_linhas: 0
+    obrigatorias: [redec, risco]
+    colunas:
+      redec: ["REDEC"]
+      risco: ["RISCO DE INCÊNDIO FLORESTAL"]
+    tipos: {redec: redec}
+
+  fogo_temperatura:
+    planilha: fogo
+    aba: "Max Temperatura"
+    titulo: "Maiores temperaturas (INMET)"
+    min_linhas: 0
+    obrigatorias: [data, municipio]
+    data_minima: "2025-01-01"
+    colunas:
+      redec:     ["REDEC"]
+      data:      ["DATA"]
+      municipio: ["MUNICÍPIO"]
+      temp_c:    ["MAIOR TEMPERATURA ºC", "MAIOR TEMPERATURA °C", "MAIOR TEMPERATURA"]
+    tipos: {redec: redec, data: data, municipio: municipio, temp_c: decimal}
+
+  fogo_umidade:
+    planilha: fogo
+    aba: "Min Umidade"
+    titulo: "Menores umidades relativas (INMET)"
+    min_linhas: 0
+    obrigatorias: [data, municipio]
+    data_minima: "2025-01-01"
+    colunas:
+      redec:     ["REDEC"]
+      data:      ["DATA"]
+      municipio: ["MUNICÍPIO"]
+      ur_pct:    ["MENOR UMIDADE %", "MENOR UMIDADE"]
+    tipos: {redec: redec, data: data, municipio: municipio, ur_pct: decimal}
+
+  fogo_severidade:
+    planilha: fogo
+    aba: "SEVERIDADE TEMP UMID"
+    titulo: "Severidade por temperatura e umidade"
+    min_linhas: 0
+    obrigatorias: [municipio]
+    colunas:
+      municipio:     ["MUNICÍPIO"]
+      redec:         ["REDEC"]
+      temp_hoje:     ["TEMP HOJE"]
+      ur_hoje:       ["UR HOJE"]
+      dias_temp:     ["DIAS CONSEC TEMP"]
+      dias_ur:       ["DIAS CONSEC UR"]
+      severidade:    ["SEVERIDADE"]
+    tipos: {municipio: municipio, redec: redec, temp_hoje: decimal, ur_hoje: decimal, dias_temp: inteiro, dias_ur: inteiro}
+
+  fogo_ultimo_dia:
+    planilha: fogo
+    aba: "ÚLTIMO DIA"
+    titulo: "Extremos do último dia"
+    min_linhas: 0
+    obrigatorias: []
+    data_minima: "2025-01-01"
+    colunas:
+      data:          ["ÚLTIMA DATA"]
+      municipio_temp: ["MUNICÍPIO TEMP"]
+      temp_c:        ["TEMP MAIOR"]
+      municipio_ur:  ["MUNICÍPIO UR"]
+      ur_pct:        ["UR MENOR"]
+    tipos: {data: data, temp_c: decimal, ur_pct: decimal}
+
 ignoradas:
   - BASE_DADOS            # substituída por referencia/municipios_rj.csv (com código IBGE)
   - REDECS E MUNICIPIOS

@@ -4,6 +4,7 @@ const VERSAO_CONTRATO = 1;
 const CONJUNTOS = [
   "sisgeo", "eventos", "boletins", "danos_humanos", "decretos", "decretos_historico",
   "alertas", "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h",
+  "fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_severidade", "fogo_ultimo_dia",
 ];
 
 async function json(caminho) {
@@ -22,8 +23,19 @@ export async function carregar(base = "data") {
   const resultados = await Promise.allSettled(CONJUNTOS.map((c) => json(`${base}/${c}.json?v=${v}`)));
   const dados = {};
   const falhas = [];
+  // conjuntos "compactados" vêm sem município/REDEC: recompõe pelo código IBGE
+  const porCod = new Map((meta.municipios || []).map((m) => [m.cod_ibge, m]));
+  const hidratar = (linhas) => {
+    for (const l of linhas) {
+      if (l.cod_ibge && !l.municipio) {
+        const m = porCod.get(l.cod_ibge);
+        if (m) { l.municipio = m.municipio; l.redec = l.redec ?? m.redec; }
+      }
+    }
+    return linhas;
+  };
   resultados.forEach((r, i) => {
-    if (r.status === "fulfilled" && Array.isArray(r.value)) dados[CONJUNTOS[i]] = r.value;
+    if (r.status === "fulfilled" && Array.isArray(r.value)) dados[CONJUNTOS[i]] = hidratar(r.value);
     else {
       dados[CONJUNTOS[i]] = null; // null = indisponível (diferente de [] = vazio)
       falhas.push(CONJUNTOS[i]);

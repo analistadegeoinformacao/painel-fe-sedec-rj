@@ -3,6 +3,7 @@ const { test, expect } = require("@playwright/test");
 const AMBIENTES = {
   sisgeo: ["geral", "tipos", "registros", "qualidade"],
   redecs: ["geral", "decretos", "resposta", "registros", "consulta", "qualidade"],
+  fogo: ["geral", "territorios", "condicoes", "registros", "qualidade"],
 };
 
 async function abrir(page, hash = "") {
@@ -12,7 +13,7 @@ async function abrir(page, hash = "") {
   await page.waitForFunction(() => window.__painelPronto === true);
 }
 
-test("os dois ambientes carregam todas as abas sem erro de JavaScript", async ({ page }) => {
+test("os três ambientes carregam todas as abas sem erro de JavaScript", async ({ page }) => {
   const erros = [];
   page.on("pageerror", (e) => erros.push(e.message));
   page.on("console", (m) => m.type() === "error" && !/Failed to load resource/.test(m.text()) && erros.push(m.text()));
@@ -25,8 +26,9 @@ test("os dois ambientes carregam todas as abas sem erro de JavaScript", async ({
     await page.click(`.ambientes a[data-amb="${amb}"]`);
     await expect(page.locator("body")).toHaveAttribute("data-amb", amb);
     // abas do outro ambiente ficam escondidas
-    const outro = amb === "sisgeo" ? "redecs" : "sisgeo";
-    await expect(page.locator(`.abas [data-amb="${outro}"]:visible`)).toHaveCount(0);
+    for (const outro of Object.keys(AMBIENTES).filter((a) => a !== amb)) {
+      await expect(page.locator(`.abas [data-amb="${outro}"]:visible`)).toHaveCount(0);
+    }
     for (const aba of abas) {
       await page.click(`.abas [data-amb="${amb}"][data-aba="${aba}"]`);
       const sec = page.locator(`.painel-aba[data-amb="${amb}"][data-aba="${aba}"]`);
@@ -34,7 +36,8 @@ test("os dois ambientes carregam todas as abas sem erro de JavaScript", async ({
       await expect(sec.locator(".falha")).toHaveCount(0);
     }
     await page.click(`.abas [data-amb="${amb}"][data-aba="geral"]`);
-    await expect(page.locator(`#${amb[0]}-mapa .leaflet-interactive`).first()).toBeVisible();
+    const MAPA = { sisgeo: "s-mapa", redecs: "r-mapa", fogo: "fv-mapa" };
+    await expect(page.locator(`#${MAPA[amb]} .leaflet-interactive`).first()).toBeVisible();
     await page.screenshot({ path: `test-results/painel-${amb}.png`, fullPage: true });
   }
   expect(erros, erros.join("\n")).toEqual([]);
@@ -66,9 +69,11 @@ test("filtro de REDEC reduz os números e é mantido ao trocar de ambiente", asy
 });
 
 test("nenhum dado pessoal no JSON publicado", async ({ request }) => {
-  const txt = await (await request.get("/data/sisgeo.json")).text();
-  expect(txt).not.toMatch(/\(#?\d{5,7}\)/);
-  expect(txt.toLowerCase()).not.toContain("efetivo");
+  for (const base of ["sisgeo", "fogo_sisgeo", "fogo_abertos"]) {
+    const txt = await (await request.get(`/data/${base}.json`)).text();
+    expect(txt, base).not.toMatch(/\(#?\d{5,7}\)/);
+    expect(txt.toLowerCase(), base).not.toContain("efetivo");
+  }
 });
 
 test("botão Atualizar busca a versão mais recente e carrega dados novos", async ({ page }) => {
@@ -132,4 +137,17 @@ test("SisGeO › Tipos e territórios: rosca de tipo, subtipo, municípios e 11 
 test("mapa tem o contorno do estado", async ({ page }) => {
   await abrir(page);
   await expect(page.locator("#s-mapa .leaflet-contorno-pane path")).toHaveCount(1);
+});
+
+test("Fogo em vegetação: eventos x ocorrências e quadro de eventos em andamento", async ({ page }) => {
+  await abrir(page, "#amb=fogo");
+  await expect(page.locator("#fv-kpis .kpi__rotulo")).toHaveText(["Ocorrências", "Eventos", "Eventos com apoio", "Municípios atingidos", "Em andamento"]);
+  const n = (i) => page.locator("#fv-kpis .kpi__valor").nth(i).innerText().then((t) => Number(t.replace(/\D/g, "")));
+  const [ocorr, eventos] = [await n(0), await n(1)];
+  expect(ocorr).toBeGreaterThan(0);
+  expect(eventos).toBeLessThanOrEqual(ocorr);            // um evento pode ter várias ocorrências
+  await expect(page.locator("#fv-mes svg")).toBeVisible();
+  await expect(page.locator("#fv-abertos")).not.toBeEmpty();
+  await page.click('.abas [data-amb="fogo"][data-aba="condicoes"]');
+  await expect(page.locator("#fv-kpis-clima .kpi")).toHaveCount(3);
 });

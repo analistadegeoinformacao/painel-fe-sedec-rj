@@ -91,3 +91,52 @@ def test_impressao_digital_so_muda_com_os_dados(tmp_path):
     outra.write_text(AMOSTRA.read_text(encoding="utf-8").replace("Corte de Árvore", "Corte de Arvore", 1), encoding="utf-8")
     rc, saida = rodar(tmp_path, outra)
     assert (saida / "versao.txt").read_text() != v1
+
+
+AMOSTRA_FOGO = Path(__file__).parent / "fixtures" / "amostra_fogo.txt"
+
+
+def rodar_duas(tmp_path, fogo=AMOSTRA_FOGO):
+    saida = tmp_path / "data"
+    rc = build.main(["--fonte", "texto", "--origem", str(AMOSTRA), "--origem-fogo", str(fogo), "--saida", str(saida)])
+    return rc, saida
+
+
+def test_planilha_de_fogo_entra_no_seu_proprio_conjunto(tmp_path):
+    rc, saida = rodar_duas(tmp_path)
+    assert rc == 0
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert meta["conjuntos"]["fogo_sisgeo"]["planilha"] == "PLANILHA FOGO EM VEGETAÇÃO"
+    assert meta["conjuntos"]["sisgeo"]["planilha"] == "NOVA BASE ANALISTAS (chuvas)"
+    fv = json.loads((saida / "fogo_sisgeo.json").read_text(encoding="utf-8"))
+    sis = json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
+    # nada da planilha de fogo vaza para o SisGeO de chuvas (amostra de fogo usa ocorrências C2099…)
+    assert not any(str(r.get("ocorrencia", "")).startswith("C2099") for r in sis)
+    assert all(str(r["ocorrencia"]).startswith("C2099") for r in fv)
+
+
+def test_identidade_evento_mais_ocorrencia(tmp_path):
+    rc, saida = rodar_duas(tmp_path)
+    fv = json.loads((saida / "fogo_sisgeo.json").read_text(encoding="utf-8"))
+    pares = [(r["id_evento"], r["ocorrencia"]) for r in fv]
+    assert len(pares) == len(set(pares)), "linha repetida não foi removida"
+    from collections import Counter
+    por_evento = Counter(r["id_evento"] for r in fv)
+    assert max(por_evento.values()) >= 2, "evento com apoio (duas ocorrências) foi perdido"
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert any("repetida" in a for a in meta["avisos"]["fogo_sisgeo"])
+
+
+def test_fogo_compacto_sem_dados_pessoais(tmp_path):
+    rc, saida = rodar_duas(tmp_path)
+    fv = json.loads((saida / "fogo_sisgeo.json").read_text(encoding="utf-8"))
+    assert "municipio" not in fv[0] and fv[0]["cod_ibge"]          # recomposto no navegador
+    assert not {"efetivo", "endereco", "viatura"} & set(fv[0])
+
+
+def test_sem_planilha_de_fogo_o_resto_publica(tmp_path):
+    saida = tmp_path / "data"
+    rc = build.main(["--fonte", "texto", "--origem", str(AMOSTRA), "--saida", str(saida)])
+    assert rc == 0
+    assert json.loads((saida / "fogo_sisgeo.json").read_text(encoding="utf-8")) == []
+    assert json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))

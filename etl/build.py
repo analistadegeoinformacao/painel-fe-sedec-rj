@@ -104,8 +104,9 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
                     reg[campo] = CONVERSORES[t](v)
                     if t in ("data", "datahora") and reg[campo] and campo not in spec.get("datas_livres", []):
                         dia = reg[campo][:10]
-                        if dia < limites["data_minima"] or dia > hoje:
-                            raise ValueError(f"data fora do período ({limites['data_minima']} a hoje): {v!r}")
+                        minima = spec.get("data_minima", limites["data_minima"])
+                        if dia < minima or dia > hoje:
+                            raise ValueError(f"data fora do período ({minima} a hoje): {v!r}")
             except ValueError as e:
                 reg[campo] = None
                 if t == "municipio":
@@ -143,6 +144,19 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
             rel.aviso(nome, msg)
     if redec_preenchida:
         rel.aviso(nome, f"{redec_preenchida} linha(s) sem REDEC: completadas pela tabela de referência")
+    # mesma ocorrência colada duas vezes: identidade = campos de "chave_unica"
+    # (no SisGeO: número do evento + número da ocorrência)
+    chave = spec.get("chave_unica")
+    if chave:
+        vistos, unicos = set(), []
+        for reg in saida:
+            k = tuple(reg.get(c) for c in chave)
+            if all(x is None for x in k) or k not in vistos:
+                vistos.add(k)
+                unicos.append(reg)
+        if len(unicos) < len(saida):
+            rel.aviso(nome, f"{len(saida) - len(unicos)} linha(s) repetida(s) (mesmo {' + '.join(chave)}) removida(s)")
+        saida = unicos
     if len(saida) < spec.get("min_linhas", 0):
         rel.erro(nome, f"apenas {len(saida)} linha(s); mínimo exigido {spec['min_linhas']}")
     return saida, sem_mun
@@ -151,7 +165,8 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--fonte", choices=["appsscript", "google", "xlsx", "texto"], required=True)
-    ap.add_argument("--origem", default="", help="URL do Apps Script, ID da planilha ou caminho do arquivo")
+    ap.add_argument("--origem", default="", help="URL do Apps Script, ID da planilha ou caminho do arquivo (planilha principal)")
+    ap.add_argument("--origem-fogo", default="", help="caminho do arquivo da planilha de fogo (modos texto/xlsx)")
     ap.add_argument("--saida", default=str(RAIZ / "site" / "data"))
     ap.add_argument("--config", default=str(RAIZ / "config" / "fontes.yml"))
     a = ap.parse_args(argv)
@@ -161,18 +176,48 @@ def main(argv=None):
     ref = N.Referencia()
     rel = Relatorio()
 
-    abas = fonte.ler(a.fonte, a.origem, [c["aba"] for c in conjuntos.values()])
+    # Cada conjunto diz de qual planilha vem ("planilha:", padrão "principal").
+    # Abas de planilhas diferentes nunca se misturam, mesmo com nomes iguais.
+    planilhas = cfg.get("planilhas", {"principal": {}})
+    origens_locais = {"principal": a.origem, "fogo": a.origem_fogo}
+    abas_por_planilha = {}
+    for pid, pcfg in planilhas.items():
+        pedidas = [c["aba"] for c in conjuntos.values() if c.get("planilha", "principal") == pid]
+        if not pedidas:
+            continue
+        if a.fonte in ("texto", "xlsx"):
+            origem = origens_locais.get(pid, "")
+            if not origem:
+                rel.aviso(pid, f"planilha '{pid}' não informada nesta execução local; conjuntos dela ficam vazios")
+                abas_por_planilha[pid] = {}
+                continue
+        else:
+            origem = a.origem
+        try:
+            abas_por_planilha[pid] = fonte.ler(a.fonte, origem, pedidas, pcfg.get("id"),
+                                               exigir_confirmacao=(pid != "principal"))
+        except SystemExit as e:
+            if pid == "principal":
+                raise
+            # planilha secundária fora do ar: os painéis dela avisam, o resto publica
+            rel.aviso(pid, f"planilha '{pcfg.get('titulo', pid)}' não pôde ser lida: {e}")
+            abas_por_planilha[pid] = {}
 
     resultados, meta_conj = {}, {}
     for nome, spec in conjuntos.items():
+        abas = abas_por_planilha.get(spec.get("planilha", "principal"), {})
         if spec["aba"] not in abas:
             (rel.erro if spec.get("min_linhas", 0) > 0 else rel.aviso)(nome, f"aba '{spec['aba']}' não encontrada")
             dados, extra = [], []
         else:
             dados, extra = processar(nome, spec, abas[spec["aba"]], ref, rel, cfg["limites"])
+        if spec.get("compactar"):
+            # município e REDEC são recompostos no navegador a partir do código IBGE
+            dados = [{k: v for k, v in r.items() if k not in ("municipio", "redec") or not r.get("cod_ibge")} for r in dados]
         if spec.get("publicar", True):
             resultados[nome] = dados
-            meta_conj[nome] = {"titulo": spec.get("titulo", nome), "aba": spec["aba"], "linhas": len(dados)}
+            meta_conj[nome] = {"titulo": spec.get("titulo", nome), "aba": spec["aba"], "linhas": len(dados),
+                               "planilha": planilhas.get(spec.get("planilha", "principal"), {}).get("titulo", "")}
         if spec.get("separar_sem_municipio"):
             alvo = spec["separar_sem_municipio"]
             resultados[alvo] = extra

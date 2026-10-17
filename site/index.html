@@ -35,6 +35,10 @@
         <span class="ambientes__nome">Eventos REDECs</span>
         <span class="ambientes__fonte">Defesa Civil</span>
       </a>
+      <a href="#amb=fogo" data-amb="fogo">
+        <span class="ambientes__nome">Fogo em vegetação</span>
+        <span class="ambientes__fonte">SisGeO · CBMERJ</span>
+      </a>
     </nav>
     <div class="topo__acoes">
       <div class="topo__status" id="status-dados" role="status">Carregando dados…</div>
@@ -58,6 +62,12 @@
     <button role="tab" data-amb="redecs" data-aba="registros">Registros</button>
     <button role="tab" data-amb="redecs" data-aba="consulta">Consulta</button>
     <button role="tab" data-amb="redecs" data-aba="qualidade">Qualidade dos dados <span class="selo-contagem" data-avisos="redecs"></span></button>
+
+    <button role="tab" data-amb="fogo" data-aba="geral">Visão geral</button>
+    <button role="tab" data-amb="fogo" data-aba="territorios">Subtipos e territórios</button>
+    <button role="tab" data-amb="fogo" data-aba="condicoes">Condições meteorológicas</button>
+    <button role="tab" data-amb="fogo" data-aba="registros">Registros</button>
+    <button role="tab" data-amb="fogo" data-aba="qualidade">Qualidade dos dados <span class="selo-contagem" data-avisos="fogo"></span></button>
   </nav>
 
   <section class="filtros" aria-label="Filtros">
@@ -178,6 +188,64 @@
         <header class="cartao__cab"><h2>Qualidade dos dados — abas da Defesa Civil</h2></header>
         <p class="nota">Problemas abaixo não impediram a publicação, mas os registros afetados ficaram com o campo em branco. Corrija na planilha e a próxima atualização refletirá a correção.</p>
         <div id="r-qualidade"></div>
+      </article>
+    </section>
+
+    <!-- =============================== AMBIENTE FOGO EM VEGETAÇÃO =============================== -->
+    <section class="painel-aba" data-amb="fogo" data-aba="geral" hidden>
+      <div class="kpis" id="fv-kpis"></div>
+      <div class="grade grade--mapa">
+        <article class="cartao cartao--mapa">
+          <header class="cartao__cab"><h2>Ocorrências de fogo por município</h2><span class="dica">clique num município para filtrar</span></header>
+          <div id="fv-mapa" class="mapa" aria-label="Mapa de ocorrências de fogo em vegetação por município"></div>
+        </article>
+        <article class="cartao">
+          <header class="cartao__cab"><h2>Ocorrências por REDEC</h2><span class="dica">clique numa barra para filtrar</span></header>
+          <div class="grafico grafico--alto" id="fv-redec"></div>
+        </article>
+      </div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por dia</h2></header><div class="grafico" id="fv-serie"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por mês, ano a ano</h2></header><div class="grafico" id="fv-mes"></div></article>
+      </div>
+      <article class="cartao">
+        <header class="cartao__cab"><h2>Eventos em andamento</h2><span class="dica">aba EVENTOS ABERTOS</span></header>
+        <div id="fv-abertos"></div>
+      </article>
+    </section>
+
+    <section class="painel-aba" data-amb="fogo" data-aba="territorios" hidden>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Por subtipo</h2></header><div class="grafico grafico--alto grafico--rosca" id="fv-subtipo"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Unidades com mais ocorrências (10 maiores)</h2></header><div class="grafico grafico--alto" id="fv-unidade"></div></article>
+      </div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Municípios com mais ocorrências (10 maiores)</h2><span class="dica">clique numa barra para filtrar</span></header><div class="grafico grafico--alto" id="fv-mun"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências nas 11 REDECs</h2><span class="dica">clique numa barra para filtrar</span></header><div class="grafico grafico--alto" id="fv-redec2"></div></article>
+      </div>
+    </section>
+
+    <section class="painel-aba" data-amb="fogo" data-aba="condicoes" hidden>
+      <div class="kpis" id="fv-kpis-clima"></div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Risco de incêndio florestal por REDEC</h2></header><div id="fv-risco"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Severidade por temperatura e umidade</h2><span class="dica">municípios com dias consecutivos</span></header><div id="fv-sev"></div></article>
+      </div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Maiores temperaturas (INMET)</h2></header><div id="fv-temp"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Menores umidades relativas (INMET)</h2></header><div id="fv-umid"></div></article>
+      </div>
+    </section>
+
+    <section class="painel-aba" data-amb="fogo" data-aba="registros" hidden>
+      <article class="cartao"><header class="cartao__cab"><h2>Ocorrências de fogo em vegetação</h2><span class="dica">um evento pode ter várias ocorrências (unidades em apoio)</span></header><div id="fv-tabela"></div></article>
+    </section>
+
+    <section class="painel-aba" data-amb="fogo" data-aba="qualidade" hidden>
+      <article class="cartao">
+        <header class="cartao__cab"><h2>Qualidade dos dados — PLANILHA FOGO EM VEGETAÇÃO</h2></header>
+        <p class="nota">Problemas abaixo não impediram a publicação, mas os registros afetados ficaram com o campo em branco. Corrija na planilha e a próxima atualização refletirá a correção.</p>
+        <div id="fv-qualidade"></div>
       </article>
     </section>
   </main>

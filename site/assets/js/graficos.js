@@ -147,6 +147,35 @@ export function rosca(el, itens, { unidade = "ocorrências", maxFatias = 6 } = {
   );
 }
 
+/**
+ * Colunas agrupadas por mês, uma série por ano (no máximo 3 anos, cores de
+ * ordem fixa). series: [[ano, [12 valores]]]. Legenda sempre visível.
+ */
+export function colunasPorMes(el, series, { unidade = "ocorrências" } = {}) {
+  const t = tema();
+  const g = iniciar(el);
+  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  const cores = [1, 2, 3].map((i) => css(`--cat-${i}`));
+  g.setOption(
+    {
+      animationDuration: 300,
+      textStyle: { fontFamily: t.fonte },
+      legend: { top: 0, right: 0, icon: "roundRect", itemWidth: 12, itemHeight: 8, textStyle: { color: t.texto2, fontSize: 12 } },
+      grid: { left: 8, right: 8, top: 32, bottom: 4, containLabel: true },
+      tooltip: { ...tooltipBase(t), trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: t.grade, opacity: 0.5 } },
+        formatter: (ps) => `${ps[0].axisValue}<br>` + ps.map((p) => `${p.marker}${p.seriesName}: <b>${fmt(p.value)}</b> ${unidade}`).join("<br>") },
+      xAxis: { type: "category", data: meses, axisTick: { show: false }, axisLine: { lineStyle: { color: t.grade } },
+        axisLabel: { color: t.texto3, fontSize: 11.5 } },
+      yAxis: { type: "value", minInterval: 1, splitLine: { lineStyle: { color: t.grade } }, axisLabel: { color: t.texto3, fontSize: 11.5 } },
+      series: series.slice(-3).map(([ano, valores], i) => ({
+        name: String(ano), type: "bar", data: valores, barMaxWidth: 14, barGap: "15%",
+        itemStyle: { color: cores.at(i), borderRadius: [4, 4, 0, 0] },
+      })),
+    },
+    true
+  );
+}
+
 export function redimensionarTodos() {
   instancias.forEach((g) => !g.isDisposed() && g.resize());
 }

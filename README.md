@@ -9,16 +9,22 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
                                                        └─► nada é publicado; o site continua com a última versão boa
 ```
 
-## Dois ambientes
+## Três ambientes, duas planilhas
 
-| Ambiente | Link | Abas |
-|---|---|---|
-| **Ocorrências SisGeO** (CBMERJ, vermelho) | `.../#amb=sisgeo` | Visão geral · Tipos e unidades · Registros · Qualidade |
-| **Eventos REDECs** (Defesa Civil, laranja) | `.../#amb=redecs` | Visão geral · Decretação · Resposta · Registros · Consulta · Qualidade |
+| Ambiente | Planilha de origem | Link | Abas |
+|---|---|---|---|
+| **Ocorrências SisGeO** (vermelho) | NOVA BASE ANALISTAS (chuvas) | `#amb=sisgeo` | Visão geral · Tipos e territórios · Registros · Qualidade |
+| **Eventos REDECs** (laranja) | NOVA BASE ANALISTAS (chuvas) | `#amb=redecs` | Visão geral · Decretação · Resposta · Registros · Consulta · Qualidade |
+| **Fogo em vegetação** (âmbar) | PLANILHA FOGO EM VEGETAÇÃO | `#amb=fogo` | Visão geral · Subtipos e territórios · Condições meteorológicas · Registros · Qualidade |
 
-Cada ambiente tem mapa, indicadores e gráficos próprios. Os filtros (período, REDEC, município) são mantidos ao
-trocar de ambiente, para comparar as duas fontes no mesmo recorte. O endereço guarda ambiente, aba e filtros:
-`#amb=redecs&aba=decretos&redec=REDEC%2011%20-%20NOROESTE` abre direto nos decretos do Noroeste.
+- Cada conjunto em `config/fontes.yml` declara `planilha:` (padrão: principal). Abas de planilhas diferentes nunca se
+  misturam, mesmo com o mesmo nome. A ponte do Apps Script só lê as planilhas da lista `PAINEL_PLANILHAS_PERMITIDAS`
+  e confirma qual leu; se não confirmar (ponte antiga), os dados de fogo ficam vazios com aviso — nunca misturados.
+- **Identidade no SisGeO:** número do evento (`IdEvento`) + número da ocorrência (`C…`). Linhas com o mesmo par são
+  repetições e saem da contagem; o mesmo evento com várias ocorrências = unidades em apoio (painel mostra
+  "Ocorrências", "Eventos" e "Eventos com apoio").
+- A planilha de fogo é opcional para a publicação: se estiver fora do ar, só o ambiente de fogo mostra aviso.
+- Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
 ## Por que este desenho não quebra a cada commit
 
@@ -82,7 +88,7 @@ republica o site quando os dados mudaram — ou 1x por hora, como sinal de vida.
 ```bash
 pip install -r requirements-dev.txt
 pytest -q
-python -m etl.build --fonte xlsx --origem planilha.xlsx      # ou --fonte texto (dump) / --fonte appsscript
+python -m etl.build --fonte xlsx --origem planilha.xlsx --origem-fogo fogo.xlsx   # ou --fonte texto / appsscript
 python -m http.server 8000 --directory site                  # abrir http://localhost:8000
 cd e2e && npm ci && npx playwright install chromium && npx playwright test
 ```

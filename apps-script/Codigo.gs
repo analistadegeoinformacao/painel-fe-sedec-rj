@@ -31,6 +31,11 @@
 
 // ID da planilha NOVA BASE ANALISTAS (o trecho entre /d/ e /edit no endereço)
 var PAINEL_PLANILHA_ID = '1SN6hpLNlyKrSYUSu0gUlzF8OaIUeuDMA4i0Gq3bpeGY';
+// Planilhas que a ponte aceita ler (lista fechada: nenhuma outra é lida).
+var PAINEL_PLANILHAS_PERMITIDAS = [
+  PAINEL_PLANILHA_ID,                               // NOVA BASE ANALISTAS (chuvas)
+  '1rlC6lxivHTj0xLmjDzENe4NEHMN6EFI6d8d2QSDXPVA'    // PLANILHA FOGO EM VEGETAÇÃO
+];
 
 function doPost(e) {
   var corpo = {};
@@ -40,7 +45,11 @@ function doPost(e) {
     return painelJson_({ erro: 'não autorizado' });
   }
   var pedidas = corpo.abas || [];
-  var livro = SpreadsheetApp.openById(PAINEL_PLANILHA_ID);
+  var planilhaId = corpo.planilha || PAINEL_PLANILHA_ID;
+  if (PAINEL_PLANILHAS_PERMITIDAS.indexOf(planilhaId) < 0) {
+    return painelJson_({ erro: 'planilha não permitida' });
+  }
+  var livro = SpreadsheetApp.openById(planilhaId);
   var abas = {};
   livro.getSheets().forEach(function (aba) {
     var nome = aba.getName();
@@ -49,7 +58,7 @@ function doPost(e) {
       abas[nome] = aba.getDataRange().getDisplayValues();
     }
   });
-  return painelJson_({ planilha: livro.getName(), lido_em: new Date().toISOString(), abas: abas });
+  return painelJson_({ planilha: livro.getName(), planilha_id: planilhaId, lido_em: new Date().toISOString(), abas: abas });
 }
 
 function doGet() {
@@ -64,8 +73,10 @@ function gerarToken() {
 
 /** Opcional: rode para conferir se o projeto enxerga a planilha. */
 function testarLeitura() {
-  var livro = SpreadsheetApp.openById(PAINEL_PLANILHA_ID);
-  Logger.log('Planilha: ' + livro.getName() + ' — ' + livro.getSheets().length + ' abas');
+  PAINEL_PLANILHAS_PERMITIDAS.forEach(function (id) {
+    var livro = SpreadsheetApp.openById(id);
+    Logger.log('Planilha: ' + livro.getName() + ' — ' + livro.getSheets().length + ' abas');
+  });
 }
 
 /**

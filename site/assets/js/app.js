@@ -1,13 +1,14 @@
 import { carregar } from "./dados.js";
 import { seguro, kpis, tabela, indisponivel } from "./componentes.js";
-import { barrasH, serieDiaria, rosca, redimensionarTodos } from "./graficos.js";
+import { barrasH, serieDiaria, rosca, colunasPorMes, redimensionarTodos } from "./graficos.js";
 import { criarMapa } from "./mapa.js";
 import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, soma, rotuloRedec, titulo } from "./util.js";
 
 // =====================================================================
-//  Dois ambientes independentes, cada um com suas abas e seu mapa:
-//    sisgeo  — ocorrências do SisGeO (CBMERJ)
+//  Três ambientes independentes, cada um com suas abas e seu mapa:
+//    sisgeo  — ocorrências do SisGeO (CBMERJ) — planilha NOVA BASE ANALISTAS
 //    redecs  — eventos informados pelas REDECs + decretação, resposta, consulta
+//    fogo    — fogo em vegetação (SisGeO) — PLANILHA FOGO EM VEGETAÇÃO
 //  Os filtros (período, REDEC, município) são compartilhados: ao trocar de
 //  ambiente o recorte é mantido, para comparar as duas fontes.
 // =====================================================================
@@ -19,10 +20,13 @@ const AMBIENTES = {
             conjuntos: ["eventos", "boletins", "danos_humanos", "decretos", "decretos_historico", "alertas",
                         "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
+  fogo:   { abas: ["geral", "territorios", "condicoes", "registros", "qualidade"],
+            conjuntos: ["fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_severidade", "fogo_ultimo_dia", "fogo"],
+            fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
 const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos" };
-const ultimaAba = { sisgeo: "geral", redecs: "geral" };
+const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
 const mapas = {}; // amb -> Promise<mapa>
@@ -45,6 +49,8 @@ function gravarURL() {
 
 // ------------------------------------------------------------- filtros
 const CAMPO_DATA = {
+  fogo_sisgeo: (l) => l.data_ocorrencia?.slice(0, 10), fogo_abertos: (l) => l.data_ocorrencia?.slice(0, 10),
+  fogo_temperatura: (l) => l.data, fogo_umidade: (l) => l.data,
   sisgeo: (l) => l.data_ocorrencia?.slice(0, 10), eventos: (l) => l.data, boletins: (l) => l.data,
   alertas: (l) => l.data, ajuda_humanitaria: (l) => l.data, pontos_apoio: (l) => l.data,
 };
@@ -343,7 +349,126 @@ const REDECS = {
   qualidade() { seguro("r-qualidade", (el) => qualidade(el, AMBIENTES.redecs.conjuntos)); },
 };
 
-const RENDER = { sisgeo: SISGEO, redecs: REDECS };
+// ===================================================== AMBIENTE FOGO
+// Identidade no SisGeO: evento (IdEvento) + ocorrência (C…). Um evento com
+// várias ocorrências = unidades em apoio operacional.
+const eventosDe = (linhas) => contarPor(linhas, "id_evento");
+const COR_RISCO = { "MUITO ALTO": "critico", ALTO: "critico", MODERADO: "atencao", BAIXO: "ok", "MUITO BAIXO": "ok" };
+const chipRisco = (v) => (v ? `<span class="chip chip--${COR_RISCO[String(v).toUpperCase()] || "neutro"}">${esc(v)}</span>` : "—");
+const maisRecentes = (linhas, campo = "data") => (linhas || []).slice().sort((a, b) => ((b[campo] || "") > (a[campo] || "") ? 1 : -1));
+
+const FOGO = {
+  geral() {
+    const fv = filtrar("fogo_sisgeo"), ab = filtrar("fogo_abertos", { comPeriodo: false });
+    seguro("fv-kpis", (el) => {
+      const ev = fv ? eventosDe(fv) : null;
+      const apoio = ev ? [...ev.values()].filter((n) => n > 1).length : null;
+      kpis(el, [
+        { rotulo: "Ocorrências", valor: fv?.length ?? "—", sub: descricaoPeriodo(), destaque: true },
+        { rotulo: "Eventos", valor: ev ? ev.size : "—", sub: "números de evento distintos" },
+        { rotulo: "Eventos com apoio", valor: apoio ?? "—", sub: "mais de uma unidade no mesmo evento" },
+        { rotulo: "Municípios atingidos", valor: fv ? muns(fv) : "—", sub: "de 92 no estado" },
+        { rotulo: "Em andamento", valor: ab ? ab.length : "—", sub: "aba EVENTOS ABERTOS" },
+      ]);
+    });
+    seguro("fv-redec", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+    seguro("fv-serie", (el) => { if (!indisponivel(el, fv)) serieDiaria(el, porDia(fv, CAMPO_DATA.fogo_sisgeo)); });
+    seguro("fv-mes", (el) => {
+      if (indisponivel(el, fv)) return;
+      const porAno = new Map();
+      for (const l of fv) {
+        const d = l.data_ocorrencia;
+        if (!d) continue;
+        const ano = d.slice(0, 4), m = Number(d.slice(5, 7)) - 1;
+        if (!porAno.has(ano)) porAno.set(ano, Array(12).fill(0));
+        porAno.get(ano)[m] += 1;
+      }
+      colunasPorMes(el, [...porAno.entries()].sort());
+    });
+    seguro("fv-abertos", (el) => {
+      if (ab && !ab.length) { el.innerHTML = `<div class="vazio">Nenhum evento de fogo em aberto no momento.</div>`; return; }
+      tabela(el, {
+        nome: "fogo_em_andamento", linhas: ab, porPagina: 15, ordem: { campo: "data_ocorrencia", dir: -1 },
+        colunas: [
+          { campo: "data_ocorrencia", titulo: "Início", formato: fmtData }, { campo: "id_evento", titulo: "Evento" },
+          { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "municipio", titulo: "Município", formato: titulo },
+          { campo: "bairro", titulo: "Bairro" }, { campo: "subtipo", titulo: "Subtipo" },
+          { campo: "unidade", titulo: "Unidade" }, { campo: "situacao", titulo: "Situação" },
+        ],
+      });
+    });
+    mapaDo("fogo", "fv-mapa").then((m) => m?.pintar(contarPor(fv || [], "cod_ibge"), "Ocorrências de fogo", "ocorrência(s)", st.municipio));
+  },
+
+  territorios() {
+    const fv = filtrar("fogo_sisgeo");
+    seguro("fv-subtipo", (el) => { if (!indisponivel(el, fv)) rosca(el, ordenar(contarPor(fv, "subtipo")), { unidade: "ocorrências" }); });
+    seguro("fv-unidade", (el) => { if (!indisponivel(el, fv)) barrasH(el, ordenar(contarPor(fv, "unidade"), 10), { unidade: "ocorrências" }); });
+    seguro("fv-mun", (el) => {
+      if (indisponivel(el, fv)) return;
+      barrasH(el, ordenar(contarPor(fv, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
+        { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
+    });
+    seguro("fv-redec2", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+  },
+
+  condicoes() {
+    const ult = (BASE.dados.fogo_ultimo_dia || [])[0];
+    seguro("fv-kpis-clima", (el) => kpis(el, [
+      { rotulo: "Maior temperatura do último dia", texto: true, destaque: true,
+        valor: ult?.temp_c != null ? `${ult.temp_c.toLocaleString("pt-BR")} °C` : "—",
+        sub: ult ? `${titulo(ult.municipio_temp || "")} · ${fmtData(ult.data)}` : "sem registro" },
+      { rotulo: "Menor umidade do último dia", texto: true,
+        valor: ult?.ur_pct != null ? `${ult.ur_pct.toLocaleString("pt-BR")} %` : "—",
+        sub: ult ? `${titulo(ult.municipio_ur || "")} · ${fmtData(ult.data)}` : "sem registro" },
+      { rotulo: "REDECs com risco alto ou muito alto", texto: true,
+        valor: (() => { const r = filtrar("fogo_risco", { comPeriodo: false }); return r ? String(r.filter((l) => /ALTO/i.test(l.risco || "")).length) : "—"; })(),
+        sub: "de 11 regionais" },
+    ]));
+    seguro("fv-risco", (el) => tabela(el, {
+      nome: "risco_incendio", linhas: filtrar("fogo_risco", { comPeriodo: false }), porPagina: 20,
+      colunas: [{ campo: "redec", titulo: "REDEC", formato: rotuloRedec },
+        { campo: "risco", titulo: "Risco de incêndio florestal", tipo: "html", formato: chipRisco }],
+    }));
+    seguro("fv-sev", (el) => {
+      const sev = filtrar("fogo_severidade", { comPeriodo: false });
+      tabela(el, {
+        nome: "severidade_temp_umid", linhas: sev && sev.filter((l) => (l.dias_temp || 0) + (l.dias_ur || 0) > 0 || (l.severidade && l.severidade !== "—")),
+        porPagina: 15, ordem: { campo: "dias_ur", dir: -1 },
+        colunas: [{ campo: "municipio", titulo: "Município", formato: titulo }, { campo: "temp_hoje", titulo: "Temp. hoje (°C)", tipo: "num" },
+          { campo: "ur_hoje", titulo: "UR hoje (%)", tipo: "num" }, { campo: "dias_temp", titulo: "Dias consec. temp.", tipo: "num" },
+          { campo: "dias_ur", titulo: "Dias consec. UR", tipo: "num" }, { campo: "severidade", titulo: "Severidade" }],
+      });
+    });
+    seguro("fv-temp", (el) => tabela(el, {
+      nome: "maiores_temperaturas", linhas: maisRecentes(filtrar("fogo_temperatura")), porPagina: 15,
+      colunas: [{ campo: "data", titulo: "Data", formato: fmtData }, { campo: "municipio", titulo: "Município", formato: titulo },
+        { campo: "temp_c", titulo: "Maior temperatura (°C)", tipo: "num" }],
+    }));
+    seguro("fv-umid", (el) => tabela(el, {
+      nome: "menores_umidades", linhas: maisRecentes(filtrar("fogo_umidade")), porPagina: 15,
+      colunas: [{ campo: "data", titulo: "Data", formato: fmtData }, { campo: "municipio", titulo: "Município", formato: titulo },
+        { campo: "ur_pct", titulo: "Menor umidade (%)", tipo: "num" }],
+    }));
+  },
+
+  registros() {
+    seguro("fv-tabela", (el) => tabela(el, {
+      nome: "fogo_em_vegetacao", linhas: filtrar("fogo_sisgeo"), ordem: { campo: "data_ocorrencia", dir: -1 },
+      colunas: [
+        { campo: "data_ocorrencia", titulo: "Data", formato: fmtData }, { campo: "id_evento", titulo: "Evento" },
+        { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "municipio", titulo: "Município", formato: titulo },
+        { campo: "redec", titulo: "REDEC", formato: rotuloRedec }, { campo: "subtipo", titulo: "Subtipo" },
+        { campo: "unidade", titulo: "Unidade" }, { campo: "situacao", titulo: "Situação" },
+        { campo: "vitimas", titulo: "Vítimas", tipo: "num" },
+      ],
+    }));
+  },
+
+  qualidade() { seguro("fv-qualidade", (el) => qualidade(el, AMBIENTES.fogo.conjuntos)); },
+};
+
+const RENDER = { sisgeo: SISGEO, redecs: REDECS, fogo: FOGO };
 
 // ------------------------------------------------ dados novos
 // O GitHub consulta a planilha a cada ~10 min e só republica quando algo mudou.

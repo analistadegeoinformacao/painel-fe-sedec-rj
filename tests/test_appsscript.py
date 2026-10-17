@@ -100,3 +100,15 @@ def test_resposta_errada_passageira_e_tentada_de_novo(monkeypatch):
         srv.shutdown()
     assert abas["SISGEO"] == [["A"], ["1"]]
     assert GoogleInstavel.chamadas == 2
+
+
+def test_ponte_antiga_nao_confirma_planilha_e_e_recusada():
+    """Ponte antiga ignora o pedido da planilha de fogo e devolveria a principal."""
+    resposta = json.dumps({"planilha": "NOVA BASE ANALISTAS", "abas": {"ALERTAS": [["DATA"]]}})
+    with pytest.raises(SystemExit, match="desatualizada"):
+        fonte.abas_do_json(resposta, planilha_esperada="ID-FOGO")
+
+
+def test_ponte_atual_confirma_planilha():
+    resposta = json.dumps({"planilha_id": "ID-FOGO", "abas": {"SISGEO_FV": [["IdEvento"]]}})
+    assert fonte.abas_do_json(resposta, planilha_esperada="ID-FOGO") == {"SISGEO_FV": [["IdEvento"]]}

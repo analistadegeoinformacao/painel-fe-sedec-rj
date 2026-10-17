@@ -38,7 +38,8 @@ def ler_google(planilha_id: str, abas: list[str]) -> dict[str, list[list[str]]]:
     return saida
 
 
-def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
+def ler_appsscript(url: str, abas: list[str], planilha_id: str | None = None,
+                   exigir_confirmacao: bool = False) -> dict[str, list[list[str]]]:
     import urllib.request
 
     token = limpar_token(os.environ.get("APPS_SCRIPT_TOKEN", ""))
@@ -51,13 +52,13 @@ def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
     ultimo_erro = None
     for tentativa in range(1, 4):  # até 3 tentativas: o Google às vezes responde errado durante reimplantações
         pedido = urllib.request.Request(
-            url, data=json.dumps({"token": token, "abas": abas}).encode("utf-8"),
+            url, data=json.dumps({"token": token, "abas": abas, "planilha": planilha_id}).encode("utf-8"),
             headers={"Content-Type": "application/json"}, method="POST",
         )
         try:
             # o Apps Script responde com um redirecionamento; o urllib segue sozinho
             with urllib.request.urlopen(pedido, timeout=120) as r:
-                return abas_do_json(r.read().decode("utf-8"))
+                return abas_do_json(r.read().decode("utf-8"), planilha_id if exigir_confirmacao else None)
         except urllib.error.HTTPError as e:
             dica = {404: "a URL do App da Web não existe mais (implantação apagada ou URL trocada?)",
                     401: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'",
@@ -68,7 +69,7 @@ def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
         except RespostaInesperada as e:
             ultimo_erro = str(e)
         except SystemExit as e:
-            if "recusou" in str(e):  # token errado: tentar de novo não adianta
+            if "recusou" in str(e) or "desatualizada" in str(e):  # tentar de novo não adianta
                 raise
             ultimo_erro = str(e)
         if tentativa < 3:
@@ -89,7 +90,7 @@ def limpar_token(bruto: str) -> str:
     return t.strip().strip('"').strip("'")
 
 
-def abas_do_json(bruto: str) -> dict[str, list[list[str]]]:
+def abas_do_json(bruto: str, planilha_esperada: str | None = None) -> dict[str, list[list[str]]]:
     try:
         corpo = json.loads(bruto)
     except json.JSONDecodeError:
@@ -100,6 +101,10 @@ def abas_do_json(bruto: str) -> dict[str, list[list[str]]]:
     if "abas" not in corpo:
         raise RespostaInesperada("O Apps Script respondeu sem as abas da planilha (a requisição caiu no doGet). "
                                  "Acontece durante uma reimplantação; se persistir, confira se APPS_SCRIPT_URL é a URL /exec da implantação atual.")
+    # Ponte antiga ignora o pedido de outra planilha e devolve a principal: nunca aceitar sem confirmação.
+    if planilha_esperada and corpo.get("planilha_id") != planilha_esperada:
+        raise SystemExit("ponte do Apps Script desatualizada: não confirmou a leitura da planilha pedida. "
+                         "Cole o apps-script/Codigo.gs atual e implante uma nova versão.")
     return {nome: [[str(c) for c in linha] for linha in linhas] for nome, linhas in corpo["abas"].items()}
 
 
@@ -123,11 +128,11 @@ def ler_texto(caminho: Path) -> dict[str, list[list[str]]]:
     return saida
 
 
-def ler(modo: str, origem: str, abas: list[str]):
+def ler(modo: str, origem: str, abas: list[str], planilha_id: str | None = None, exigir_confirmacao: bool = False):
     if modo == "appsscript":
-        return ler_appsscript(origem or os.environ.get("APPS_SCRIPT_URL", ""), abas)
+        return ler_appsscript(origem or os.environ.get("APPS_SCRIPT_URL", ""), abas, planilha_id, exigir_confirmacao)
     if modo == "google":
-        return ler_google(origem, abas)
+        return ler_google(planilha_id or origem, abas)
     if modo == "xlsx":
         return ler_xlsx(Path(origem))
     if modo == "texto":
