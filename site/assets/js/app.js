@@ -57,7 +57,7 @@ const CAMPO_DATA = {
 
 // Depuração do SisGeO (feita no ETL): linhas com "depuracao" (situacao | motivo | ambos) não contam
 // em nenhum painel; só aparecem na aba Depuração (depuracao: "excluidas").
-function filtrar(nome, { comPeriodo = true, depuracao = "validas" } = {}) {
+function filtrar(nome, { comPeriodo = true, depuracao = "validas", semTipo = false } = {}) {
   const linhas = BASE.dados[nome];
   if (linhas === null || linhas === undefined) return null;
   const fd = CAMPO_DATA[nome];
@@ -70,7 +70,7 @@ function filtrar(nome, { comPeriodo = true, depuracao = "validas" } = {}) {
     }
     if (st.redec && (l.redec ?? redecDoCod.get(l.cod_ibge)) !== st.redec) return false;
     if (st.municipio && l.cod_ibge !== st.municipio) return false;
-    if (st.tipo && nome === "sisgeo" && l.tipo !== st.tipo) return false; // filtro só do ambiente SisGeO
+    if (st.tipo && !semTipo && nome === "sisgeo" && l.tipo !== st.tipo) return false; // filtro só do ambiente SisGeO
     return true;
   });
 }
@@ -245,9 +245,32 @@ const COLUNAS_SISGEO = [
   { campo: "situacao", titulo: "Situação" }, { campo: "vitimas", titulo: "Vítimas", tipo: "num" },
 ];
 
+// Tipos com cartão numérico no SisGeO · Chuvas (grafia comparada sem acento/maiúscula)
+const TIPOS_PRINCIPAIS = ["Corte de Árvore", "Deslizamento/Desabamento", "Inundação/Alagamento", "Salvamento de Pessoa"];
+
 const SISGEO = {
   geral() {
     const sis = filtrar("sisgeo");
+    seguro("s-kpis-num", (el) => {
+      // quantidades por tipo principal; clicar filtra o painel por aquele tipo (clicar de novo limpa)
+      const chave = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+      const semTipo = filtrar("sisgeo", { semTipo: true });
+      const total = semTipo?.length ?? null;
+      const doTipo = (nome) => {
+        const real = [...new Set((semTipo || []).map((l) => l.tipo))].find((t) => chave(t) === chave(nome)) || nome;
+        const n = (semTipo || []).filter((l) => l.tipo === real).length;
+        const ativo = st.tipo === real;
+        return { rotulo: nome, valor: semTipo ? n : "—", destaque: ativo,
+          sub: semTipo?.length ? `${Math.round((100 * n) / semTipo.length)}% das ocorrências válidas` : "",
+          acao: () => { st.tipo = ativo ? "" : real; atualizar(); }, rotuloAcao: ativo ? "Limpar filtro" : "Filtrar",
+          dicaAcao: ativo ? "Mostrar todos os tipos" : `Filtrar o painel por ${nome}` };
+      };
+      kpis(el, [
+        { rotulo: "Ocorrências válidas", valor: total ?? "—", destaque: !st.tipo,
+          sub: `${descricaoPeriodo()} · ${fmt(filtrar("sisgeo", { depuracao: "excluidas", semTipo: true })?.length || 0)} excluídas na depuração` },
+        ...TIPOS_PRINCIPAIS.map(doTipo),
+      ]);
+    });
     seguro("s-kpis", (el) => {
       // o que mais aparece em cada dimensão, com quantidade e % do total filtrado
       const lider = (campo, nomear = (v) => v) => {

@@ -240,3 +240,16 @@ test("depuração: excluídas não contam e aparecem na aba Depuração", async 
     expect(sits.some((t) => /Falso aviso|Cancelad|desistiu/.test(t))).toBe(false);
   }
 });
+
+test("SisGeO · Chuvas: cartões numéricos por tipo filtram o painel", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo");
+  const cartoes = page.locator("#s-kpis-num .kpi");
+  await expect(cartoes).toHaveCount(5);
+  await expect(cartoes.first()).toContainText("Ocorrências válidas");
+  const corte = page.locator("#s-kpis-num button.kpi", { hasText: "Corte de Árvore" });
+  await corte.click();
+  await expect(page).toHaveURL(/tipo=/);
+  await expect(page.locator("#s-kpis-num button.kpi", { hasText: "Corte de Árvore" })).toContainText("Limpar filtro");
+  await page.locator("#s-kpis-num button.kpi", { hasText: "Corte de Árvore" }).click();
+  await expect(page).not.toHaveURL(/tipo=/);
+});
