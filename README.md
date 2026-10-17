@@ -1,4 +1,4 @@
-# Dashboard Força Especializada da SEDEC
+# Painel Integrado - Força Especializada da SEDEC-RJ
 
 Painel estático (GitHub Pages) alimentado pela planilha **NOVA BASE ANALISTAS**.
 SEDEC-RJ · FE-SEDEC · NI²AD.

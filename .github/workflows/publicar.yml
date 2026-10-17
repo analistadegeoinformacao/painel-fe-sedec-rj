@@ -1,5 +1,6 @@
 # Atualiza e publica o painel.
-# Roda: a cada 10 min, a cada push na main, ou manualmente (botão "Run workflow").
+# Roda: quando o "Vigia da planilha" (vigia.yml) vê dados novos, a cada push na main,
+# manualmente (botão "Run workflow") e, de reserva, pelo agendamento abaixo.
 # Nas execuções agendadas, só republica se os dados mudaram (ou 1x por hora,
 # como sinal de vida) — ver etl/precisa_publicar.py.
 # Se QUALQUER etapa falhar (planilha fora do contrato, teste quebrado), a etapa
@@ -10,7 +11,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "7,17,27,37,47,57 * * * *"   # a cada 10 min, fora do minuto 0 (horário de maior fila no GitHub)
+    - cron: "7,37 * * * *"   # reserva: o GitHub atrasa muito o agendamento; quem garante os 5 min é o vigia
   workflow_dispatch:
 
 permissions:
@@ -75,6 +76,8 @@ jobs:
             echo "::error title=Leitura da planilha falhou::${msg:-$(tail -3 etl.log | tr '\n' ' ')}"
             exit 1
           }
+          # resumo visível na execução: quantas linhas cada aba trouxe
+          python -c "import json;m=json.load(open('site/data/meta.json'));print('::notice title=Linhas lidas::'+' · '.join(f'{k}={v[\"linhas\"]}' for k,v in m['conjuntos'].items()))"
 
       - id: pages
         uses: actions/configure-pages@v5

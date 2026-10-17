@@ -1,0 +1,61 @@
+# Vigia da planilha: o agendamento do GitHub ("schedule") atrasa muito — na prática
+# roda de 3 em 3 horas. Este fluxo fica ligado (~5h45) olhando a planilha a cada
+# 5 min e, quando os dados mudam (ou a última publicação tem mais de 1 h), dispara
+# "Atualizar e publicar painel". Ao terminar, religa a si mesmo. Não precisa de
+# token pessoal: usa o token automático do próprio GitHub (permissão actions: write).
+# Repositório público = minutos de Actions gratuitos.
+name: Vigia da planilha
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */2 * * *"   # religa o vigia se a corrente se romper (o duplicado espera na fila)
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: vigia
+  cancel-in-progress: false
+
+jobs:
+  vigiar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+
+      - name: Olhar a planilha a cada 5 min
+        env:
+          APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
+          APPS_SCRIPT_TOKEN: ${{ secrets.APPS_SCRIPT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          SITE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        run: |
+          [ -n "$APPS_SCRIPT_URL" ] || { echo "::warning::Planilha não conectada"; exit 0; }
+          fim=$(( $(date +%s) + 340*60 ))
+          while [ "$(date +%s)" -lt "$fim" ]; do
+            if python -m etl.build --fonte appsscript --saida /tmp/dados > /tmp/etl.log 2>&1; then
+              decisao=$(GITHUB_OUTPUT= python -m etl.precisa_publicar --base "$SITE" --evento schedule --dados /tmp/dados)
+              echo "$(date -u +%H:%M) $decisao"
+              if echo "$decisao" | grep -q "^publicar=true"; then
+                gh workflow run publicar.yml --ref main && sleep 480 && continue
+              fi
+            else
+              echo "$(date -u +%H:%M) leitura falhou: $(tail -2 /tmp/etl.log | tr '\n' ' ')"
+            fi
+            sleep 300
+          done
+
+      - name: Religar o vigia
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run vigia.yml --ref main
