@@ -336,9 +336,12 @@ const REDECS = {
       { rotulo: "Eventos", valor: ev?.length ?? "—", sub: descricaoPeriodo(), destaque: true },
       { rotulo: "Municípios atingidos", valor: ev ? muns(ev) : "—", sub: "de 92 no estado" },
       { rotulo: "Decretos vigentes", valor: dec ? dec.filter(vigente).length : "—", sub: "situação hoje" },
-      { rotulo: "Desabrigados", valor: dh ? soma(dh, "desabrigados") : "—", sub: "consolidado" },
-      { rotulo: "Desalojados", valor: dh ? soma(dh, "desalojados") : "—", sub: "consolidado" },
-      { rotulo: "Óbitos", valor: dh ? soma(dh, "obitos") : "—", sub: "consolidado" },
+      // danos humanos: SEMPRE da aba DANOS HUMANOS (número atual por município, corrigido para mais ou para menos
+      // pela equipe). Não somar os eventos: o mesmo desalojado apareceria em vários registros.
+      { rotulo: "Desalojados", valor: dh ? soma(dh, "desalojados") : "—", sub: "situação atual · aba DANOS HUMANOS" },
+      { rotulo: "Desabrigados", valor: dh ? soma(dh, "desabrigados") : "—", sub: "situação atual · aba DANOS HUMANOS" },
+      { rotulo: "Afetados", valor: dh ? soma(dh, "afetados") : "—", sub: "situação atual · aba DANOS HUMANOS" },
+      { rotulo: "Óbitos", valor: dh ? soma(dh, "obitos") : "—", sub: "situação atual · aba DANOS HUMANOS" },
     ]));
     seguro("r-redec", (el) => { if (!indisponivel(el, ev)) barrasH(el, porRedec(ev), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "eventos" }); });
     seguro("r-serie", (el) => {
@@ -411,8 +414,8 @@ const REDECS = {
         { campo: "data", titulo: "Data", formato: fmtData }, { campo: "hora", titulo: "Hora" },
         { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
         { campo: "descricao", titulo: "Descrição", tipo: "longo" },
-        { campo: "desabrigados", titulo: "Desabrig.", tipo: "num" }, { campo: "desalojados", titulo: "Desaloj.", tipo: "num" },
-        { campo: "obitos", titulo: "Óbitos", tipo: "num" }, { campo: "total_ocorrencias", titulo: "Ocorr.", tipo: "num" },
+        // desalojados/desabrigados/óbitos ficam fora daqui de propósito: a fonte oficial é a aba DANOS HUMANOS
+        { campo: "total_ocorrencias", titulo: "Ocorr.", tipo: "num" },
       ],
     }));
   },
