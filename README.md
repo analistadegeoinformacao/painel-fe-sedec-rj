@@ -65,6 +65,13 @@ sem período de teste. O GitHub Pages é gratuito para repositórios públicos.
 
 Já configurado no repositório: Pages via GitHub Actions e proteção da branch `main` (exige PR com testes verdes).
 
+### Atualizar o painel logo após editar a planilha (opcional)
+
+Sem configurar nada, o painel se atualiza a cada 30 min. Para forçar na hora: *Actions › Atualizar e publicar
+painel › Run workflow*. Para que **cada edição** na planilha republique o painel sozinha (2 a 7 min depois que a
+edição para), siga a seção *ATUALIZAÇÃO AUTOMÁTICA* no topo de `apps-script/Codigo.gs`: um token do GitHub com
+permissão só de *Actions* neste repositório + executar `ativarAtualizacaoAutomatica` uma vez.
+
 > Alternativa sem Apps Script: `--fonte google` com conta de serviço do Google Cloud (a Sheets API também é gratuita,
 > mas exige criar um projeto no Cloud). Ver `etl/fonte.py`.
 
