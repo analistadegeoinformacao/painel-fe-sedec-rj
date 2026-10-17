@@ -223,8 +223,11 @@ test("cartão Eventos com apoio abre a tabela filtrada", async ({ page }) => {
   await expect(page.locator("#fv-tabela-filtro")).toContainText("Mostrar só eventos com apoio");
 });
 
-test("depuração: excluídas não contam e aparecem na aba Depuração", async ({ page }) => {
-  for (const [amb, p] of [["sisgeo", "s"], ["fogo", "fv"]]) {
+test("depuração: excluídas não contam e aparecem na aba Depuração", async ({ page, request }) => {
+  const meta = await (await request.get("/data/meta.json")).json();
+  for (const [amb, p, conj] of [["sisgeo", "s", "sisgeo"], ["fogo", "fv", "fogo_sisgeo"]]) {
+    const dep = meta.conjuntos[conj]?.depuracao;
+    if (!dep || dep.situacao + dep.motivo + dep.ambos === 0) continue; // planilha sem exclusões (ou de fogo vazia)
     await page.goto("about:blank");
     await page.goto(`/#amb=${amb}&aba=depuracao`);
     await page.waitForFunction(() => window.__painelPronto);

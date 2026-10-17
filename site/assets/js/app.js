@@ -105,7 +105,7 @@ function montarFiltros() {
   selR.addEventListener("change", (e) => { st.redec = e.target.value; st.municipio = ""; preencherMunicipios(); atualizar(); });
   document.getElementById("f-municipio").addEventListener("change", (e) => { st.municipio = e.target.value; atualizar(); });
   const selT = document.getElementById("f-tipo");
-  ordenar(contarPor(BASE.dados.sisgeo || [], "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
+  ordenar(contarPor((BASE.dados.sisgeo || []).filter((l) => !l.depuracao), "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
     Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "" });
@@ -563,7 +563,7 @@ const ROTULO_DEP = { situacao: "Situação", motivo: "Motivo da exclusão", ambo
 function abaDepuracao(nome, p) {
   const validas = filtrar(nome), exc = filtrar(nome, { depuracao: "excluidas" });
   seguro(`${p}-dep-kpis`, (el) => {
-    if (indisponivel(el, validas)) return;
+    if (indisponivel(el, validas && exc && [...validas, ...exc])) return;
     const c = contarPor(exc, "depuracao"), total = validas.length + exc.length;
     const pct = (n) => (total ? `${Math.round((100 * n) / total)}% do registrado` : "");
     kpis(el, [
