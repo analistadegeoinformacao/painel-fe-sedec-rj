@@ -45,23 +45,40 @@ def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
     url = url.strip()
     if not url or not token:
         raise SystemExit("APPS_SCRIPT_URL e APPS_SCRIPT_TOKEN precisam estar configurados nos segredos do GitHub.")
-    pedido = urllib.request.Request(
-        url, data=json.dumps({"token": token, "abas": abas}).encode("utf-8"),
-        headers={"Content-Type": "application/json"}, method="POST",
-    )
-    # o Apps Script responde com um redirecionamento; o urllib segue sozinho
+    import time
     import urllib.error
-    try:
-        with urllib.request.urlopen(pedido, timeout=120) as r:
-            bruto = r.read().decode("utf-8")
-    except urllib.error.HTTPError as e:
-        dica = {404: "a URL do App da Web não existe mais (implantação apagada ou URL trocada?)",
-                401: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'",
-                403: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'"}.get(e.code, "erro no Google")
-        raise SystemExit(f"Apps Script respondeu HTTP {e.code}: {dica}.")
-    except urllib.error.URLError as e:
-        raise SystemExit(f"Não foi possível falar com o Apps Script: {e.reason}.")
-    return abas_do_json(bruto)
+
+    ultimo_erro = None
+    for tentativa in range(1, 4):  # até 3 tentativas: o Google às vezes responde errado durante reimplantações
+        pedido = urllib.request.Request(
+            url, data=json.dumps({"token": token, "abas": abas}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST",
+        )
+        try:
+            # o Apps Script responde com um redirecionamento; o urllib segue sozinho
+            with urllib.request.urlopen(pedido, timeout=120) as r:
+                return abas_do_json(r.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            dica = {404: "a URL do App da Web não existe mais (implantação apagada ou URL trocada?)",
+                    401: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'",
+                    403: "acesso negado: a implantação precisa ser 'Quem pode acessar: Qualquer pessoa'"}.get(e.code, "erro no Google")
+            ultimo_erro = f"Apps Script respondeu HTTP {e.code}: {dica}."
+        except urllib.error.URLError as e:
+            ultimo_erro = f"Não foi possível falar com o Apps Script: {e.reason}."
+        except RespostaInesperada as e:
+            ultimo_erro = str(e)
+        except SystemExit as e:
+            if "recusou" in str(e):  # token errado: tentar de novo não adianta
+                raise
+            ultimo_erro = str(e)
+        if tentativa < 3:
+            print(f"aviso  leitura da planilha, tentativa {tentativa} falhou: {ultimo_erro} Nova tentativa em {20 * tentativa}s.")
+            time.sleep(20 * tentativa)
+    raise SystemExit(ultimo_erro)
+
+
+class RespostaInesperada(Exception):
+    pass
 
 
 def limpar_token(bruto: str) -> str:
@@ -80,6 +97,9 @@ def abas_do_json(bruto: str) -> dict[str, list[list[str]]]:
                          "com acesso 'Qualquer pessoa' e se a URL termina em /exec.")
     if "erro" in corpo:
         raise SystemExit(f"Apps Script recusou: {corpo['erro']} (confira o APPS_SCRIPT_TOKEN).")
+    if "abas" not in corpo:
+        raise RespostaInesperada("O Apps Script respondeu sem as abas da planilha (a requisição caiu no doGet). "
+                                 "Acontece durante uma reimplantação; se persistir, confira se APPS_SCRIPT_URL é a URL /exec da implantação atual.")
     return {nome: [[str(c) for c in linha] for linha in linhas] for nome, linhas in corpo["abas"].items()}
 
 

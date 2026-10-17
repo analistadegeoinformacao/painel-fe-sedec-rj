@@ -72,3 +72,31 @@ def test_resposta_html_explica_o_problema():
 def test_token_colado_de_varios_jeitos(servidor, monkeypatch, colado):
     monkeypatch.setenv("APPS_SCRIPT_TOKEN", colado)
     assert "SISGEO" in fonte.ler("appsscript", servidor + "  ", ["SISGEO"])
+
+
+class GoogleInstavel(FalsoGoogle):
+    """Primeira resposta igual à do doGet (sem abas); depois responde certo."""
+    chamadas = 0
+
+    def do_POST(self):
+        GoogleInstavel.chamadas += 1
+        global RESPOSTA
+        self.rfile.read(int(self.headers["Content-Length"]))
+        RESPOSTA = {"ok": True} if GoogleInstavel.chamadas == 1 else {"abas": {"SISGEO": [["A"], ["1"]]}}
+        self.send_response(302)
+        self.send_header("Location", "/echo")
+        self.end_headers()
+
+
+def test_resposta_errada_passageira_e_tentada_de_novo(monkeypatch):
+    import time as _time
+    monkeypatch.setattr(_time, "sleep", lambda s: None)
+    monkeypatch.setenv("APPS_SCRIPT_TOKEN", TOKEN)
+    srv = HTTPServer(("127.0.0.1", 0), GoogleInstavel)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        abas = fonte.ler("appsscript", f"http://127.0.0.1:{srv.server_port}/exec", ["SISGEO"])
+    finally:
+        srv.shutdown()
+    assert abas["SISGEO"] == [["A"], ["1"]]
+    assert GoogleInstavel.chamadas == 2
