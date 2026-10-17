@@ -38,7 +38,7 @@ trocar de ambiente, para comparar as duas fontes no mesmo recorte. O endereço g
 ```
 config/fontes.yml          contrato: abas, colunas, tipos, obrigatórias, limites
 referencia/municipios_rj.csv  92 municípios · código IBGE · REDEC
-apps-script/Codigo.gs      ponte gratuita planilha -> GitHub (colar no Apps Script da planilha)
+apps-script/Codigo.gs      ponte gratuita planilha -> GitHub (projeto Apps Script separado, lê a planilha pelo ID)
 etl/                       fonte.py (leitura) · normaliza.py (limpeza) · build.py (orquestra)
 site/                      index.html · assets/{css,js,geo,vendor} · data/ (gerado, não versionado)
 tests/                     testes do ETL + amostra anonimizada
@@ -51,8 +51,10 @@ e2e/                       teste de fumaça no navegador (Playwright)
 A leitura da planilha usa um **Google Apps Script** dentro da própria planilha: sem Google Cloud, sem cartão,
 sem período de teste. O GitHub Pages é gratuito para repositórios públicos.
 
-1. **Na planilha** NOVA BASE ANALISTAS: *Extensões › Apps Script*. Cole o conteúdo de `apps-script/Codigo.gs` e salve.
-2. Selecione a função `gerarToken` › **Executar** › autorize com a sua conta. Copie o token que aparece no *Registro de execução*.
+1. Em **https://script.google.com › Novo projeto** (projeto **separado** — não use *Extensões › Apps Script* da
+   planilha, para não interferir nos scripts e complementos que já existem nela). Cole `apps-script/Codigo.gs` e salve.
+2. Selecione a função `gerarToken` › **Executar** › autorize com a conta que tem acesso à planilha.
+   Copie o token que aparece no *Registro de execução*. (Opcional: rode `testarLeitura` para conferir o acesso.)
 3. *Implantar › Nova implantação* › tipo **App da Web** · Executar como: **Eu** · Quem pode acessar: **Qualquer pessoa**.
    Copie a URL (termina em `/exec`).
    *"Qualquer pessoa" só permite chamar a URL; sem o token ela responde "não autorizado".*
