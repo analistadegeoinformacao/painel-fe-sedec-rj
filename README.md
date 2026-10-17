@@ -1,4 +1,4 @@
-# Painel de Monitoramento — Defesa Civil RJ
+# Dashboard Força Especializada da SEDEC
 
 Painel estático (GitHub Pages) alimentado pela planilha **NOVA BASE ANALISTAS**.
 SEDEC-RJ · FE-SEDEC · NI²AD.
