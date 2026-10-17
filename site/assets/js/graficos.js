@@ -16,10 +16,19 @@ function tema() {
 function iniciar(el) {
   if (!window.echarts) throw new Error("ECharts não carregou");
   let g = instancias.get(el);
+  // Se o cartão mostrou "Nenhum registro"/falha, o HTML do gráfico foi trocado por esse aviso:
+  // o gráfico antigo ficou desligado da tela e precisa ser recriado (senão o aviso nunca sai).
+  if (g && !g.isDisposed() && el.querySelector(":scope > .vazio, :scope > .falha")) {
+    g.dispose();
+    el.innerHTML = "";
+  }
   if (!g || g.isDisposed()) {
     g = echarts.init(el, null, { renderer: "svg", locale: "PT-br" });
     instancias.set(el, g);
-    new ResizeObserver(() => g.resize()).observe(el);
+    if (!el.dataset.observado) {
+      el.dataset.observado = "1";
+      new ResizeObserver(() => { const atual = instancias.get(el); if (atual && !atual.isDisposed()) atual.resize(); }).observe(el);
+    }
   }
   return g;
 }

@@ -193,3 +193,17 @@ test("SisGeO · Chuvas avisa que o fogo tem ambiente próprio (quando houver fog
     await expect(aviso).toBeHidden();
   }
 });
+
+test("gráfico volta a aparecer depois de um filtro sem registros", async ({ page }) => {
+  await page.goto("/#amb=sisgeo");
+  await page.waitForFunction(() => window.__painelPronto);
+  await page.fill("#f-de", "1990-01-01");
+  await page.fill("#f-ate", "1990-01-02");
+  await page.locator("#f-ate").dispatchEvent("change");
+  await expect(page.locator("#s-redec .vazio")).toBeVisible();
+  await page.click(".filtros__periodo button[data-periodo=tudo]");
+  for (const id of ["#s-redec", "#s-serie", "#s-top-mun"]) {
+    await expect(page.locator(`${id} .vazio`)).toHaveCount(0);
+    await expect(page.locator(`${id} svg`).first()).toBeVisible();
+  }
+});
