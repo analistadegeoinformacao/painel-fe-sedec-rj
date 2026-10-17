@@ -1,6 +1,7 @@
 """Extrai -> normaliza -> valida -> publica os JSON do painel.
 
 Uso:
+  python -m etl.build --fonte appsscript            (usa APPS_SCRIPT_URL / APPS_SCRIPT_TOKEN)
   python -m etl.build --fonte google --origem <ID_DA_PLANILHA>
   python -m etl.build --fonte texto  --origem caminho/NOVA_BASE_ANALISTAS
   python -m etl.build --fonte xlsx   --origem caminho/planilha.xlsx
@@ -148,8 +149,8 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--fonte", choices=["google", "xlsx", "texto"], required=True)
-    ap.add_argument("--origem", required=True, help="ID da planilha ou caminho do arquivo")
+    ap.add_argument("--fonte", choices=["appsscript", "google", "xlsx", "texto"], required=True)
+    ap.add_argument("--origem", default="", help="URL do Apps Script, ID da planilha ou caminho do arquivo")
     ap.add_argument("--saida", default=str(RAIZ / "site" / "data"))
     ap.add_argument("--config", default=str(RAIZ / "config" / "fontes.yml"))
     a = ap.parse_args(argv)

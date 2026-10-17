@@ -17,281 +17,86 @@ QUEDA DE ESTRUTURAS
 (Nº) ","SIRENE - MOBILIZAÇÃO
 (Nº)",CELL BROADCAST,"PONTOS DE APOIO
 (Nº)",GABINETE DE CRISE,DECRETO,HOMOLOGAÇÃO DO ESTADO
-01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Ocorrências no município:
-1 - Queda de árvore em unidade escolar municipal - 
-Avenida Sarapuí, S/N (esquina com Av. Pasteur), bairro Parque Alian
-
-2 - Queda de árvore em via publica - Avenida Deputado José da Costa Franca, Lote 04 / Quadra 10, bairro Vilar dos Teles 
-
-3- Queda de árvore em via pública - Rua Doutor Mário Cabral, 429, bairro Vila Rosali",,,,,,,,,,,,3,,3
-01/02/2026,21:50,,,"Ocorrências no município:
-1 - Queda de árvore em unidade escolar municipal - 
-Avenida Sarapuí, S/N (esquina com Av. Pasteur), bairro Parque Alian
-
-2 - Queda de árvore em via publica - Avenida Deputado José da Costa Franca, Lote 04 / Quadra 10, bairro Vilar dos Teles 
-
-3- Queda de árvore em via pública - Rua Doutor Mário Cabral, 429, bairro Vila Rosali",,,,,,,,,,,,3,,3
-01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Ocorrências no município:
-1 - Queda de árvore em unidade escolar municipal - 
-Avenida Sarapuí, S/N (esquina com Av. Pasteur), bairro Parque Alian
-
-2 - Queda de árvore em via publica - Avenida Deputado José da Costa Franca, Lote 04 / Quadra 10, bairro Vilar dos Teles 
-
-3- Queda de árvore em via pública - Rua Doutor Mário Cabral, 429, bairro Vila Rosali",,,,,,,,,,,,3,,3
-01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Ocorrências no município:
-1 - Queda de árvore em unidade escolar municipal - 
-Avenida Sarapuí, S/N (esquina com Av. Pasteur), bairro Parque Alian
-
-2 - Queda de árvore em via publica - Avenida Deputado José da Costa Franca, Lote 04 / Quadra 10, bairro Vilar dos Teles 
-
-3- Queda de árvore em via pública - Rua Doutor Mário Cabral, 429, bairro Vila Rosali",,,,,,,,,,,,3,,3
-01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Ocorrências no município:
-1 - Queda de árvore em unidade escolar municipal - 
-Avenida Sarapuí, S/N (esquina com Av. Pasteur), bairro Parque Alian
-
-2 - Queda de árvore em via publica - Avenida Deputado José da Costa Franca, Lote 04 / Quadra 10, bairro Vilar dos Teles 
-
-3- Queda de árvore em via pública - Rua Doutor Mário Cabral, 429, bairro Vila Rosali",,,,,,,,,,,,3,,3
-01/02/2026,22:14,TERESÓPOLIS - RJ,REDEC 7 - SERRANA I,"Município afetado: Teresópolis
-
-⛈️ COBRADE: Chuva intensas
-
-🗒️ Resumo da situação atual:
-🏘️ Ocorrências: 
-1- queda de árvore
-2- deslizamento, sem vítimas
-
-Fonte: Defesa civil municipal de Teresópolis",,,,,,,,1,,,,1,,2,,,,24
-01/02/2026,22:14,PETRÓPOLIS - RJ,REDEC 7 - SERRANA I,Sirenes mobilizadas,,,,,,,,,,,,,,,,,,,1
-01/02/2026,23:59,SÃO JOSÉ DO VALE DO RIO PRETO - RJ,REDEC 7 - SERRANA I,"🗒️ Resumo da situação atual:
-🏘️ Ocorrências: 
-2 alagamentos e
-2 quedas de barreira",,,,,,,2,2,,,,,,4
-02/02/2026,07:06,SANTA MARIA MADALENA - RJ,REDEC 8 - SERRANA II,"Município afetado:  Santa Maria Madalena 
-
-⛈️ COBRADE: Chuva intensas
-
-🗒️ Resumo da situação atual:
-🏘️ ocorrências:
-
-*Alagamentos no bairro largo do machado.
-09 casa afetadas pelo alagamento.
-*03 queda de barreira.
-*Alagamento no centro na rua Barão de Madalena.
-*02 quedas de árvores obstruindo rua, já liberada pela DCM
-
-Sem desalojados se sem desabrigados.
-
-pluviômetro marcou 68 mm entre 40 a 50 minutos.",,,,,,,2,3,,,,2,,7
-02/02/2026,08:33,RIO DE JANEIRO - RJ,REDEC 1 - CAPITAL,"📍Município afetado:  Rio de Janeiro 
-
-⛈️ COBRADE: Chuva intensas
-
-🗒️ Resumo da situação atual:
-🏘️ ocorrências:
-C20260031430
-*chuvas forte, ocasionou desabamento de imóvel - queda de um imóvel na Av Maracanã.
-
-Vítimas informadas: 7
-5 verdes 
-1 Amarela 
-1 cinza
-
- Número de vítimas informado pelo solicitante:  10.
- Vítimas confirmadas:  7.
- Os recursos são suficientes.
-
- ÚLTIMA VÍTIMA FOI RESGATADA, CRIANÇA FEMININA, AMARELA, REMOVIDA PARA HMSA.
-
- GUARNIÇÃO AINDA NO LOCAL.
-
-Fonte: Coordenação REDEC 1 CAPITAL ( WhatsApp "" Grupo DREDEC - REDECs"" )",,,1,6,,,,,1,,,,,1
-02/02/2026,10:35,SANTA MARIA MADALENA - RJ,REDEC 8 - SERRANA II,"🛑 ATUALIZAÇÃO: 10:00h
-Data:  02/02/2026
-
-📍Município afetado:  Santa Maria Madalena 
-
-⛈️ COBRADE: Chuva intensas 1.3.2.1.4 acompanhada de fortes ventos 
-
-🗒️ Resumo da situação atual:
-🏘️ ocorrências:
-
-*Estrada Terras Frias RJ 146 que liga Santa Maria Madalena a São Fidélis:
-Com vários pontos fechada devido queda de árvores,  só tendo acesso moto e com falta de energia por queda de postes até no quinto distrito Renascença.
-
-*Corpo de Bombeiros acionado
-*DCM tb atuando no corte das árvores para liberação da RJ
-*Enel acionada para restabelecimento da energia elétrica 
-
-Sem desalojados e sem desabrigados.
-
-Até o momento não houve acionamento desta Redec por parte do município afetado
-
-Seguimos acompanhando e orientando 
-
-Fonte: Coordenação REDEC 8  Serrana II ( WhatsApp "" Grupo DREDEC - REDECs"" )",,,,,,,,,,,,1,,1
-02/02/2026,14:47,PARATY - RJ,REDEC 4 - COSTA VERDE,"C20260031016   -Uma forte chuva, acompanhada de ventos intensos, atingiu Paraty na tarde deste domingo (01), causando a queda de árvores em várias regiões do município. Durante o temporal, uma árvore caiu sobre um carro na estrada Paraty–Cunha, nas proximidades do Trevo Clube, resultando em um grave acidente.
-
-No veículo, estavam quatro membros de uma mesma família. Uma das ocupantes não resistiu aos ferimentos e faleceu no local, enquanto os demais foram socorridos e levados para atendimento médico. Até o momento, foi confirmada uma vítima fatal, e as circunstâncias do acidente estão sendo investigadas pelas autoridades.
-
-Logo no início da chuva, por volta das 17h, Paraty ficou totalmente sem energia elétrica, com o fornecimento sendo restabelecido gradualmente a partir das 22h, inicialmente em alguns bairros do município.
-
-Fonte:  Coordenação REDEC 4  Costa Verde ( WhatsApp "" Grupo DREDEC - REDECs"" )",,,1,3,,,,,,,,,,0
-02/02/2026,17:44,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Redec 11 - 17h43 
-Município : Itaperuna
-COMDEC solicitando apoio da REDEC para uso de Viatura.
-Viatura de apoio: ARDC-026 - 
-Condutor: Sd BM AZEVEDO RG: 54.457
-Fonte: Coordenação REDEC 11  Noroeste ( WhatsApp "" Grupo DREDEC - REDECs"" )",,,,,,,,,,,,,,0
-02/02/2026,22:32,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"REDEC  11  02/02/2026 - 17h43 - CHUVAS INTENSAS 
-Município : Itaperuna
-COMDEC solicitando apoio da REDEC 11  com seus respctivos militares: Ten. Cel BM Anderson Fontes, Maj. BM Samir Alves, Sub. Ten BM Pacheco, SGT BM Rodrigues Neto, SD. BM Junior Azevedo empenhando as VTRs APC 039 e ARDC 026.
-Eventos registrados:
-- Rua Alfredo candidato Lopes, 159, bairro Surubi. 
-Evento: Risco de deslizamento.
-Desabrigados :03
-
-- Rua Deputado Ulisses Guimarães , bairro Cehab.
-Evento: deslizamento ( houve queda de muro) 
-
-- Rua Paulo Vargas, 2 , bairro Vinhosa, Igreja Comunidade da benção.
-Evento: alagamento dentro da Igreja.
-
-- ⁠ Rua Paula Gama , 16 , Bairro Vinhosa.
-Evento: alagamento dentro da residência.
-
-- Rua João Boechat Filho.
-Evento: destruição de Rua/ enxurrada. 
-
-- Rua Euclides Pombell de Lima.
-Evento: destruição de rua de paralelepípedo/ enxurrada. 
-
-- Desmobilização da equipe 22h e 10min.
-
-Fonte: Coordenação REDEC 11  Noroeste ( WhatsApp "" Grupo DREDEC - REDECs"" )",3,,,,,,4,1,1,,,,,6,2
-02/02/2026,22:32,SÃO SEBASTIÃO DO ALTO - RJ,REDEC 8 - SERRANA II,"Redec 8 Serrana II
-
-Data: 02/02/2026
-Atualização: 22:00h
-Município: São Sebastião do Alto 
-Evento: Chuvas Intensas 
-Cobrade: 1.3.2.4
-
-*01 ocorrência registrada:
-Queda de barreira na RJ , estrada da Barra Mansa a 1 km da sede.
-01 família afetada
-Entrada de água e lama na residência
-Atendido pelo bombeiro trevo de Madalena, para remoção da família.
-
-Nº de Desabrigados: 0
-Nº de Desalojados: 3
-Nº de Afetados: 0
-Nº Óbitos: 0
-Nº de pontos de apoio abertos: 0
-Nº de abrigos abertos: 0
-
-Até o momento não houve acionamento desta Redec por parte do município afetado
-
-Seguimos acompanhando e orientando o município
-Fonte: Defesa Civil Municipal de SSA
-Fonte: Coordenação REDEC 08  Serrana  ( WhatsApp "" Grupo DREDEC - REDECs"" )",,3,,,,,1,,,,,,,1
-02/02/2026,22:39,ANGRA DOS REIS - RJ,REDEC 4 - COSTA VERDE,"Alerta severo
-
-Defesa Civil:(ANGRA DOS REIS) -
-ALERTA: Estao sendo registrados grandes volumes de chuva. Continue atento aos proximos avisos. Tel: 199 / 33654588.
-
-Fonte: Coordenação REDEC 4  Costa Verde ( WhatsApp "" Grupo DREDEC - REDECs"" )",,,,,,,,,,,,,,0
-03/02/2026,09:36,SANTA MARIA MADALENA - RJ,REDEC 8 - SERRANA II,"Ocorrências no município de santa Maria Madalena após um acúmulo de 141 mm em 24 horas:
-
-*Rj 146 Madalena x São Fidelis com 5 pontos de interdição por queda de barreira - máquinas do DER já providenciando a liberação da RJ.
-
-*Estrada Madalena Ribeirão Santíssimo Estrada do Benfica com 2 pontos de interdição por queda de barreira - máquinas da prefeitura fazendo a liberação da estrada
-
-*Estrada Nova com 3 pontos de interdição, queda de barreira - máquina da prefeitura no local
-
-*Destelhamento de 3 casas de veraneio na zona rural Ribeirão Santíssimo.
-
-*Queda de parede de uma casa Fazenda Tudelandia 
-
-*Deslizamento de terra na subida do bairro Cidade Alta, já sinalizado pela DCM 
-
-Não há vítimas
-Não há desabrigados 
-Não há desalojados 
-
-Fonte: Defesa Civil Municipal de SMM / REDEC 8 (grupo de whatsapp)",,,,,,,,,,,,,,0
-03/02/2026,15h30,QUEIMADOS - RJ,REDEC 6 – Sul II ,"
-
-Queimados - Nível dos rios elevado, ruas alagadas, 45mm em alguns barros. Até o momento nenhuma ocorrência. Não solicitou apoio a esta REDEC.
-",,,,,,,,,,,,,,0
-03/02/2026,16h,PARACAMBI - RJ,REDEC 6 - SUL II,Queda de árvore na RJ-127,,,,,,,,,,,,,,0
-03/02/2026,17h,JAPERI - RJ,REDEC 6 - SUL II, algumas ruas alagadas,,,,,,,,,,,,,,0
-03/02/2026,17h,MENDES - RJ,REDEC 6 - SUL II,"2 ruas alagadas por conta de rede de manilhas antigas, e teve um volume milimétrico muito alto em 15min, cerca de 25mm. E um Deslizamento no terreno de uma casa no Bairro do Grotão, não apresenta riscos à edificação.",,,,,,,,,,,,,,0
-03/02/2026,17h33,ITAPERUNA - RJ,REDEC 11 - NOROESTE,Apoio na instrumentação de de danos,4,,,,,1682,,,,,,,,0
-03/02/2026,17h55,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Apoio na limpeza de vias
-Viatura empenhada:
-ACM 023 - TR 023 - DBM 1/18 São Pedro da Aldeia!
-Militares do DBM 1/18 empenhados:
-SD BM Romário dos Santos - RG 54080
-2° SGT Palhinha - RG 43072",,,,,,,,,,,,,,0
-03/02/2026,19h41,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Ocorrência: desabamento
-Rua Motorista Walter Macedo - Centro - Itaperuna",,,,,,,,,,,,,,0,,,,,,,,,7856 de 03fev26 - nível 2
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,Endereço: Mutuá/Motivo: Queda de muro,,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,Ameaça de Desabamento de muro / Bairro Almerinda,,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Queda de árvore  Rua Luciano Carneiro, Lote 7, Quadra 1 – Pita",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Queda de árvore  /Rua Maria dos Anjos Costa, Lote 07 – Jóquei",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Queda de Árvore na rede elétrica  /Rua Adelaide Lima, Lote 35, Quadra 26 – Jardim Catarina",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Queda de árvore sobre residência /Rua Valdemiro Gonçalves Pereira, nº 456–464 – Sacramento",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Ameaça de Deslizamento / Rua Almirante Jaceguai, em frente ao nº 47 – Laranjal",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,Queda de Árvore  /  Estrada de Guaxindiba – entrada pelo Vereador Natan,,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,Queda de Árvore  /Estrada da Meia-Noite - 99 - Ipiiba,,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Queda de árvore / Rua Valdemiro Lopo, Jóquei ",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Queda de árvore / Rua Francisca Trapanez Aguiar, 65, Santa Isabel ",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Queda de Muro sobre residência /  Travessa Antônio Correia casa 03, Engenho Pequeno ",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,Buraco na via pública / Rua José Armando (rampa lateral do pronto socorro),,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Ameaça de Queda de árvore  /  Avenida Joaquim, 535, Boa Vista ",,,,,,,,,,,,,,0
-03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA," Queda de árvore  / Estrada da Meia Noite , próximo ao número 2.700- Anaia",,,,,,,,,,,,,,0
+01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Registro fictício de teste nº 1 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,3,,3
+01/02/2026,21:50,,,"Registro fictício de teste nº 2 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,3,,3
+01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Registro fictício de teste nº 3 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,3,,3
+01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Registro fictício de teste nº 4 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,3,,3
+01/02/2026,21:50,SÃO JOÃO DE MERITI - RJ,REDEC 2 - BAIXADA FLUMINENSE,"Registro fictício de teste nº 5 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,3,,3
+01/02/2026,22:14,TERESÓPOLIS - RJ,REDEC 7 - SERRANA I,"Registro fictício de teste nº 6 — texto ilustrativo, sem relação com evento real.",,,,,,,,1,,,,1,,2,,,,24
+01/02/2026,22:14,PETRÓPOLIS - RJ,REDEC 7 - SERRANA I,"Registro fictício de teste nº 7 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,,,,,,1
+01/02/2026,23:59,SÃO JOSÉ DO VALE DO RIO PRETO - RJ,REDEC 7 - SERRANA I,"Registro fictício de teste nº 8 — texto ilustrativo, sem relação com evento real.",,,,,,,2,2,,,,,,4
+02/02/2026,07:06,SANTA MARIA MADALENA - RJ,REDEC 8 - SERRANA II,"Registro fictício de teste nº 9 — texto ilustrativo, sem relação com evento real.",,,,,,,2,3,,,,2,,7
+02/02/2026,08:33,RIO DE JANEIRO - RJ,REDEC 1 - CAPITAL,"Registro fictício de teste nº 10 — texto ilustrativo, sem relação com evento real.",,,1,6,,,,,1,,,,,1
+02/02/2026,10:35,SANTA MARIA MADALENA - RJ,REDEC 8 - SERRANA II,"Registro fictício de teste nº 11 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,1,,1
+02/02/2026,14:47,PARATY - RJ,REDEC 4 - COSTA VERDE,"Registro fictício de teste nº 12 — texto ilustrativo, sem relação com evento real.",,,1,3,,,,,,,,,,0
+02/02/2026,17:44,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Registro fictício de teste nº 13 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+02/02/2026,22:32,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Registro fictício de teste nº 14 — texto ilustrativo, sem relação com evento real.",3,,,,,,4,1,1,,,,,6,2
+02/02/2026,22:32,SÃO SEBASTIÃO DO ALTO - RJ,REDEC 8 - SERRANA II,"Registro fictício de teste nº 15 — texto ilustrativo, sem relação com evento real.",,3,,,,,1,,,,,,,1
+02/02/2026,22:39,ANGRA DOS REIS - RJ,REDEC 4 - COSTA VERDE,"Registro fictício de teste nº 16 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,09:36,SANTA MARIA MADALENA - RJ,REDEC 8 - SERRANA II,"Registro fictício de teste nº 17 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,15h30,QUEIMADOS - RJ,REDEC 6 – Sul II ,"Registro fictício de teste nº 18 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,16h,PARACAMBI - RJ,REDEC 6 - SUL II,"Registro fictício de teste nº 19 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,17h,JAPERI - RJ,REDEC 6 - SUL II,"Registro fictício de teste nº 20 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,17h,MENDES - RJ,REDEC 6 - SUL II,"Registro fictício de teste nº 21 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,17h33,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Registro fictício de teste nº 22 — texto ilustrativo, sem relação com evento real.",4,,,,,1682,,,,,,,,0
+03/02/2026,17h55,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Registro fictício de teste nº 23 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,19h41,ITAPERUNA - RJ,REDEC 11 - NOROESTE,"Registro fictício de teste nº 24 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0,,,,,,,,,7856 de 03fev26 - nível 2
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 25 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 26 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 27 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 28 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 29 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 30 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 31 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 32 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 33 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 34 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 35 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 36 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 37 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 38 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
+03/02/2026,,SÃO GONÇALO - RJ,REDEC 3 - METROPOLITANA,"Registro fictício de teste nº 39 — texto ilustrativo, sem relação com evento real.",,,,,,,,,,,,,,0
 ## Sheet name: SISGEO
 REDEC,IdEvento,Ocorrência,Data Ocorrência,Unidade,Tipo,Subtipo,Viatura,Efetivo,Data Despacho,Data Deslocamento,Data Chegada,Data Fechamento,Situação,VítimaQtd,Município,Endereço,Latitude/Longitude,Avaliação Cenário,Atualização Cenário,Motivo da Exclusão,Duração da operação,Duração (segundos)
-REDEC 1 - CAPITAL,1684544,C20260000235,01/01/2026 04:27:00,1º GBM Humaitá,Salvamento de Pessoa,Em Vias Publicas,ABS087 (HIBRID),ANONIMIZADO,1/1/2026 04:27,1/1/2026 04:37,,1/1/2026 04:53,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.9469,-43.2029"
-REDEC 1 - CAPITAL,1684836,C20260000548,01/01/2026 10:27:00,2º GMAR Barra da Tijuca,Salvamento de Pessoa,Outros(Especificar na Observação),AMA156 (EMBARC) ASE489 (AVA),ANONIMIZADO,1/1/2026 10:27,1/1/2026 10:28,1/1/2026 10:41,1/1/2026 12:37,Encerrada com empenho de viatura,1,Rio de Janeiro,ANONIMIZADO,"-23.0147,-43.31"
-REDEC 1 - CAPITAL,1685078,C20260000802,01/01/2026 14:40:00,12º GBM Jacarepaguá,Corte de Árvore,Caída sobre Veículos(sem Vítimas),ABS094 (ABS) AR570 (APOIO),ANONIMIZADO,1/1/2026 15:16,1/1/2026 15:29,1/1/2026 15:32,1/1/2026 16:14,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.9581,-43.3875"
-REDEC 3 - METROPOLITANA,1685091,C20260000816,01/01/2026 14:55:00,DBM 6/M Itaipú,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",ABS085,ANONIMIZADO,1/1/2026 14:55,1/1/2026 15:12,1/1/2026 15:23,1/1/2026 18:13,Encerrada com empenho de viatura,0,Niterói,ANONIMIZADO,"-22.9296,-42.9887"
-REDEC 1 - CAPITAL,1685129,C20260000857,01/01/2026 15:25:00,DBM 1/M Paquetá,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",AR554 (OUTROS),ANONIMIZADO,1/1/2026 15:56,1/1/2026 15:56,1/1/2026 16:56,1/1/2026 17:20,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.7525,-43.1051"
-REDEC 1 - CAPITAL,1685133,C20260000862,01/01/2026 15:32:00,DBM 1/M Paquetá,Salvamento de Pessoa,Outros(Especificar na Observação),AR554 (OUTROS),ANONIMIZADO,1/1/2026 15:37,,01/01/2026 15:37,1/1/2026 15:41,Encerrada com empenho de viatura,1,Rio de Janeiro,ANONIMIZADO,"-22.7542,-43.1127"
-REDEC 2 - BAIXADA FLUMINENSE,1685139,C20260000868,01/01/2026 15:39:00,GOPP Campos Elizeos,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",ABS092 (ABS),ANONIMIZADO,1/1/2026 15:54,1/1/2026 16:17,1/1/2026 16:56,1/1/2026 17:21,Encerrada com empenho de viatura,0,Duque de Caxias,ANONIMIZADO,"-22.6712,-43.2658"
-REDEC 2 - BAIXADA FLUMINENSE,1685144,C20260000873,01/01/2026 15:46:00,GOPP Campos Elizeos,Corte de Árvore,Caída em Vias Públicas,ABS092 (ABS),ANONIMIZADO,1/1/2026 17:21,1/1/2026 17:22,1/1/2026 18:04,1/1/2026 19:53,Encerrada com empenho de viatura,0,Duque de Caxias,ANONIMIZADO,"-22.658,-43.3046"
-REDEC 5 - SUL I,1685155,C20260000885,01/01/2026 16:01:00,DBM 1/15 Três Rios,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",ABSL135 (SALVAM),ANONIMIZADO,1/1/2026 16:01,1/1/2026 16:08,1/1/2026 16:21,1/1/2026 16:57,Encerrada com empenho de viatura,0,Três Rios,ANONIMIZADO,"-22.0976,-43.2171"
-REDEC 9 - BAIXADA LITORÂNEA,1685165,C20260000896,01/01/2026 16:08:00,18º GBM Cabo Frio,Salvamento de Pessoa,Em Lagos/Represas/Rios,BIA014,ANONIMIZADO,1/1/2026 16:08,1/1/2026 16:15,,1/1/2026 17:14,Encerrada com empenho de viatura,0,Arraial do Cabo,ANONIMIZADO,"-22.9699,-42.0352"
-REDEC 7 - SERRANA I,1685231,C20260000965,01/01/2026 17:25:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,ABS036 AR361,ANONIMIZADO,1/1/2026 17:26,1/1/2026 17:26,1/1/2026 17:29,1/1/2026 17:38,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.949,-42.5621",ANONIMIZADO
-REDEC 2 - BAIXADA FLUMINENSE,1685255,C20260000990,01/01/2026 17:44:00,2º GSFMA Fragoso,Salvamento de Pessoa,Em Cachoeiras,AR584 (APOIO) ASE409 (BAS) ABS103,ANONIMIZADO,1/1/2026 17:44,1/1/2026 17:44,,1/1/2026 17:53,Encerrada com empenho de viatura,0,Magé,ANONIMIZADO,"-22.5993,-43.1408"
-REDEC 7 - SERRANA I,1685256,C20260000991,01/01/2026 17:46:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,AR361 ABS036,ANONIMIZADO,1/1/2026 17:46,1/1/2026 17:46,1/1/2026 17:49,1/1/2026 17:54,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.9262,-42.6081",ANONIMIZADO
-REDEC 8 - SERRANA II,1685315,C20260001054,01/01/2026 18:45:00,PABM 1/6 Santa Maria Madalena,Corte de Árvore,Caída em Vias Públicas,AR187 (OUTROS) ABT098,ANONIMIZADO,1/1/2026 18:45,1/1/2026 18:46,1/1/2026 19:12,1/1/2026 20:48,Encerrada com empenho de viatura,0,Trajano de Moraes,ANONIMIZADO,"-22.0709,-42.1452",ANONIMIZADO
-REDEC 8 - SERRANA II,1685319,C20260001059,01/01/2026 18:50:00,DBM 1/21 Itaocara,Corte de Árvore,Caída em Vias Públicas,ABS032,ANONIMIZADO,1/1/2026 18:51,01/01/2026 18:51,01/01/2026 20:17,1/1/2026 21:14,Encerrada com empenho de viatura,0,Nova Friburgo,ANONIMIZADO,"-21.7972,-42.0467",ANONIMIZADO,ANONIMIZADO
-REDEC 7 - SERRANA I,1685322,C20260001062,01/01/2026 18:51:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,AR361,ANONIMIZADO,1/1/2026 18:52,,1/1/2026 19:37,1/1/2026 20:26,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.8652,-42.4875"
-REDEC 11 - NOROESTE,1685331,C20260001071,01/01/2026 18:58:00,DBM 2/5 São Fidélis,Corte de Árvore,Caída em Vias Públicas,ABS105 (HIBRID),ANONIMIZADO,1/1/2026 19:01,1/1/2026 19:04,1/1/2026 19:14,1/1/2026 19:31,Encerrada com empenho de viatura,0,São Fidélis,ANONIMIZADO,"-21.6466,-41.749"
-REDEC 7 - SERRANA I,1685412,C20260001153,01/01/2026 20:26:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,AR361,ANONIMIZADO,1/1/2026 20:26,,1/1/2026 20:30,1/1/2026 20:38,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.8662,-42.4744"
-REDEC 7 - SERRANA I,1685431,C20260001173,01/01/2026 20:39:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,AR361,ANONIMIZADO,1/1/2026 20:40,,1/1/2026 20:53,1/1/2026 20:57,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.8767,-42.519"
-REDEC 10 - NORTE,1685455,C20260001197,01/01/2026 21:09:00,DBM 5/5 São Francisco do Itabapoana,Corte de Árvore,Caída em Vias Públicas,ABS101 (HIBRID),ANONIMIZADO,1/1/2026 21:09,1/1/2026 21:09,1/1/2026 21:11,1/1/2026 21:25,Encerrada com empenho de viatura,0,São Francisco de Itabapoana,ANONIMIZADO,"-21.4984,-41.2117"
-REDEC 8 - SERRANA II,1685475,C20260001221,01/01/2026 21:45:00,6º GBM Nova Friburgo,Corte de Árvore,Caída em Vias Públicas,ABSL151,ANONIMIZADO,1/1/2026 21:45,1/1/2026 21:45,1/1/2026 22:06,1/1/2026 22:10,Encerrada com empenho de viatura,0,Nova Friburgo,ANONIMIZADO,"-22.272,-42.5027"
-REDEC 11 - NOROESTE,1685516,C20260001262,01/01/2026 22:47:00,DBM 3/21 Italva,Corte de Árvore,Caída em Vias Públicas,ABT104 (INCEND),ANONIMIZADO,1/1/2026 22:47,1/1/2026 22:48,1/1/2026 23:18,2/1/2026 00:13,Encerrada com empenho de viatura,0,Cardoso Moreira,ANONIMIZADO,"-21.4875,-41.6178",ANONIMIZADO
-REDEC 6 - SUL II,1685761,C20260001515,02/01/2026 09:42:00,29º GBM Paracambi,Corte de Árvore,Caída em Vias Públicas,ABT121 (ABT),ANONIMIZADO,2/1/2026 09:42,2/1/2026 09:42,2/1/2026 10:00,2/1/2026 10:37,Encerrada com empenho de viatura,0,Paracambi,ANONIMIZADO,"-22.6026,-43.7055"
-REDEC 1 - CAPITAL,1685921,C20260001685,02/01/2026 11:41:00,DBM 1/2 Ramos,Salvamento de Pessoa,Em Edificações,ABS083 ASE403 (OUTROS),ANONIMIZADO,2/1/2026 11:51,2/1/2026 11:51,2/1/2026 12:15,2/1/2026 16:51,Encerrada com empenho de viatura,1,Rio de Janeiro,ANONIMIZADO,"-22.8633,-43.2859",ANONIMIZADO,ANONIMIZADO
-REDEC 8 - SERRANA II,1686078,C20260001851,02/01/2026 14:24:00,DBM 4/6 Cantagalo,Corte de Árvore,Caída em Vias Públicas,ABS072,ANONIMIZADO,2/1/2026 14:24,2/1/2026 14:26,2/1/2026 15:21,2/1/2026 15:37,Encerrada com empenho de viatura,0,Cantagalo,ANONIMIZADO,"-21.9603,-42.3591"
-REDEC 1 - CAPITAL,1686152,C20260001929,02/01/2026 15:46:00,DBM 2/11 Tijuca,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",ABS035 (HIBRID),ANONIMIZADO,2/1/2026 17:11,2/1/2026 17:18,2/1/2026 17:39,2/1/2026 18:18,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.9338,-43.2378"
-REDEC 9 - BAIXADA LITORÂNEA,1686171,C20260001951,02/01/2026 15:59:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",AT076,ANONIMIZADO,2/1/2026 15:59,2/1/2026 16:02,2/1/2026 17:04,2/1/2026 17:05,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4842,-42.2004",ANONIMIZADO
-REDEC 9 - BAIXADA LITORÂNEA,1686201,C20260001987,02/01/2026 16:28:00,9º GBM Macaé,Corte de Árvore,Caída em Vias Públicas,AR501,ANONIMIZADO,2/1/2026 17:10,2/1/2026 17:12,2/1/2026 18:50,2/1/2026 20:35,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4851,-42.1967"
-REDEC 9 - BAIXADA LITORÂNEA,1686206,C20260001993,02/01/2026 16:31:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,Caída em Vias Públicas,AT076,ANONIMIZADO,2/1/2026 17:57,2/1/2026 18:04,,2/1/2026 18:28,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4689,-42.1992"
-REDEC 9 - BAIXADA LITORÂNEA,1686209,C20260001996,02/01/2026 16:34:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,Caída em Vias Públicas,AT076,ANONIMIZADO,2/1/2026 17:09,2/1/2026 17:10,,2/1/2026 17:39,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4778,-42.1995"
-REDEC 9 - BAIXADA LITORÂNEA,1686216,C20260002004,02/01/2026 16:40:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",AT076,ANONIMIZADO,2/1/2026 17:39,2/1/2026 17:40,,2/1/2026 17:49,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4779,-42.2034"
-REDEC 4 - COSTA VERDE,1686272,C20260002065,02/01/2026 17:48:00,DBM 4/10 Mangaratiba,Corte de Árvore,Caída em Vias Públicas,ABT141 (ABT),ANONIMIZADO,2/1/2026 17:48,2/1/2026 17:49,02/01/2026 18:36,2/1/2026 18:58,Encerrada com empenho de viatura,0,Mangaratiba,ANONIMIZADO,"-22.935,-43.996"
-REDEC 1 - CAPITAL,1686324,C20260002127,02/01/2026 18:34:00,24º GBM Irajá,Salvamento de Pessoa,Em Edificações,AR491 (APOIO) ASE510 (INT) ABSL148,ANONIMIZADO,2/1/2026 18:36,2/1/2026 18:53,2/1/2026 18:53,2/1/2026 19:53,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.8519,-43.3468"
-REDEC 8 - SERRANA II,1686352,C20260002161,02/01/2026 19:01:00,PABM 1/6 Santa Maria Madalena,Corte de Árvore,Caída em Vias Públicas,AR187 (OUTROS) ABT098,ANONIMIZADO,2/1/2026 19:02,2/1/2026 19:02,2/1/2026 19:08,2/1/2026 21:26,Encerrada com empenho de viatura,0,Nova Friburgo,ANONIMIZADO,"-22.0126,-42.195"
-REDEC 9 - BAIXADA LITORÂNEA,1686363,C20260002174,02/01/2026 19:11:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,Caída em Vias Públicas,AT076,ANONIMIZADO,2/1/2026 19:12,2/1/2026 19:12,2/1/2026 19:12,2/1/2026 19:48,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4851,-42.1967"
-REDEC 8 - SERRANA II,1686410,C20260002224,02/01/2026 19:55:00,DBM 1/6 Cordeiro,Corte de Árvore,Caída em Vias Públicas,ABT107,ANONIMIZADO,2/1/2026 20:01,2/1/2026 21:32,2/1/2026 20:34,2/1/2026 22:16,Encerrada com empenho de viatura,0,Macuco,ANONIMIZADO,"-21.9845,-42.2531"
-REDEC 11 - NOROESTE,1686416,C20260002231,02/01/2026 20:00:00,DBM 1/21 Itaocara,Corte de Árvore,Caída em Vias Públicas,ABS032,ANONIMIZADO,2/1/2026 20:00,2/1/2026 20:02,2/1/2026 20:02,2/1/2026 20:12,Encerrada com empenho de viatura,0,Aperibé,ANONIMIZADO,"-21.6611,-42.0862"
-REDEC 8 - SERRANA II,1686438,C20260002253,02/01/2026 20:14:00,DBM 4/6 Cantagalo,Corte de Árvore,Caída em Vias Públicas,ABS072,ANONIMIZADO,2/1/2026 20:15,2/1/2026 20:16,2/1/2026 20:39,2/1/2026 20:39,Encerrada com empenho de viatura,0,Cantagalo,ANONIMIZADO,"-21.9877,-42.3409"
-REDEC 8 - SERRANA II,1686463,C20260002280,02/01/2026 20:41:00,DBM 4/6 Cantagalo,Corte de Árvore,Caída em Vias Públicas,ABS072,ANONIMIZADO,2/1/2026 20:41,2/1/2026 20:43,2/1/2026 20:54,2/1/2026 21:37,Encerrada com empenho de viatura,0,Cantagalo,ANONIMIZADO,"-21.9603,-42.3591"
+REDEC 1 - CAPITAL,900001,TESTE770487,01/01/2026 04:27:00,1º GBM Humaitá,Salvamento de Pessoa,Em Vias Publicas,VTR-TESTE,ANONIMIZADO,1/1/2026 04:27,1/1/2026 04:37,,1/1/2026 04:53,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.9624,-43.1932"
+REDEC 1 - CAPITAL,900002,TESTE356787,01/01/2026 10:27:00,2º GMAR Barra da Tijuca,Salvamento de Pessoa,Outros(Especificar na Observação),VTR-TESTE,ANONIMIZADO,1/1/2026 10:27,1/1/2026 10:28,1/1/2026 10:41,1/1/2026 12:37,Encerrada com empenho de viatura,1,Rio de Janeiro,ANONIMIZADO,"-23.0258,-43.3005"
+REDEC 1 - CAPITAL,900003,TESTE809570,01/01/2026 14:40:00,12º GBM Jacarepaguá,Corte de Árvore,Caída sobre Veículos(sem Vítimas),VTR-TESTE,ANONIMIZADO,1/1/2026 15:16,1/1/2026 15:29,1/1/2026 15:32,1/1/2026 16:14,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.9485,-43.3857"
+REDEC 3 - METROPOLITANA,900004,TESTE719176,01/01/2026 14:55:00,DBM 6/M Itaipú,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",VTR-TESTE,ANONIMIZADO,1/1/2026 14:55,1/1/2026 15:12,1/1/2026 15:23,1/1/2026 18:13,Encerrada com empenho de viatura,0,Niterói,ANONIMIZADO,"-22.9327,-43.0075"
+REDEC 1 - CAPITAL,900005,TESTE329258,01/01/2026 15:25:00,DBM 1/M Paquetá,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",VTR-TESTE,ANONIMIZADO,1/1/2026 15:56,1/1/2026 15:56,1/1/2026 16:56,1/1/2026 17:20,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.7632,-43.1010"
+REDEC 1 - CAPITAL,900006,TESTE688508,01/01/2026 15:32:00,DBM 1/M Paquetá,Salvamento de Pessoa,Outros(Especificar na Observação),VTR-TESTE,ANONIMIZADO,1/1/2026 15:37,,01/01/2026 15:37,1/1/2026 15:41,Encerrada com empenho de viatura,1,Rio de Janeiro,ANONIMIZADO,"-22.7662,-43.1067"
+REDEC 2 - BAIXADA FLUMINENSE,900007,TESTE671412,01/01/2026 15:39:00,GOPP Campos Elizeos,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",VTR-TESTE,ANONIMIZADO,1/1/2026 15:54,1/1/2026 16:17,1/1/2026 16:56,1/1/2026 17:21,Encerrada com empenho de viatura,0,Duque de Caxias,ANONIMIZADO,"-22.6744,-43.2678"
+REDEC 2 - BAIXADA FLUMINENSE,900008,TESTE391704,01/01/2026 15:46:00,GOPP Campos Elizeos,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 17:21,1/1/2026 17:22,1/1/2026 18:04,1/1/2026 19:53,Encerrada com empenho de viatura,0,Duque de Caxias,ANONIMIZADO,"-22.6456,-43.3243"
+REDEC 5 - SUL I,900009,TESTE944962,01/01/2026 16:01:00,DBM 1/15 Três Rios,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",VTR-TESTE,ANONIMIZADO,1/1/2026 16:01,1/1/2026 16:08,1/1/2026 16:21,1/1/2026 16:57,Encerrada com empenho de viatura,0,Três Rios,ANONIMIZADO,"-22.1112,-43.2202"
+REDEC 9 - BAIXADA LITORÂNEA,900010,TESTE391369,01/01/2026 16:08:00,18º GBM Cabo Frio,Salvamento de Pessoa,Em Lagos/Represas/Rios,VTR-TESTE,ANONIMIZADO,1/1/2026 16:08,1/1/2026 16:15,,1/1/2026 17:14,Encerrada com empenho de viatura,0,Arraial do Cabo,ANONIMIZADO,"-22.9837,-42.0169"
+REDEC 7 - SERRANA I,900011,TESTE452944,01/01/2026 17:25:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 17:26,1/1/2026 17:26,1/1/2026 17:29,1/1/2026 17:38,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.9649,-42.5669",ANONIMIZADO
+REDEC 2 - BAIXADA FLUMINENSE,900012,TESTE476417,01/01/2026 17:44:00,2º GSFMA Fragoso,Salvamento de Pessoa,Em Cachoeiras,VTR-TESTE,ANONIMIZADO,1/1/2026 17:44,1/1/2026 17:44,,1/1/2026 17:53,Encerrada com empenho de viatura,0,Magé,ANONIMIZADO,"-22.5854,-43.1367"
+REDEC 7 - SERRANA I,900013,TESTE946335,01/01/2026 17:46:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 17:46,1/1/2026 17:46,1/1/2026 17:49,1/1/2026 17:54,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.9445,-42.6097",ANONIMIZADO
+REDEC 8 - SERRANA II,900014,TESTE230889,01/01/2026 18:45:00,PABM 1/6 Santa Maria Madalena,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 18:45,1/1/2026 18:46,1/1/2026 19:12,1/1/2026 20:48,Encerrada com empenho de viatura,0,Trajano de Moraes,ANONIMIZADO,"-22.0520,-42.1501",ANONIMIZADO
+REDEC 8 - SERRANA II,900015,TESTE678856,01/01/2026 18:50:00,DBM 1/21 Itaocara,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 18:51,01/01/2026 18:51,01/01/2026 20:17,1/1/2026 21:14,Encerrada com empenho de viatura,0,Nova Friburgo,ANONIMIZADO,"-21.8055,-42.0416",ANONIMIZADO,ANONIMIZADO
+REDEC 7 - SERRANA I,900016,TESTE479201,01/01/2026 18:51:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 18:52,,1/1/2026 19:37,1/1/2026 20:26,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.8621,-42.4793"
+REDEC 11 - NOROESTE,900017,TESTE148050,01/01/2026 18:58:00,DBM 2/5 São Fidélis,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 19:01,1/1/2026 19:04,1/1/2026 19:14,1/1/2026 19:31,Encerrada com empenho de viatura,0,São Fidélis,ANONIMIZADO,"-21.6401,-41.7381"
+REDEC 7 - SERRANA I,900018,TESTE183667,01/01/2026 20:26:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 20:26,,1/1/2026 20:30,1/1/2026 20:38,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.8520,-42.4597"
+REDEC 7 - SERRANA I,900019,TESTE498591,01/01/2026 20:39:00,DBM 1/16 Carmo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 20:40,,1/1/2026 20:53,1/1/2026 20:57,Encerrada com empenho de viatura,0,Carmo,ANONIMIZADO,"-21.8856,-42.5136"
+REDEC 10 - NORTE,900020,TESTE482554,01/01/2026 21:09:00,DBM 5/5 São Francisco do Itabapoana,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 21:09,1/1/2026 21:09,1/1/2026 21:11,1/1/2026 21:25,Encerrada com empenho de viatura,0,São Francisco de Itabapoana,ANONIMIZADO,"-21.5119,-41.2175"
+REDEC 8 - SERRANA II,900021,TESTE802729,01/01/2026 21:45:00,6º GBM Nova Friburgo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 21:45,1/1/2026 21:45,1/1/2026 22:06,1/1/2026 22:10,Encerrada com empenho de viatura,0,Nova Friburgo,ANONIMIZADO,"-22.2813,-42.4852"
+REDEC 11 - NOROESTE,900022,TESTE779514,01/01/2026 22:47:00,DBM 3/21 Italva,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,1/1/2026 22:47,1/1/2026 22:48,1/1/2026 23:18,2/1/2026 00:13,Encerrada com empenho de viatura,0,Cardoso Moreira,ANONIMIZADO,"-21.5046,-41.6124",ANONIMIZADO
+REDEC 6 - SUL II,900023,TESTE660086,02/01/2026 09:42:00,29º GBM Paracambi,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 09:42,2/1/2026 09:42,2/1/2026 10:00,2/1/2026 10:37,Encerrada com empenho de viatura,0,Paracambi,ANONIMIZADO,"-22.5934,-43.7190"
+REDEC 1 - CAPITAL,900024,TESTE497887,02/01/2026 11:41:00,DBM 1/2 Ramos,Salvamento de Pessoa,Em Edificações,VTR-TESTE,ANONIMIZADO,2/1/2026 11:51,2/1/2026 11:51,2/1/2026 12:15,2/1/2026 16:51,Encerrada com empenho de viatura,1,Rio de Janeiro,ANONIMIZADO,"-22.8725,-43.2689",ANONIMIZADO,ANONIMIZADO
+REDEC 8 - SERRANA II,900025,TESTE821590,02/01/2026 14:24:00,DBM 4/6 Cantagalo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 14:24,2/1/2026 14:26,2/1/2026 15:21,2/1/2026 15:37,Encerrada com empenho de viatura,0,Cantagalo,ANONIMIZADO,"-21.9580,-42.3517"
+REDEC 1 - CAPITAL,900026,TESTE983794,02/01/2026 15:46:00,DBM 2/11 Tijuca,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",VTR-TESTE,ANONIMIZADO,2/1/2026 17:11,2/1/2026 17:18,2/1/2026 17:39,2/1/2026 18:18,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.9231,-43.2556"
+REDEC 9 - BAIXADA LITORÂNEA,900027,TESTE961722,02/01/2026 15:59:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",VTR-TESTE,ANONIMIZADO,2/1/2026 15:59,2/1/2026 16:02,2/1/2026 17:04,2/1/2026 17:05,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.5029,-42.2078",ANONIMIZADO
+REDEC 9 - BAIXADA LITORÂNEA,900028,TESTE380746,02/01/2026 16:28:00,9º GBM Macaé,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 17:10,2/1/2026 17:12,2/1/2026 18:50,2/1/2026 20:35,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.5025,-42.1802"
+REDEC 9 - BAIXADA LITORÂNEA,900029,TESTE694731,02/01/2026 16:31:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 17:57,2/1/2026 18:04,,2/1/2026 18:28,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4538,-42.2066"
+REDEC 9 - BAIXADA LITORÂNEA,900030,TESTE787277,02/01/2026 16:34:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 17:09,2/1/2026 17:10,,2/1/2026 17:39,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4778,-42.1841"
+REDEC 9 - BAIXADA LITORÂNEA,900031,TESTE774079,02/01/2026 16:40:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,"Caída Sobre Edificações(Casas, Muros, etc)",VTR-TESTE,ANONIMIZADO,2/1/2026 17:39,2/1/2026 17:40,,2/1/2026 17:49,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4795,-42.2128"
+REDEC 4 - COSTA VERDE,900032,TESTE358607,02/01/2026 17:48:00,DBM 4/10 Mangaratiba,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 17:48,2/1/2026 17:49,02/01/2026 18:36,2/1/2026 18:58,Encerrada com empenho de viatura,0,Mangaratiba,ANONIMIZADO,"-22.9252,-43.9944"
+REDEC 1 - CAPITAL,900033,TESTE883300,02/01/2026 18:34:00,24º GBM Irajá,Salvamento de Pessoa,Em Edificações,VTR-TESTE,ANONIMIZADO,2/1/2026 18:36,2/1/2026 18:53,2/1/2026 18:53,2/1/2026 19:53,Encerrada com empenho de viatura,0,Rio de Janeiro,ANONIMIZADO,"-22.8485,-43.3309"
+REDEC 8 - SERRANA II,900034,TESTE518801,02/01/2026 19:01:00,PABM 1/6 Santa Maria Madalena,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 19:02,2/1/2026 19:02,2/1/2026 19:08,2/1/2026 21:26,Encerrada com empenho de viatura,0,Nova Friburgo,ANONIMIZADO,"-22.0181,-42.1751"
+REDEC 9 - BAIXADA LITORÂNEA,900035,TESTE245051,02/01/2026 19:11:00,DBM 1/9 Casimiro de Abreu,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 19:12,2/1/2026 19:12,2/1/2026 19:12,2/1/2026 19:48,Encerrada com empenho de viatura,0,Casimiro de Abreu,ANONIMIZADO,"-22.4847,-42.2131"
+REDEC 8 - SERRANA II,900036,TESTE149405,02/01/2026 19:55:00,DBM 1/6 Cordeiro,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 20:01,2/1/2026 21:32,2/1/2026 20:34,2/1/2026 22:16,Encerrada com empenho de viatura,0,Macuco,ANONIMIZADO,"-21.9701,-42.2670"
+REDEC 11 - NOROESTE,900037,TESTE267753,02/01/2026 20:00:00,DBM 1/21 Itaocara,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 20:00,2/1/2026 20:02,2/1/2026 20:02,2/1/2026 20:12,Encerrada com empenho de viatura,0,Aperibé,ANONIMIZADO,"-21.6494,-42.0893"
+REDEC 8 - SERRANA II,900038,TESTE166613,02/01/2026 20:14:00,DBM 4/6 Cantagalo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 20:15,2/1/2026 20:16,2/1/2026 20:39,2/1/2026 20:39,Encerrada com empenho de viatura,0,Cantagalo,ANONIMIZADO,"-21.9923,-42.3371"
+REDEC 8 - SERRANA II,900039,TESTE590785,02/01/2026 20:41:00,DBM 4/6 Cantagalo,Corte de Árvore,Caída em Vias Públicas,VTR-TESTE,ANONIMIZADO,2/1/2026 20:41,2/1/2026 20:43,2/1/2026 20:54,2/1/2026 21:37,Encerrada com empenho de viatura,0,Cantagalo,ANONIMIZADO,"-21.9591,-42.3403"
 ## Sheet name: DANOS HUMANOS
 REDECS,MUNICÍPIOS,DESALOJADOS,DESABRIGADOS,AFETADOS,ÓBITOS
 REDEC 4 - COSTA VERDE,ANGRA DOS REIS - RJ,0,0,,0

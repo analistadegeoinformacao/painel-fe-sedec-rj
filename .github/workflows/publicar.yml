@@ -21,7 +21,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Enquanto a planilha não estiver conectada (segredos ausentes), o fluxo só
+  # registra um aviso e termina sem erro — nada de e-mail de falha a cada 30 min.
+  verificar:
+    runs-on: ubuntu-24.04
+    outputs:
+      pronto: ${{ steps.v.outputs.pronto }}
+    steps:
+      - id: v
+        env:
+          URL: ${{ secrets.APPS_SCRIPT_URL }}
+          TOKEN: ${{ secrets.APPS_SCRIPT_TOKEN }}
+        run: |
+          if [ -n "$URL" ] && [ -n "$TOKEN" ]; then
+            echo "pronto=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pronto=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Planilha ainda não conectada: cadastre APPS_SCRIPT_URL e APPS_SCRIPT_TOKEN (ver README)."
+          fi
+
   construir:
+    needs: verificar
+    if: needs.verificar.outputs.pronto == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -37,10 +58,12 @@ jobs:
       - name: Testes do ETL
         run: pytest -q
 
+      # Leitura gratuita via Apps Script dentro da planilha (apps-script/Codigo.gs).
       - name: Ler planilha, validar e gerar dados
         env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-        run: python -m etl.build --fonte google --origem "${{ vars.PLANILHA_ID }}"
+          APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
+          APPS_SCRIPT_TOKEN: ${{ secrets.APPS_SCRIPT_TOKEN }}
+        run: python -m etl.build --fonte appsscript
 
       - uses: actions/setup-node@v4
         with:

@@ -1,8 +1,11 @@
 """Leitura da planilha. Devolve sempre {nome_da_aba: [[célula, ...], ...]}.
 
-Três modos:
-  google  — produção (GitHub Actions). Usa uma conta de serviço com acesso
-            SOMENTE LEITURA à planilha. Credencial no segredo GOOGLE_CREDENTIALS.
+Quatro modos:
+  appsscript — PRODUÇÃO (padrão, 100% gratuito). Um Apps Script dentro da
+            planilha (apps-script/Codigo.gs) entrega as abas para o GitHub
+            Actions. Segredos: APPS_SCRIPT_URL e APPS_SCRIPT_TOKEN.
+  google  — alternativa via conta de serviço do Google Cloud (também gratuita,
+            exige criar projeto no Cloud). Segredo GOOGLE_CREDENTIALS.
   xlsx    — arquivo baixado (Arquivo > Fazer download > .xlsx).
   texto   — dump em texto com blocos '## Sheet name: <aba>' (formato do
             arquivo NOVA_BASE_ANALISTAS usado para desenvolver este projeto).
@@ -35,6 +38,33 @@ def ler_google(planilha_id: str, abas: list[str]) -> dict[str, list[list[str]]]:
     return saida
 
 
+def ler_appsscript(url: str, abas: list[str]) -> dict[str, list[list[str]]]:
+    import urllib.request
+
+    token = os.environ.get("APPS_SCRIPT_TOKEN", "")
+    if not url or not token:
+        raise SystemExit("APPS_SCRIPT_URL e APPS_SCRIPT_TOKEN precisam estar configurados nos segredos do GitHub.")
+    pedido = urllib.request.Request(
+        url, data=json.dumps({"token": token, "abas": abas}).encode("utf-8"),
+        headers={"Content-Type": "application/json"}, method="POST",
+    )
+    # o Apps Script responde com um redirecionamento; o urllib segue sozinho
+    with urllib.request.urlopen(pedido, timeout=120) as r:
+        bruto = r.read().decode("utf-8")
+    return abas_do_json(bruto)
+
+
+def abas_do_json(bruto: str) -> dict[str, list[list[str]]]:
+    try:
+        corpo = json.loads(bruto)
+    except json.JSONDecodeError:
+        raise SystemExit("O Apps Script não devolveu JSON. Confira se a implantação é 'App da Web' "
+                         "com acesso 'Qualquer pessoa' e se a URL termina em /exec.")
+    if "erro" in corpo:
+        raise SystemExit(f"Apps Script recusou: {corpo['erro']} (confira o APPS_SCRIPT_TOKEN).")
+    return {nome: [[str(c) for c in linha] for linha in linhas] for nome, linhas in corpo["abas"].items()}
+
+
 def ler_xlsx(caminho: Path) -> dict[str, list[list[str]]]:
     from openpyxl import load_workbook
 
@@ -56,6 +86,8 @@ def ler_texto(caminho: Path) -> dict[str, list[list[str]]]:
 
 
 def ler(modo: str, origem: str, abas: list[str]):
+    if modo == "appsscript":
+        return ler_appsscript(origem or os.environ.get("APPS_SCRIPT_URL", ""), abas)
     if modo == "google":
         return ler_google(origem, abas)
     if modo == "xlsx":

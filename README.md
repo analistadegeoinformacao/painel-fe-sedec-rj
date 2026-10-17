@@ -38,6 +38,7 @@ trocar de ambiente, para comparar as duas fontes no mesmo recorte. O endereço g
 ```
 config/fontes.yml          contrato: abas, colunas, tipos, obrigatórias, limites
 referencia/municipios_rj.csv  92 municípios · código IBGE · REDEC
+apps-script/Codigo.gs      ponte gratuita planilha -> GitHub (colar no Apps Script da planilha)
 etl/                       fonte.py (leitura) · normaliza.py (limpeza) · build.py (orquestra)
 site/                      index.html · assets/{css,js,geo,vendor} · data/ (gerado, não versionado)
 tests/                     testes do ETL + amostra anonimizada
@@ -45,26 +46,32 @@ e2e/                       teste de fumaça no navegador (Playwright)
 .github/workflows/         publicar.yml (cron + push) · ci.yml (PR)
 ```
 
-## Configuração inicial (uma vez)
+## Configuração inicial (uma vez) — 100% gratuita
 
-1. **Conta de serviço Google (somente leitura)**
-   - Google Cloud Console → criar projeto → ativar **Google Sheets API**.
-   - IAM → Contas de serviço → criar → Chaves → *Adicionar chave JSON*.
-   - Na planilha, **Compartilhar** com o e-mail da conta de serviço como **Leitor**.
-   - Não é preciso publicar a planilha na web.
-2. **No GitHub** (Settings do repositório)
-   - *Secrets and variables → Actions → Secrets*: `GOOGLE_CREDENTIALS` = conteúdo do JSON da chave.
-   - *Variables*: `PLANILHA_ID` = `1SN6hpLNlyKrSYUSu0gUlzF8OaIUeuDMA4i0Gq3bpeGY`.
-   - *Pages → Source*: **GitHub Actions**.
-   - *Branches → Add rule* para `main`: exigir PR e exigir o check **Verificação de PR**.
-3. *Actions → Atualizar e publicar painel → Run workflow* para a primeira publicação.
+A leitura da planilha usa um **Google Apps Script** dentro da própria planilha: sem Google Cloud, sem cartão,
+sem período de teste. O GitHub Pages é gratuito para repositórios públicos.
+
+1. **Na planilha** NOVA BASE ANALISTAS: *Extensões › Apps Script*. Cole o conteúdo de `apps-script/Codigo.gs` e salve.
+2. Selecione a função `gerarToken` › **Executar** › autorize com a sua conta. Copie o token que aparece no *Registro de execução*.
+3. *Implantar › Nova implantação* › tipo **App da Web** · Executar como: **Eu** · Quem pode acessar: **Qualquer pessoa**.
+   Copie a URL (termina em `/exec`).
+   *"Qualquer pessoa" só permite chamar a URL; sem o token ela responde "não autorizado".*
+4. **No GitHub** › *Settings › Secrets and variables › Actions › New repository secret*:
+   - `APPS_SCRIPT_URL` = URL do passo 3
+   - `APPS_SCRIPT_TOKEN` = token do passo 2
+5. *Actions › Atualizar e publicar painel › Run workflow*.
+
+Já configurado no repositório: Pages via GitHub Actions e proteção da branch `main` (exige PR com testes verdes).
+
+> Alternativa sem Apps Script: `--fonte google` com conta de serviço do Google Cloud (a Sheets API também é gratuita,
+> mas exige criar um projeto no Cloud). Ver `etl/fonte.py`.
 
 ## Rodar no computador
 
 ```bash
 pip install -r requirements-dev.txt
 pytest -q
-python -m etl.build --fonte xlsx --origem planilha.xlsx      # ou --fonte texto (dump) / --fonte google
+python -m etl.build --fonte xlsx --origem planilha.xlsx      # ou --fonte texto (dump) / --fonte appsscript
 python -m http.server 8000 --directory site                  # abrir http://localhost:8000
 cd e2e && npm ci && npx playwright install chromium && npx playwright test
 ```
@@ -79,6 +86,7 @@ cd e2e && npm ci && npx playwright install chromium && npx playwright test
 
 ## Observações
 
+- A amostra de testes (`tests/fixtures/amostra.txt`) é fictícia: estrutura real, textos e identificadores trocados.
 - O GitHub desativa workflows agendados de repositórios **públicos** após 60 dias sem commits. Um commit qualquer reativa.
 - GitHub Pages em conta gratuita é **público** para quem tiver o link (`noindex` só evita buscadores).
   Para acesso restrito, ver o documento do projeto (opções: GitHub Enterprise com Pages privado, ou Cloudflare Pages + Access).
