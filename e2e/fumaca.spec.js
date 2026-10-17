@@ -139,8 +139,16 @@ test("mapa tem o contorno do estado", async ({ page }) => {
   await expect(page.locator("#s-mapa .leaflet-contorno-pane path")).toHaveCount(1);
 });
 
-test("Fogo em vegetação: eventos x ocorrências e quadro de eventos em andamento", async ({ page }) => {
+test("Fogo em vegetação: eventos x ocorrências e quadro de eventos em andamento", async ({ page, request }) => {
+  // a planilha de fogo é opcional: sem dados dela (ponte antiga, planilha fora do ar), o ambiente
+  // precisa abrir mostrando "sem registros" — e o teste não pode bloquear a publicação do resto
+  const fv = await (await request.get("/data/fogo_sisgeo.json")).json();
   await abrir(page, "#amb=fogo");
+  if (!fv.length) {
+    await expect(page.locator("#fv-redec .vazio")).toBeVisible();
+    await expect(page.locator(".painel-aba[data-amb='fogo'] .falha")).toHaveCount(0);
+    return;
+  }
   await expect(page.locator("#fv-kpis .kpi__rotulo")).toHaveText(["Ocorrências", "Eventos", "Eventos com apoio", "Municípios atingidos", "Em andamento"]);
   const n = (i) => page.locator("#fv-kpis .kpi__valor").nth(i).innerText().then((t) => Number(t.replace(/\D/g, "")));
   const [ocorr, eventos] = [await n(0), await n(1)];
