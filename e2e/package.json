@@ -2,5 +2,5 @@
   "name": "painel-sedec-rj-e2e",
   "private": true,
   "scripts": { "test": "playwright test" },
-  "devDependencies": { "@playwright/test": "1.56.0" }
+  "devDependencies": { "@playwright/test": "1.64.0" }
 }
