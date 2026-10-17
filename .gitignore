@@ -1,0 +1,13 @@
+# dados gerados pelo ETL — nunca versionar (podem conter informação operacional)
+site/data/
+# credenciais
+*.json.key
+credenciais*.json
+service-account*.json
+# ferramentas
+__pycache__/
+.pytest_cache/
+.venv/
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/

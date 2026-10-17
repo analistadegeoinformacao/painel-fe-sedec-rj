@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Monitoramento · Defesa Civil RJ</title>
+  <meta name="description" content="Painel de monitoramento — ambiente SisGeO (CBMERJ) e ambiente Eventos REDECs (Defesa Civil) — SEDEC-RJ / FE-SEDEC / NI²AD">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="assets/css/painel.css">
+  <script src="assets/vendor/echarts.min.js" defer></script>
+  <script src="assets/vendor/echarts-pt-br.js" defer></script>
+  <script src="assets/vendor/leaflet/leaflet.js" defer></script>
+  <script type="module" src="assets/js/app.js"></script>
+</head>
+<body data-amb="sisgeo">
+  <header class="topo">
+    <div class="topo__marca">
+      <div class="topo__selo" aria-hidden="true">DC</div>
+      <div>
+        <h1>Painel de Monitoramento de Defesa Civil</h1>
+        <p>SEDEC-RJ · FE-SEDEC · NI²AD</p>
+      </div>
+    </div>
+    <nav class="ambientes" aria-label="Ambiente">
+      <a href="#amb=sisgeo" data-amb="sisgeo" aria-current="page">
+        <span class="ambientes__nome">Ocorrências SisGeO</span>
+        <span class="ambientes__fonte">CBMERJ</span>
+      </a>
+      <a href="#amb=redecs" data-amb="redecs">
+        <span class="ambientes__nome">Eventos REDECs</span>
+        <span class="ambientes__fonte">Defesa Civil</span>
+      </a>
+    </nav>
+    <div class="topo__status" id="status-dados" role="status">Carregando dados…</div>
+  </header>
+
+  <!-- Abas de cada ambiente: só as do ambiente ativo aparecem -->
+  <nav class="abas" role="tablist" aria-label="Seções do ambiente">
+    <button role="tab" data-amb="sisgeo" data-aba="geral">Visão geral</button>
+    <button role="tab" data-amb="sisgeo" data-aba="tipos">Tipos e unidades</button>
+    <button role="tab" data-amb="sisgeo" data-aba="registros">Registros</button>
+    <button role="tab" data-amb="sisgeo" data-aba="qualidade">Qualidade dos dados <span class="selo-contagem" data-avisos="sisgeo"></span></button>
+
+    <button role="tab" data-amb="redecs" data-aba="geral">Visão geral</button>
+    <button role="tab" data-amb="redecs" data-aba="decretos">Decretação</button>
+    <button role="tab" data-amb="redecs" data-aba="resposta">Resposta</button>
+    <button role="tab" data-amb="redecs" data-aba="registros">Registros</button>
+    <button role="tab" data-amb="redecs" data-aba="consulta">Consulta</button>
+    <button role="tab" data-amb="redecs" data-aba="qualidade">Qualidade dos dados <span class="selo-contagem" data-avisos="redecs"></span></button>
+  </nav>
+
+  <section class="filtros" aria-label="Filtros">
+    <div class="filtros__periodo" role="group" aria-label="Período">
+      <button data-periodo="1">Hoje</button>
+      <button data-periodo="7">7 dias</button>
+      <button data-periodo="30">30 dias</button>
+      <button data-periodo="ano">Ano</button>
+      <button data-periodo="tudo" aria-pressed="true">Tudo</button>
+    </div>
+    <label>De <input type="date" id="f-de"></label>
+    <label>Até <input type="date" id="f-ate"></label>
+    <label>REDEC <select id="f-redec"><option value="">Todas</option></select></label>
+    <label>Município <select id="f-municipio"><option value="">Todos</option></select></label>
+    <button class="botao-limpar" id="f-limpar">Limpar filtros</button>
+  </section>
+
+  <main id="conteudo">
+    <!-- =============================== AMBIENTE SISGEO =============================== -->
+    <section class="painel-aba" data-amb="sisgeo" data-aba="geral">
+      <div class="kpis" id="s-kpis"></div>
+      <div class="grade grade--mapa">
+        <article class="cartao cartao--mapa">
+          <header class="cartao__cab"><h2>Ocorrências por município</h2><span class="dica">clique num município para filtrar</span></header>
+          <div id="s-mapa" class="mapa" aria-label="Mapa de ocorrências SisGeO por município"></div>
+        </article>
+        <article class="cartao">
+          <header class="cartao__cab"><h2>Ocorrências por REDEC</h2><span class="dica">clique numa barra para filtrar</span></header>
+          <div class="grafico grafico--alto" id="s-redec"></div>
+        </article>
+      </div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências por dia</h2></header><div class="grafico" id="s-serie"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Municípios com mais ocorrências</h2></header><div class="grafico" id="s-top-mun"></div></article>
+      </div>
+    </section>
+
+    <section class="painel-aba" data-amb="sisgeo" data-aba="tipos" hidden>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Por tipo</h2></header><div class="grafico" id="s-tipo"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Por subtipo (10 maiores)</h2></header><div class="grafico" id="s-subtipo"></div></article>
+      </div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Unidades com mais empenhos (10 maiores)</h2></header><div class="grafico" id="s-unidade"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Situação de encerramento</h2></header><div class="grafico" id="s-situacao"></div></article>
+      </div>
+    </section>
+
+    <section class="painel-aba" data-amb="sisgeo" data-aba="registros" hidden>
+      <article class="cartao"><header class="cartao__cab"><h2>Ocorrências SisGeO</h2></header><div id="s-tabela"></div></article>
+    </section>
+
+    <section class="painel-aba" data-amb="sisgeo" data-aba="qualidade" hidden>
+      <article class="cartao">
+        <header class="cartao__cab"><h2>Qualidade dos dados — aba SISGEO</h2></header>
+        <p class="nota">Problemas abaixo não impediram a publicação, mas os registros afetados ficaram com o campo em branco. Corrija na planilha e a próxima atualização refletirá a correção.</p>
+        <div id="s-qualidade"></div>
+      </article>
+    </section>
+
+    <!-- =============================== AMBIENTE REDECS =============================== -->
+    <section class="painel-aba" data-amb="redecs" data-aba="geral" hidden>
+      <div class="kpis" id="r-kpis"></div>
+      <div class="grade grade--mapa">
+        <article class="cartao cartao--mapa">
+          <header class="cartao__cab">
+            <h2>Distribuição territorial</h2>
+            <div class="alternador" role="group" aria-label="Camada do mapa">
+              <button data-mapa="eventos" aria-pressed="true">Eventos</button>
+              <button data-mapa="decretos">Decretos vigentes</button>
+            </div>
+          </header>
+          <div id="r-mapa" class="mapa" aria-label="Mapa de eventos REDECs por município"></div>
+        </article>
+        <article class="cartao">
+          <header class="cartao__cab"><h2>Eventos por REDEC</h2><span class="dica">clique numa barra para filtrar</span></header>
+          <div class="grafico grafico--alto" id="r-redec"></div>
+        </article>
+      </div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Eventos por dia</h2></header><div class="grafico" id="r-serie"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Ocorrências informadas por natureza</h2></header><div class="grafico" id="r-natureza"></div></article>
+      </div>
+    </section>
+
+    <section class="painel-aba" data-amb="redecs" data-aba="decretos" hidden>
+      <div class="kpis" id="r-kpis-decretos"></div>
+      <article class="cartao"><header class="cartao__cab"><h2>Decretos municipais</h2><span class="dica">vigência calculada a partir de hoje</span></header><div id="r-decretos"></div></article>
+    </section>
+
+    <section class="painel-aba" data-amb="redecs" data-aba="resposta" hidden>
+      <div class="kpis" id="r-kpis-resposta"></div>
+      <div class="grade grade--2">
+        <article class="cartao"><header class="cartao__cab"><h2>Ajuda humanitária</h2></header><div id="r-ajuda"></div></article>
+        <article class="cartao"><header class="cartao__cab"><h2>Pontos de apoio</h2></header><div id="r-pontos"></div></article>
+      </div>
+      <article class="cartao"><header class="cartao__cab"><h2>Severidade por REDEC</h2></header><div id="r-severidade"></div></article>
+    </section>
+
+    <section class="painel-aba" data-amb="redecs" data-aba="registros" hidden>
+      <article class="cartao"><header class="cartao__cab"><h2>Eventos informados pelas REDECs</h2></header><div id="r-tabela"></div></article>
+    </section>
+
+    <section class="painel-aba" data-amb="redecs" data-aba="consulta" hidden>
+      <article class="cartao">
+        <header class="cartao__cab">
+          <h2>Consulta às bases</h2>
+          <label class="seletor-base">Base <select id="r-base"></select></label>
+        </header>
+        <p class="nota" id="r-nota"></p>
+        <div id="r-consulta"></div>
+      </article>
+    </section>
+
+    <section class="painel-aba" data-amb="redecs" data-aba="qualidade" hidden>
+      <article class="cartao">
+        <header class="cartao__cab"><h2>Qualidade dos dados — abas da Defesa Civil</h2></header>
+        <p class="nota">Problemas abaixo não impediram a publicação, mas os registros afetados ficaram com o campo em branco. Corrija na planilha e a próxima atualização refletirá a correção.</p>
+        <div id="r-qualidade"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <span id="rodape-fonte"></span>
+    <span id="rodape-versao"></span>
+  </footer>
+</body>
+</html>

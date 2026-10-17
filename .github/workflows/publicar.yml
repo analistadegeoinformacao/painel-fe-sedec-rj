@@ -1,0 +1,78 @@
+# Atualiza e publica o painel.
+# Roda: a cada 30 min, a cada push na main, ou manualmente (botão "Run workflow").
+# Se QUALQUER etapa falhar (planilha fora do contrato, teste quebrado), a etapa
+# de publicação não roda e o site continua com a última versão boa.
+name: Atualizar e publicar painel
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/30 * * * *"      # horário UTC; o GitHub pode atrasar alguns minutos
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+
+      - name: Testes do ETL
+        run: pytest -q
+
+      - name: Ler planilha, validar e gerar dados
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: python -m etl.build --fonte google --origem "${{ vars.PLANILHA_ID }}"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: Teste de fumaça no navegador (com os dados recém-gerados)
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      - name: Guardar print do painel
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: print-painel
+          path: e2e/test-results/
+          retention-days: 7
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

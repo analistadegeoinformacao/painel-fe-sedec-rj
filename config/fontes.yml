@@ -1,0 +1,270 @@
+# =====================================================================
+#  CONTRATO DE DADOS — o que o painel lê da planilha "NOVA BASE ANALISTAS"
+# ---------------------------------------------------------------------
+#  Regra de ouro: o site NUNCA lê a planilha diretamente. O ETL lê, valida
+#  contra este contrato e só então gera os JSON publicados.
+#
+#  Para cada conjunto de dados:
+#    aba:          nome da aba na planilha (exato)
+#    linha_cabecalho: índice (0 = primeira linha) da linha de cabeçalho
+#    colunas:      campo_no_json -> lista de nomes aceitos na planilha.
+#                  A comparação ignora acentos, maiúsculas, quebras de linha
+#                  e espaços duplicados. Renomear "DESABRIGADOS\n(Nº)" para
+#                  "Desabrigados (nº)" NÃO quebra nada.
+#    tipos:        texto | inteiro | decimal | data | hora | datahora |
+#                  municipio | redec | latlon | sim_nao
+#    obrigatorias: colunas que, se sumirem da aba, BLOQUEIAM a publicação.
+#    publicar:     false = a aba é lida e validada, mas não vai para o site.
+#    min_linhas:   abaixo disso a publicação é bloqueada (protege contra
+#                  aba apagada/esvaziada por engano).
+#
+#  Colunas que não estão listadas aqui NÃO são publicadas. É assim que
+#  dados pessoais (nomes e matrículas do efetivo, endereços) ficam de fora.
+# =====================================================================
+
+conjuntos:
+
+  eventos:
+    aba: "EVENTOS REDECS"
+    titulo: "Eventos informados pelas REDECs"
+    min_linhas: 1
+    obrigatorias: [data, municipio, redec]
+    colunas:
+      data:            ["DATA"]
+      hora:            ["HORA"]
+      municipio:       ["MUNICÍPIO", "MUNICIPIO"]
+      redec:           ["REDEC"]
+      descricao:       ["DESCRIÇÃO"]
+      desabrigados:    ["DESABRIGADOS (Nº)", "DESABRIGADOS"]
+      desalojados:     ["DESALOJADOS (Nº)", "DESALOJADOS"]
+      obitos:          ["ÓBITOS (Nº)", "ÓBITOS"]
+      feridos:         ["FERIDOS / ENFERMOS (Nº)"]
+      desaparecidos:   ["DESAPARECIDOS (Nº)"]
+      afetados:        ["TOTAL DE AFETADOS (Nº)"]
+      inundacao:       ["INUNDAÇÃO / ALAGAMENTO / ENXURRADA (N°)", "INUNDAÇÃO / ALAGAMENTO / ENXURRADA (Nº)"]
+      deslizamento:    ["DESLIZAMENTO (Nº)"]
+      desabamento:     ["DESABAMENTO/ QUEDA DE ESTRUTURAS (Nº)", "DESABAMENTO/QUEDA DE ESTRUTURAS (Nº)"]
+      destelhamento:   ["DESTELHAMENTO (Nº)"]
+      salvamento:      ["SALVAMENTO DE PESSOA (Nº)"]
+      queda_arvore:    ["QUEDA DE ÁRVORE (Nº)"]
+      outros:          ["OUTROS (Nº)"]
+      total_ocorrencias: ["SOMATÓRIO DE OCORRÊNCIAS"]
+      alerta_idap:     ["ALERTA IDAP (Sim ou Não)"]
+      sirene_toque:    ["SIRENE - TOQUE DE CHUVA (Nº)"]
+      sirene_mobilizacao: ["SIRENE - MOBILIZAÇÃO (Nº)"]
+      cell_broadcast:  ["CELL BROADCAST"]
+      pontos_apoio:    ["PONTOS DE APOIO (Nº)"]
+      decreto:         ["DECRETO"]
+    tipos:
+      data: data
+      hora: hora
+      municipio: municipio
+      redec: redec
+      desabrigados: inteiro
+      desalojados: inteiro
+      obitos: inteiro
+      feridos: inteiro
+      desaparecidos: inteiro
+      afetados: inteiro
+      inundacao: inteiro
+      deslizamento: inteiro
+      desabamento: inteiro
+      destelhamento: inteiro
+      salvamento: inteiro
+      queda_arvore: inteiro
+      outros: inteiro
+      total_ocorrencias: inteiro
+      alerta_idap: sim_nao
+      sirene_toque: inteiro
+      sirene_mobilizacao: inteiro
+      cell_broadcast: inteiro
+      pontos_apoio: inteiro
+    # Linhas sem município são boletins (sirenes, Cell Broadcast). Em vez de
+    # aparecerem como "Não informado", vão para um conjunto próprio.
+    separar_sem_municipio: boletins
+
+  sisgeo:
+    aba: "SISGEO"
+    titulo: "Ocorrências SisGeO (CBMERJ)"
+    min_linhas: 1
+    obrigatorias: [ocorrencia, data_ocorrencia, tipo, municipio]
+    colunas:
+      redec:           ["REDEC"]
+      ocorrencia:      ["Ocorrência"]
+      data_ocorrencia: ["Data Ocorrência"]
+      unidade:         ["Unidade"]
+      tipo:            ["Tipo"]
+      subtipo:         ["Subtipo"]
+      situacao:        ["Situação"]
+      vitimas:         ["VítimaQtd"]
+      municipio:       ["Município"]
+      latlon:          ["Latitude/Longitude"]
+      duracao_s:       ["Duração (segundos)"]
+      # DE FORA DE PROPÓSITO (dados pessoais / texto livre):
+      #   Efetivo (nomes e matrículas), Endereço, Avaliação Cenário,
+      #   Atualização Cenário, Motivo da Exclusão
+    tipos:
+      redec: redec
+      data_ocorrencia: datahora
+      vitimas: inteiro
+      municipio: municipio
+      latlon: latlon
+      duracao_s: inteiro
+    # Coordenadas arredondadas (3 casas ≈ 100 m) para não expor endereço exato.
+    casas_decimais_coord: 3
+
+  danos_humanos:
+    aba: "DANOS HUMANOS"
+    titulo: "Danos humanos consolidados por município"
+    min_linhas: 1
+    obrigatorias: [municipio]
+    colunas:
+      redec:        ["REDECS", "REDEC"]
+      municipio:    ["MUNICÍPIOS", "MUNICÍPIO"]
+      desalojados:  ["DESALOJADOS"]
+      desabrigados: ["DESABRIGADOS"]
+      afetados:     ["AFETADOS"]
+      obitos:       ["ÓBITOS"]
+    tipos: {redec: redec, municipio: municipio, desalojados: inteiro, desabrigados: inteiro, afetados: inteiro, obitos: inteiro}
+
+  decretos:
+    aba: "DECRETAÇÃO"
+    titulo: "Decretos municipais vigentes"
+    min_linhas: 0
+    obrigatorias: [municipio, decreto]
+    colunas:
+      municipio:    ["MUNICÍPIO"]
+      redec:        ["REDEC"]
+      decreto:      ["DECRETAÇÃO SE ou ECP"]
+      nivel:        ["NÍVEL"]
+      data_decreto: ["Data de Decretação"]
+      prazo_dias:   ["Prazo"]
+      termino:      ["Término da Vigência"]
+    tipos: {municipio: municipio, redec: redec, nivel: inteiro, data_decreto: data, prazo_dias: inteiro, termino: data}
+    datas_livres: [termino]     # término da vigência é futuro por natureza
+
+  decretos_historico:
+    aba: "HISTÓRICO DECRETAÇÃO"
+    titulo: "Histórico de decretação"
+    min_linhas: 0
+    obrigatorias: [municipio]
+    colunas:
+      municipio:    ["MUNICÍPIO"]
+      redec:        ["REDEC"]
+      decreto:      ["DECRETAÇÃO SE ou ECP"]
+      nivel:        ["NÍVEL"]
+      data_decreto: ["Data de Decretação"]
+      prazo_dias:   ["Prazo"]
+      termino:      ["Término da Vigência"]
+    tipos: {municipio: municipio, redec: redec, nivel: inteiro, data_decreto: data, prazo_dias: inteiro, termino: data}
+    datas_livres: [termino, data_decreto]   # histórico pode vir de temporadas anteriores
+
+  alertas:
+    aba: "ALERTAS"
+    titulo: "Alertas emitidos (IDAP / Cell Broadcast)"
+    min_linhas: 0
+    obrigatorias: [data]
+    colunas:
+      data:           ["DATA"]
+      idap:           ["IDAP"]
+      cell_broadcast: ["DCA / Cell Broadcast"]
+    tipos: {data: data, idap: sim_nao, cell_broadcast: inteiro}
+
+  ajuda_humanitaria:
+    aba: "AJUDA HUMANITÁRIA"
+    titulo: "Ações de ajuda humanitária"
+    min_linhas: 0
+    obrigatorias: [municipio, acao]
+    colunas:
+      data:      ["DATA"]
+      municipio: ["MUNICÍPIO"]
+      redec:     ["REDEC"]
+      acao:      ["AÇÃO"]
+      setor:     ["SETOR"]
+    tipos: {data: data, municipio: municipio, redec: redec}
+
+  pontos_apoio:
+    aba: "PONTOS DE APOIO"
+    titulo: "Pontos de apoio abertos"
+    min_linhas: 0
+    obrigatorias: [municipio, ponto]
+    colunas:
+      redec:     ["REDEC"]
+      data:      ["DATA"]
+      municipio: ["MUNICÍPIO"]
+      bairro:    ["BAIRRO"]
+      ponto:     ["PONTO DE APOIO"]
+    tipos: {redec: redec, data: data, municipio: municipio}
+
+  severidade:
+    aba: "NÍVEL SEVERIDADE"
+    titulo: "Nível de severidade por REDEC"
+    min_linhas: 0
+    obrigatorias: [redec, severidade]
+    colunas:
+      redec:      ["REDEC"]
+      severidade: ["SEVERIDADE"]
+    tipos: {redec: redec}
+
+  s2id:
+    aba: "S2iD"
+    titulo: "Registros S2iD (consulta)"
+    min_linhas: 0
+    obrigatorias: [municipio]
+    colunas:
+      municipio:      ["MUNICÍPIO"]
+      desalojados:    ["DESALOJADOS"]
+      desabrigados:   ["DESABRIGADOS"]
+      afetados:       ["AFETADOS"]
+      obitos:         ["ÓBITOS"]
+      danos_materiais: ["DANOS MATERIAIS"]
+      prejuizo_publico: ["PREJUÍZOS ECONÔMICOS PÚBLICOS"]
+      prejuizo_privado: ["PREJUÍZOS ECONÔMICOS PRIVADOS"]
+      homologacao:    ["HOMOLOGAÇÃO ESTADUAL"]
+      reconhecimento: ["RECONHECIMENTO FEDERAL"]
+      fide:           ["Nº FIDE"]
+    tipos: {municipio: municipio, desalojados: inteiro, desabrigados: inteiro, afetados: inteiro, obitos: inteiro,
+            danos_materiais: decimal, prejuizo_publico: decimal, prejuizo_privado: decimal}
+
+  chuva_24h:
+    aba: "24h_maiores leituras"
+    titulo: "Maiores leituras pluviométricas — 24 h"
+    min_linhas: 0
+    obrigatorias: []
+    colunas:
+      mm:    ["leitura por 24h (medida)"]
+      local: ["leitura por 24h (local)"]
+    tipos: {mm: decimal}
+
+  chuva_1h:
+    aba: "1h_maiores leituras 1h"
+    titulo: "Maiores leituras pluviométricas — 1 h"
+    min_linhas: 0
+    obrigatorias: []
+    colunas:
+      mm:    ["leitura por h (medida)"]
+      local: ["leitura por h (local)"]
+    tipos: {mm: decimal}
+
+# Abas lidas pela automação interna e que NÃO entram no painel.
+# Listadas aqui só para documentar que foram ignoradas de propósito.
+ignoradas:
+  - BASE_DADOS            # substituída por referencia/municipios_rj.csv (com código IBGE)
+  - REDECS E MUNICIPIOS
+  - LISTAS_AUX
+  - NVScriptsProperties
+  - AUTOCRAT
+  - "DO NOT DELETE - AutoCrat Job Settings"
+  - "NÍVEL DE RESPOSTA"
+  - "MAIORES LEITURAS PLUVIOMÉTRICAS(CEMADEN-RJ)"
+  - "SISGEO 7h - 7h"       # subconjunto do SISGEO
+  - "GRAC(MAQUINÁRIO)"     # layout em colunas por órgão; precisa ser reestruturada para virar tabela
+
+# Limites de qualidade: acima disso, a publicação é BLOQUEADA
+# (o site continua mostrando a última versão boa).
+limites:
+  pct_max_datas_invalidas: 5      # % de datas que não puderam ser lidas
+  pct_max_municipios_desconhecidos: 5
+  # Datas antes disto ou no futuro viram aviso (ex.: 08/03/2025 digitado no lugar de 2026).
+  # Ajuste a cada nova temporada operacional.
+  data_minima: "2025-10-01"
