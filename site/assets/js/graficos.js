@@ -41,7 +41,7 @@ function tooltipBase(t) {
 }
 
 /** Barras horizontais ordenadas. itens: [[rotulo, valor, chaveOriginal?]] */
-export function barrasH(el, itens, { aoClicar, selecionado, unidade = "registros" } = {}) {
+export function barrasH(el, itens, { aoClicar, selecionado, unidade = "registros", largRotulo = 190 } = {}) {
   const t = tema();
   const g = iniciar(el);
   const dados = itens.slice().reverse();
@@ -49,12 +49,12 @@ export function barrasH(el, itens, { aoClicar, selecionado, unidade = "registros
     {
       animationDuration: 300,
       textStyle: { fontFamily: t.fonte },
-      grid: { left: 8, right: 48, top: 4, bottom: 4, containLabel: true },
+      grid: { left: largRotulo === 190 ? 8 : 20, right: 48, top: 4, bottom: 4, containLabel: true },
       tooltip: { ...tooltipBase(t), trigger: "item", formatter: (p) => `${p.name}<br><b>${fmt(p.value)}</b> ${unidade}` },
       xAxis: { type: "value", show: false },
       yAxis: {
         type: "category", data: dados.map((d) => d[0]), axisTick: { show: false }, axisLine: { show: false },
-        axisLabel: { color: t.texto2, fontSize: 12, width: 190, overflow: "truncate" },
+        axisLabel: { color: t.texto2, fontSize: 12, width: largRotulo === 190 ? 190 : Math.min(largRotulo, el.clientWidth * 0.45), overflow: "truncate" },
       },
       series: [{
         type: "bar", barMaxWidth: 18, barCategoryGap: "35%",

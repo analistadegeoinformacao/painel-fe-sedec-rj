@@ -187,3 +187,13 @@ def test_motivo_higienizado():
     assert "@" not in higienizar_motivo("ver email a.b@x.com.br")
     assert "123.456.789" not in higienizar_motivo("CPF 123.456.789-00")
     assert len(higienizar_motivo("x" * 300)) == 118
+
+
+def test_fogo_sem_coordenada_publicada_e_com_uc(tmp_path):
+    rc, saida = rodar_duas(tmp_path)
+    assert rc == 0
+    fv = json.loads((saida / "fogo_sisgeo.json").read_text(encoding="utf-8"))
+    assert not any("latlon" in r for r in fv), "coordenada do fogo não pode ser publicada"
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert len(meta["ucs"]) > 100
+    assert all(r["uc_faixa"] in ("dentro", "500", "1000") for r in fv if "uc_faixa" in r)

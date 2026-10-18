@@ -460,6 +460,27 @@ const REDECS = {
 const eventosDe = (linhas) => contarPor(linhas, "id_evento");
 const COR_RISCO = { "MUITO ALTO": "critico", ALTO: "critico", MODERADO: "atencao", BAIXO: "ok", "MUITO BAIXO": "ok" };
 const chipRisco = (v) => (v ? `<span class="chip chip--${COR_RISCO[String(v).toUpperCase()] || "neutro"}">${esc(v)}</span>` : "—");
+// Unidades de conservação: o ETL marca cada ocorrência com a UC (índice em meta.ucs) e a faixa
+// (dentro / até 500 m / até 1 km). Conta EVENTOS: um evento vale uma vez, na faixa mais próxima
+// entre as suas ocorrências.
+const ORDEM_FAIXA = { dentro: 0, 500: 1, 1000: 2 };
+const nomeUC = (i) => titulo(BASE.meta.ucs?.[i]?.nome || "UC");
+// siglas usuais (SNUC) só no ranking, para o nome caber também no celular
+const SIGLAS_UC = [[/^Parque Nacional\b/, "PARNA"], [/^Parque Estadual\b/, "PE"], [/^Parque Natural Municipal\b/, "PNM"],
+  [/^Refúgio de Vida Silvestre\b/, "RVS"], [/^Reserva Biológica\b/, "REBIO"], [/^Estação Ecológica\b/, "ESEC"], [/^Monumento Natural\b/, "MONA"]];
+const siglaUC = (i) => SIGLAS_UC.reduce((n, [re, s]) => n.replace(re, s), nomeUC(i));
+function eventosPertoDeUC(linhas) {
+  if (!linhas || !BASE.meta.ucs) return null;
+  const melhor = new Map();
+  for (const l of linhas) {
+    if (!l.uc_faixa) continue;
+    const atual = melhor.get(l.id_evento);
+    if (!atual || ORDEM_FAIXA[l.uc_faixa] < ORDEM_FAIXA[atual.uc_faixa]) melhor.set(l.id_evento, l);
+  }
+  const faixa = { dentro: 0, 500: 0, 1000: 0 }, porUC = new Map();
+  for (const l of melhor.values()) { faixa[l.uc_faixa]++; porUC.set(l.uc, (porUC.get(l.uc) || 0) + 1); }
+  return { total: melhor.size, faixa, porUC };
+}
 const maisRecentes = (linhas, campo = "data") => (linhas || []).slice().sort((a, b) => ((b[campo] || "") > (a[campo] || "") ? 1 : -1));
 
 const FOGO = {
@@ -479,11 +500,21 @@ const FOGO = {
         { rotulo: "Em andamento", valor: ab ? ab.length : "—", sub: "aba EVENTOS ABERTOS" },
       ]);
     });
-    seguro("fv-kpis-lider", (el) => kpis(el, [
-      { rotulo: "Subtipo mais frequente", texto: true, ...liderDe(fv, "subtipo") },
-      { rotulo: "Município com mais ocorrências", texto: true, ...liderDe(fv, "cod_ibge", nomeMun) },
-      { rotulo: "REDEC com mais ocorrências", texto: true, ...liderDe(fv, "redec", rotuloRedec) },
-    ]));
+    seguro("fv-kpis-lider", (el) => {
+      const uc = eventosPertoDeUC(fv);
+      const [ucTop, nTop] = uc ? ordenar(uc.porUC, 1)[0] || [] : [];
+      kpis(el, [
+        { rotulo: "Subtipo mais frequente", texto: true, ...liderDe(fv, "subtipo") },
+        { rotulo: "Município com mais ocorrências", texto: true, ...liderDe(fv, "cod_ibge", nomeMun) },
+        { rotulo: "REDEC com mais ocorrências", texto: true, ...liderDe(fv, "redec", rotuloRedec) },
+        { rotulo: "Eventos em UC ou até 1 km", texto: true, valor: uc ? fmt(uc.total) : "—",
+          sub: uc ? `${fmt(uc.faixa.dentro)} dentro · ${fmt(uc.faixa["500"])} até 500 m · ${fmt(uc.faixa["1000"])} até 1 km` : "cruzamento com UCs indisponível",
+          ...(uc?.total ? { acao: () => { st.aba = "territorios"; atualizar(); requestAnimationFrame(() => document.getElementById("fv-ucs")?.scrollIntoView({ behavior: "smooth", block: "center" })); },
+            rotuloAcao: "Ver ranking", dicaAcao: "Abrir o ranking das UCs" } : {}) },
+        { rotulo: "UC mais pressionada", texto: true, valor: ucTop !== undefined ? nomeUC(ucTop) : "—",
+          sub: ucTop !== undefined ? `${fmt(nTop)} eventos dentro ou até 1 km · ${BASE.meta.ucs[ucTop]?.esfera || ""}` : (uc ? "nenhum evento em UC ou até 1 km" : "") },
+      ]);
+    });
     seguro("fv-redec", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
     seguro("fv-serie", (el) => {
       if (indisponivel(el, fv)) return;
@@ -529,6 +560,13 @@ const FOGO = {
         { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
     });
     seguro("fv-redec2", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+    seguro("fv-ucs", (el) => {
+      if (indisponivel(el, fv)) return;
+      const uc = eventosPertoDeUC(fv);
+      if (!uc) { el.innerHTML = `<div class="falha">Cruzamento com unidades de conservação indisponível nesta atualização.</div>`; return; }
+      if (indisponivel(el, uc.total ? [1] : [])) return;
+      barrasH(el, ordenar(uc.porUC, 15).map(([k, v]) => [siglaUC(k), v, k]), { unidade: "eventos", largRotulo: 300 });
+    });
   },
 
   condicoes() {

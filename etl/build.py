@@ -64,6 +64,23 @@ def mapear_colunas(cabecalho, spec_colunas):
     return achadas
 
 
+def cruzar_ucs(nome, cfg_uc, dados, rel, ucs_meta):
+    """Marca cada ocorrência com a UC mais próxima (até raio_m) e descarta a coordenada.
+    Se o arquivo de UCs faltar ou falhar, segue sem o cruzamento (aviso), nunca publica coordenada."""
+    from etl import ucs as U
+    try:
+        lista, arvore = U.carregar(RAIZ / cfg_uc["arquivo"])
+        cont = U.classificar(dados, lista, arvore, cfg_uc.get("raio_m", 1000))
+        ucs_meta[:] = U.tabela_meta(lista)
+        if cont["sem_coordenada"]:
+            rel.aviso(nome, f"{cont['sem_coordenada']} ocorrência(s) sem coordenada válida: fora do cruzamento com UCs")
+    except Exception as e:  # noqa: BLE001 — o cruzamento é complementar
+        rel.aviso(nome, f"cruzamento com unidades de conservação não feito: {e}")
+    for r in dados:
+        r.pop("latlon", None)
+    return dados
+
+
 def higienizar_motivo(texto) -> str:
     """Motivo da exclusão é texto livre: tira o que pode identificar alguém (telefone, CPF,
     matrícula, e-mail) e limita o tamanho."""
@@ -248,6 +265,7 @@ def main(argv=None):
             abas_por_planilha[pid] = {}
 
     resultados, meta_conj = {}, {}
+    ucs_meta = []
     for nome, spec in conjuntos.items():
         abas = abas_por_planilha.get(spec.get("planilha", "principal"), {})
         if spec["aba"] not in abas:
@@ -255,6 +273,8 @@ def main(argv=None):
             dados, extra = [], []
         else:
             dados, extra = processar(nome, spec, abas[spec["aba"]], ref, rel, cfg["limites"])
+        if spec.get("proximidade_uc"):
+            dados = cruzar_ucs(nome, spec["proximidade_uc"], dados, rel, ucs_meta)
         if spec.get("compactar"):
             # município e REDEC são recompostos no navegador a partir do código IBGE
             dados = [{k: v for k, v in r.items() if k not in ("municipio", "redec") or not r.get("cod_ibge")} for r in dados]
@@ -290,6 +310,8 @@ def main(argv=None):
         "redecs": ref.redecs,
         "municipios": ref.linhas,
     }
+    if ucs_meta:
+        meta["ucs"] = ucs_meta
 
     # grava num diretório temporário e só troca no fim (escrita atômica)
     destino = Path(a.saida)

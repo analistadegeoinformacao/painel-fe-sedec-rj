@@ -302,8 +302,15 @@ conjuntos:
       vitimas:         ["VítimaQtd"]
       municipio:       ["Município"]
       motivo_exclusao: ["Motivo da Exclusão"]   # só para a depuração; publicado higienizado na aba Depuração
+      latlon:          ["Latitude/Longitude"]   # só para o cruzamento com UCs; NUNCA publicado (ver proximidade_uc)
       # DE FORA DE PROPÓSITO: Efetivo, Endereço, Viatura, Avaliação/Atualização Cenário
-    tipos: {redec: redec, data_ocorrencia: datahora, vitimas: inteiro, municipio: municipio}
+    tipos: {redec: redec, data_ocorrencia: datahora, vitimas: inteiro, municipio: municipio, latlon: latlon}
+    casas_decimais_coord: 5
+    # Cruzamento com unidades de conservação (etl/ucs.py): cada ocorrência ganha a UC e a faixa
+    # (dentro / até 500 m / até 1 km); a coordenada é descartada antes de publicar.
+    proximidade_uc:
+      arquivo: referencia/ucs_rj.geojson
+      raio_m: 1000
     chave_unica: [id_evento, ocorrencia]
     # Depuração: só conta como válida a ocorrência "atendida com prestação de serviço" ou
     # "encerrada com empenho de viatura" E sem nada em "Motivo da Exclusão". As demais

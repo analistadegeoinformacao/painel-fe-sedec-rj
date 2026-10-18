@@ -39,6 +39,10 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
   prestação de serviço" ou "Encerrada com empenho de viatura" **e** sem nada em "Motivo da Exclusão". As demais
   (excluídas por situação, por motivo ou pelos dois) ficam fora de todos os indicadores e aparecem só na aba
   **Depuração**. A lista de situações válidas está em `config/fontes.yml` (`depuracao:`); o motivo aparece na tabela da aba Depuração, sem números longos (telefone, CPF, matrícula) nem e-mails.
+- **Unidades de conservação (SisGeO · Fogo):** o ETL cruza a coordenada de cada ocorrência com
+  `referencia/ucs_rj.geojson` (UCs de proteção integral, sem zonas de amortecimento) e marca a UC e a faixa
+  (dentro / até 500 m / até 1 km). A coordenada é descartada antes de publicar. Painel: cartões "Eventos em UC ou
+  até 1 km" e "UC mais pressionada" (Visão geral) e ranking das UCs (Subtipos e territórios). Conta eventos.
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
 ## Por que este desenho não quebra a cada commit

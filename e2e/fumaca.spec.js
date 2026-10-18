@@ -268,3 +268,16 @@ test("botão alterna modo claro/escuro e lembra a escolha", async ({ page }) => 
   expect(await fundo()).toBe(antes);
   await expect(page.locator(".painel-aba:not([hidden]) .falha")).toHaveCount(0);
 });
+
+test("SisGeO · Fogo: cartões de UC e ranking das UCs", async ({ page }) => {
+  await abrir(page, "#amb=fogo");
+  const linha2 = page.locator("#fv-kpis-lider .kpi__rotulo");
+  await expect(linha2).toHaveText(["Subtipo mais frequente", "Município com mais ocorrências", "REDEC com mais ocorrências", "Eventos em UC ou até 1 km", "UC mais pressionada"]);
+  await expect(page.locator("#fv-kpis .kpi")).toHaveCount(5); // linha 1 intacta
+  const ver = page.locator("#fv-kpis-lider button.kpi", { hasText: "Eventos em UC" });
+  if (await ver.count()) {
+    await ver.click();
+    await expect(page).toHaveURL(/aba=territorios/);
+    await expect(page.locator("#fv-ucs svg")).toBeVisible();
+  }
+});
