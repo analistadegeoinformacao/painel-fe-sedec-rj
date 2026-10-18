@@ -138,12 +138,14 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
     redec_preenchida = 0
     excluidos = 0
     saida, sem_mun = [], []
+    fora_rj = []  # ocorrências atendidas fora do estado (necessidade pontual): aviso próprio na Qualidade
 
     for i, bruta in enumerate(linhas_brutas[h + 1:]):
         linha_planilha = h + 2 + i
         if all(N.vazio(c) for c in bruta):
             continue
         reg = {}
+        erros_linha = {}
         for campo, j in cols.items():
             v = bruta[j] if j < len(bruta) else ""
             t = tipos.get(campo, "texto")
@@ -165,9 +167,19 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
                 reg[campo] = None
                 if t == "municipio":
                     reg["cod_ibge"] = None
-                invalidos[campo] += 1
-                if len(exemplos[campo]) < 3:
-                    exemplos[campo].append(f"linha {linha_planilha}: {e}")
+                erros_linha[campo] = str(e)
+
+        # município de fora do RJ + coordenada fora do RJ = atendimento fora do estado (não é erro de digitação)
+        c_mun = next((c for c in erros_linha if tipos.get(c) == "municipio"), None)
+        c_ll = next((c for c in erros_linha if tipos.get(c) == "latlon"), None)
+        if c_mun and c_ll and "desconhecido" in erros_linha[c_mun] and "fora do RJ" in erros_linha[c_ll]:
+            mun_txt = bruta[cols[c_mun]] if cols[c_mun] < len(bruta) else ""
+            fora_rj.append(f"linha {linha_planilha}: {str(mun_txt).strip()}")
+            del erros_linha[c_mun], erros_linha[c_ll]
+        for campo, msg in erros_linha.items():
+            invalidos[campo] += 1
+            if len(exemplos[campo]) < 3:
+                exemplos[campo].append(f"linha {linha_planilha}: {msg}")
 
         # REDEC vazia ou inválida, mas município conhecido -> completa pela referência
         if "redec" in spec["colunas"] and reg.get("cod_ibge"):
@@ -189,6 +201,9 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
             continue
         saida.append(reg)
 
+    if fora_rj:
+        rel.aviso(nome, f"{len(fora_rj)} ocorrência(s) FORA DO RJ (atendimento fora do estado; entram nos totais sem município) — "
+                        + "; ".join(fora_rj[:10]) + (" …" if len(fora_rj) > 10 else ""))
     total = len(saida) or 1
     for campo, n in invalidos.items():
         t = tipos.get(campo, "texto")

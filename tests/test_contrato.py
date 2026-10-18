@@ -197,3 +197,24 @@ def test_fogo_sem_coordenada_publicada_e_com_uc(tmp_path):
     meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
     assert len(meta["ucs"]) > 100
     assert all(r["uc_faixa"] in ("dentro", "500", "1000") for r in fv if "uc_faixa" in r)
+
+
+def test_ocorrencia_fora_do_rj_vira_aviso_proprio(tmp_path):
+    texto = (Path(__file__).parent / "fixtures" / "amostra_fogo.txt").read_text(encoding="utf-8")
+    linhas = texto.split("\n")
+    i = next(k for k, l in enumerate(linhas) if l.startswith("REDEC,IdEvento")) + 1
+    import csv as _csv, io as _io
+    r = next(_csv.reader([linhas[i]]))
+    h = next(_csv.reader([linhas[i - 1]]))
+    r += [""] * (len(h) - len(r))
+    r[h.index("Município")] = "Guaratinguetá"
+    r[h.index("Latitude/Longitude")] = "-22.8182,-45.1822"
+    out = _io.StringIO(); _csv.writer(out, lineterminator="").writerow(r); linhas[i] = out.getvalue()
+    fogo = tmp_path / "fogo.txt"; fogo.write_text("\n".join(linhas), encoding="utf-8")
+    saida = tmp_path / "data"
+    assert build.main(["--fonte", "texto", "--origem", str(AMOSTRA), "--origem-fogo", str(fogo), "--saida", str(saida)]) == 0
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    av = meta["avisos"]["fogo_sisgeo"]
+    assert any("FORA DO RJ" in a and "Guaratinguetá" in a for a in av)
+    assert not any("-45.18" in a for a in av), "coordenada não pode aparecer no aviso"
+    assert not any("município desconhecido" in a for a in av)
