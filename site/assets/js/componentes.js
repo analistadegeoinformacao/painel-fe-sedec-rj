@@ -31,7 +31,7 @@ export function kpis(el, itens) {
   el.innerHTML = itens
     .map(
       (k, i) => `<${k.acao ? `button type="button" data-kpi="${i}" title="${esc(k.dicaAcao || "")}"` : "div"} class="kpi${k.destaque ? " kpi--destaque" : ""}${k.acao ? " kpi--acao" : ""}">
-        <div class="kpi__rotulo">${esc(k.rotulo)}</div>
+        <div class="kpi__rotulo">${esc(k.rotulo).replaceAll("/", "/<wbr>")}</div>
         <div class="kpi__valor${k.texto ? " kpi__valor--texto" : ""}"${k.texto ? ` title="${esc(k.valor ?? "")}"` : ""}>${typeof k.valor === "number" ? fmt(k.valor) : esc(k.valor ?? "—")}</div>
         ${k.sub ? `<div class="kpi__sub">${esc(k.sub)}</div>` : ""}
         ${k.acao ? `<div class="kpi__acao">${esc(k.rotuloAcao || "Ver lista")} →</div>` : ""}
