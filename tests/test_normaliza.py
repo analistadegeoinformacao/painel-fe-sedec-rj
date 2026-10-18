@@ -76,3 +76,8 @@ def test_latlon_arredonda_e_valida():
     assert N.latlon("-22.94693,-43.20291") == [-22.947, -43.203]
     with pytest.raises(ValueError):
         N.latlon("-3.1,-60.0")  # fora do RJ
+
+
+def test_sao_francisco_do_itabapoana_digitado_errado():
+    ref = N.Referencia()
+    assert ref.municipio("São Francisco do Itabapoana") == ref.municipio("São Francisco de Itabapoana")
