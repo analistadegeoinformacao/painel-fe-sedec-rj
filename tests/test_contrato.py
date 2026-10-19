@@ -218,3 +218,12 @@ def test_ocorrencia_fora_do_rj_vira_aviso_proprio(tmp_path):
     assert any("FORA DO RJ" in a and "Guaratinguetá" in a for a in av)
     assert not any("-45.18" in a for a in av), "coordenada não pode aparecer no aviso"
     assert not any("município desconhecido" in a for a in av)
+
+
+def test_avisos_trazem_numero_da_linha_e_linha_nao_e_publicada(tmp_path):
+    rc, saida = rodar_duas(tmp_path)
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    rep = [a for a in meta["avisos"]["fogo_sisgeo"] if "repetida" in a]
+    assert rep and re.search(r"linha \d+ repete a linha \d+", rep[0])
+    for f in saida.glob("*.json"):
+        assert '"_linha"' not in f.read_text(encoding="utf-8"), f.name

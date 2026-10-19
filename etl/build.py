@@ -66,6 +66,15 @@ def mapear_colunas(cabecalho, spec_colunas):
     return achadas
 
 
+def linhas_txt(linhas, maximo=60) -> str:
+    """'linhas 12, 15, 40' (com teto, para o aviso não ficar enorme)."""
+    ls = sorted(set(int(x) for x in linhas if x))
+    if not ls:
+        return ""
+    txt = ", ".join(str(x) for x in ls[:maximo])
+    return ("linha " if len(ls) == 1 else "linhas ") + txt + (f" … e mais {len(ls) - maximo}" if len(ls) > maximo else "")
+
+
 def cruzar_ucs(nome, cfg_uc, dados, rel, ucs_meta):
     """Marca cada ocorrência com a UC mais próxima (até raio_m) e descarta a coordenada.
     Se o arquivo de UCs faltar ou falhar, segue sem o cruzamento (aviso), nunca publica coordenada."""
@@ -75,11 +84,13 @@ def cruzar_ucs(nome, cfg_uc, dados, rel, ucs_meta):
         cont = U.classificar(dados, lista, arvore, cfg_uc.get("raio_m", 1000))
         ucs_meta[:] = U.tabela_meta(lista)
         if cont["sem_coordenada"]:
-            rel.aviso(nome, f"{cont['sem_coordenada']} ocorrência(s) sem coordenada válida: fora do cruzamento com UCs")
+            sem = [r.get("_linha") for r in dados if r.get("_sem_coord")]
+            rel.aviso(nome, f"{cont['sem_coordenada']} ocorrência(s) sem coordenada válida: fora do cruzamento com UCs — {linhas_txt(sem)}")
     except Exception as e:  # noqa: BLE001 — o cruzamento é complementar
         rel.aviso(nome, f"cruzamento com unidades de conservação não feito: {e}")
     for r in dados:
         r.pop("latlon", None)
+        r.pop("_sem_coord", None)
     return dados
 
 
@@ -137,6 +148,8 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
     hoje = (datetime.now(BRT) + timedelta(days=1)).date().isoformat()  # 1 dia de folga
     invalidos = Counter()
     exemplos = defaultdict(list)
+    linhas_inv = defaultdict(list)
+    linhas_redec = []
     redec_preenchida = 0
     excluidos = 0
     saida, sem_mun = [], []
@@ -146,7 +159,7 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
         linha_planilha = h + 2 + i
         if all(N.vazio(c) for c in bruta):
             continue
-        reg = {}
+        reg = {"_linha": linha_planilha}  # nº da linha na planilha: só para os avisos, não é publicado
         erros_linha = {}
         for campo, j in cols.items():
             v = bruta[j] if j < len(bruta) else ""
@@ -186,6 +199,7 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
             del erros_linha[c_mun], erros_linha[c_ll]
         for campo, msg in erros_linha.items():
             invalidos[campo] += 1
+            linhas_inv[campo].append(linha_planilha)
             if len(exemplos[campo]) < 3:
                 exemplos[campo].append(f"linha {linha_planilha}: {msg}")
 
@@ -195,6 +209,7 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
             if reg.get("redec") is None:
                 reg["redec"] = oficial
                 redec_preenchida += 1
+                linhas_redec.append(linha_planilha)
             elif reg["redec"] != oficial:
                 rel.aviso(nome, f"linha {linha_planilha}: {reg['municipio']} marcado como "
                                 f"{reg['redec']}, referência diz {oficial}")
@@ -216,7 +231,8 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
     for campo, n in invalidos.items():
         t = tipos.get(campo, "texto")
         pct = 100 * n / total
-        msg = f"{n} valor(es) inválido(s) em '{campo}' ({pct:.1f}%) — " + "; ".join(exemplos[campo])
+        msg = (f"{n} valor(es) inválido(s) em '{campo}' ({pct:.1f}%) — " + "; ".join(exemplos[campo])
+               + (f" — todas: {linhas_txt(linhas_inv[campo])}" if n > len(exemplos[campo]) else ""))
         limite = {"data": limites["pct_max_datas_invalidas"], "datahora": limites["pct_max_datas_invalidas"],
                   "municipio": limites["pct_max_municipios_desconhecidos"]}.get(t)
         if limite is not None and pct > limite:
@@ -224,19 +240,22 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
         else:
             rel.aviso(nome, msg)
     if redec_preenchida:
-        rel.aviso(nome, f"{redec_preenchida} linha(s) sem REDEC: completadas pela tabela de referência")
+        rel.aviso(nome, f"{redec_preenchida} linha(s) sem REDEC: completadas pela tabela de referência — {linhas_txt(linhas_redec)}")
     # mesma ocorrência colada duas vezes: identidade = campos de "chave_unica"
     # (no SisGeO: número do evento + número da ocorrência)
     chave = spec.get("chave_unica")
     if chave:
-        vistos, unicos = set(), []
+        vistos, unicos, pares = {}, [], []
         for reg in saida:
             k = tuple(reg.get(c) for c in chave)
             if all(x is None for x in k) or k not in vistos:
-                vistos.add(k)
+                vistos[k] = reg["_linha"]
                 unicos.append(reg)
+            else:
+                pares.append(f"linha {reg['_linha']} repete a linha {vistos[k]}")
         if len(unicos) < len(saida):
-            rel.aviso(nome, f"{len(saida) - len(unicos)} linha(s) repetida(s) (mesmo {' + '.join(chave)}) removida(s)")
+            rel.aviso(nome, f"{len(saida) - len(unicos)} linha(s) repetida(s) (mesmo {' + '.join(chave)}) removida(s) — "
+                            + "; ".join(pares[:30]) + (" …" if len(pares) > 30 else ""))
         saida = unicos
     rel.excluidos[nome] = excluidos
     if spec.get("depuracao"):
@@ -304,6 +323,8 @@ def main(argv=None):
         if spec.get("compactar"):
             # município e REDEC são recompostos no navegador a partir do código IBGE
             dados = [{k: v for k, v in r.items() if k not in ("municipio", "redec") or not r.get("cod_ibge")} for r in dados]
+        for r in dados:
+            r.pop("_linha", None)
         if spec.get("publicar", True):
             resultados[nome] = dados
             meta_conj[nome] = {"titulo": spec.get("titulo", nome), "aba": spec["aba"], "linhas": len(dados),

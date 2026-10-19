@@ -51,6 +51,7 @@ def classificar(registros: list[dict], ucs, arvore, raio_m: int = 1000) -> dict:
         ll = r.pop("latlon", None)
         if not ll:
             cont["sem_coordenada"] += 1
+            r["_sem_coord"] = True
             continue
         p = Point(ll[1] * _KX, ll[0] * _KY)
         cand = [ucs[i] for i in arvore.query(p.buffer(raio_m))]

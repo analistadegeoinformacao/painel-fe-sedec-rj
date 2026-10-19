@@ -186,7 +186,8 @@ def estruturar(registros: list[dict], ref, aviso) -> list[dict]:
         t = tipo_da_mensagem(texto)
         info = {"idap": _idap, "cb": _cb, "sirene": _sirene}.get(t, lambda *_: {"envios": 0, "municipios": [], "redecs": [], "resumo": "mensagem não reconhecida"})(texto, ref)
         if t == "outro":
-            aviso(f"mensagem de {r.get('data') or 'data ?'} não reconhecida como IDAP, Cell Broadcast ou sirene: \"{_cabecalho(texto)[:60]}\"")
+            onde = f"linha {r['_linha']}: " if r.get("_linha") else ""
+            aviso(f"{onde}mensagem de {r.get('data') or 'data ?'} não reconhecida como IDAP, Cell Broadcast ou sirene: \"{_cabecalho(texto)[:60]}\"")
         saida.append({"data": (r.get("data") or "")[:10] or None, "hora": (r.get("data") or "")[11:16] or None,
                       "tipo": t, **info, "texto": texto})
     return saida
