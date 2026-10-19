@@ -292,3 +292,17 @@ test("Resposta: envios IDAP/Cell Broadcast/sirenes e mensagens ao clicar", async
     await expect(page.locator("#r-alertas tbody tr").first()).toContainText("IDAP");
   }
 });
+
+test("Decretação: padrão só vigentes; cartão alterna para todos os registrados", async ({ page }) => {
+  await abrir(page, "#amb=redecs&aba=decretos");
+  await expect(page.locator("#r-decretos-titulo")).toHaveText("Decretos municipais vigentes");
+  const n = (i) => page.locator("#r-kpis-decretos .kpi__valor").nth(i).innerText().then((t) => Number(t.replace(/\D/g, "")));
+  const [registrados, vigentes] = [await n(0), await n(1)];
+  const linhas = async () => { const t = await page.locator("#r-decretos .t-conta").innerText(); return Number((t.match(/\d+/) || ["0"])[0]); };
+  if (vigentes) expect(await linhas()).toBe(vigentes);
+  await page.locator("#r-kpis-decretos button.kpi", { hasText: "Decretos registrados" }).click();
+  await expect(page.locator("#r-decretos-titulo")).toHaveText("Decretos municipais registrados");
+  if (registrados) expect(await linhas()).toBe(registrados);
+  await page.locator("#r-kpis-decretos button.kpi", { hasText: "Decretos registrados" }).click();
+  await expect(page.locator("#r-decretos-titulo")).toHaveText("Decretos municipais vigentes");
+});

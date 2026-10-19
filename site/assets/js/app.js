@@ -26,7 +26,7 @@ const AMBIENTES = {
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
-const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "" };
+const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "", decretos: "" };
 const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
@@ -117,7 +117,7 @@ function montarFiltros() {
   ordenar(contarPor((BASE.dados.sisgeo || []).filter((l) => !l.depuracao), "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
-    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "" });
+    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "", decretos: "" });
     preencherMunicipios();
     atualizar();
   });
@@ -377,14 +377,20 @@ const REDECS = {
   decretos() {
     const dec = filtrar("decretos", { comPeriodo: false });
     const comV = (dec || []).map((l) => ({ ...l, _v: vigencia(l) }));
+    // padrão: só os vigentes; o cartão "Decretos registrados" alterna para a lista completa
+    const todos = st.decretos === "todos";
+    const vigentesHoje = comV.filter((l) => (l._v.dias ?? -1) >= 0);
+    const alternar = (v) => () => { st.decretos = v; atualizar(); };
     seguro("r-kpis-decretos", (el) => kpis(el, [
-      { rotulo: "Decretos registrados", valor: dec?.length ?? "—", destaque: true },
-      { rotulo: "Vigentes hoje", valor: comV.filter((l) => (l._v.dias ?? -1) >= 0).length },
+      { rotulo: "Decretos registrados", valor: dec?.length ?? "—", destaque: todos,
+        acao: alternar(todos ? "" : "todos"), rotuloAcao: todos ? "Mostrar só os vigentes" : "Ver todos os registrados",
+        dicaAcao: todos ? "Voltar à lista de decretos vigentes" : "Mostrar na tabela todos os decretos registrados" },
+      { rotulo: "Vigentes hoje", valor: vigentesHoje.length, destaque: !todos },
       { rotulo: "Vencem em até 15 dias", valor: comV.filter((l) => l._v.classe === "atencao").length },
       { rotulo: "Encerrados", valor: comV.filter((l) => l._v.rotulo === "Encerrado").length },
     ]));
     seguro("r-decretos", (el) => tabela(el, {
-      nome: "decretos", linhas: dec === null ? null : comV, ordem: { campo: "termino", dir: 1 },
+      nome: todos ? "decretos_registrados" : "decretos_vigentes", linhas: dec === null ? null : (todos ? comV : vigentesHoje), ordem: { campo: "termino", dir: 1 },
       colunas: [
         { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
         { campo: "decreto", titulo: "Decreto" }, { campo: "nivel", titulo: "Nível", tipo: "num" },
@@ -393,6 +399,8 @@ const REDECS = {
         { campo: "_v", titulo: "Situação", tipo: "html", formato: (v) => `<span class="chip chip--${v.classe}">${esc(v.rotulo)}</span>` },
       ],
     }));
+    const tit = document.getElementById("r-decretos-titulo");
+    if (tit) tit.textContent = todos ? "Decretos municipais registrados" : "Decretos municipais vigentes";
   },
   resposta() {
     const aj = filtrar("ajuda_humanitaria"), pa = filtrar("pontos_apoio"), sev = filtrar("severidade", { comPeriodo: false });
