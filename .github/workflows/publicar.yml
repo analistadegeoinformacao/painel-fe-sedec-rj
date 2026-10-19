@@ -78,6 +78,8 @@ jobs:
           }
           # resumo visível na execução: quantas linhas cada aba trouxe
           python -c "import json;m=json.load(open('site/data/meta.json'));print('::notice title=Linhas lidas::'+' · '.join(f'{k}={v[\"linhas\"]}' for k,v in m['conjuntos'].items()))"
+          # avisos da Qualidade dos dados, também visíveis no resumo da execução
+          python -c "import json;m=json.load(open('site/data/meta.json'));[print(f'::notice title=Qualidade {k}::'+' || '.join(v)[:3000]) for k,v in m.get('avisos',{}).items() if v]"
 
       - id: pages
         uses: actions/configure-pages@v5
