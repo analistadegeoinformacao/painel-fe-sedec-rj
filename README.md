@@ -97,7 +97,7 @@ Já configurado no repositório: Pages via GitHub Actions e proteção da branch
 ### Frequência de atualização
 
 O GitHub consulta a planilha **a cada 10 min** (horários de pico podem atrasar execuções agendadas) e só
-republica o site quando os dados mudaram — ou 1x por hora, como sinal de vida. Sem tokens e sem nada a renovar.
+republica o site quando os dados mudaram — ou a cada 10 min, como sinal de vida (o selo "Última leitura" mostra a hora da última conferência). Sem tokens e sem nada a renovar.
 
 - **Botão Atualizar** (topo do painel): carrega na hora a versão mais recente já publicada.
 - **Painel aberto numa tela**: confere sozinho a cada 5 min e recarrega quando há dados novos.

@@ -16,7 +16,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-LIMITE_MIN = 60
+LIMITE_MIN = 10  # sinal de vida: o selo "Última leitura" nunca fica mais velho que ~15 min
 
 
 def baixar(url: str) -> str | None:

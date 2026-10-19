@@ -721,6 +721,12 @@ async function verificarDadosNovos() {
   if (!r.ok) throw new Error(`meta.json: HTTP ${r.status}`);
   const meta = await r.json();
   if (meta.gerado_em === BASE.meta.gerado_em) return false;
+  if (meta.versao_dados && meta.versao_dados === BASE.meta.versao_dados) {
+    // planilha conferida de novo, sem dados novos: só atualiza o horário da última leitura
+    BASE.meta.gerado_em = meta.gerado_em;
+    status(BASE.meta);
+    return false;
+  }
   const nova = await carregar();
   BASE.meta = nova.meta;
   BASE.dados = nova.dados;
@@ -805,7 +811,8 @@ function status(meta) {
   const gerado = new Date(meta.gerado_em);
   const horas = (Date.now() - gerado) / 3.6e6;
   const quando = gerado.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-  el.textContent = `Dados de ${quando}`;
+  el.textContent = `Última leitura: ${quando}`;
+  el.title = "Horário em que a planilha foi conferida pela última vez (conferência automática a cada ~10 min)";
   el.dataset.estado = horas > 3 ? "antigo" : "ok";
   if (horas > 3) el.textContent += " · atualização atrasada";
   for (const [amb, cfg] of Object.entries(AMBIENTES)) {

@@ -16,12 +16,12 @@ def test_agendado_dados_mudaram():
 
 
 def test_agendado_sem_mudanca_nao_publica():
-    publicar, motivo = decidir("schedule", "a", "a", HA(20), AGORA)
+    publicar, motivo = decidir("schedule", "a", "a", HA(5), AGORA)
     assert not publicar and "iguais" in motivo
 
 
-def test_agendado_sinal_de_vida_a_cada_hora():
-    assert decidir("schedule", "a", "a", HA(61), AGORA)[0]
+def test_agendado_sinal_de_vida_a_cada_10_min():
+    assert decidir("schedule", "a", "a", HA(11), AGORA)[0]
 
 
 def test_site_inacessivel_publica():

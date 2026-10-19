@@ -1,8 +1,8 @@
 # Atualiza e publica o painel.
 # Roda: quando o "Vigia da planilha" (vigia.yml) vê dados novos, a cada push na main,
 # manualmente (botão "Run workflow") e, de reserva, pelo agendamento abaixo.
-# Nas execuções agendadas, só republica se os dados mudaram (ou 1x por hora,
-# como sinal de vida) — ver etl/precisa_publicar.py.
+# Nas execuções agendadas, só republica se os dados mudaram (ou a cada 10 min,
+# como sinal de vida para o selo "Última leitura") — ver etl/precisa_publicar.py.
 # Se QUALQUER etapa falhar (planilha fora do contrato, teste quebrado), a etapa
 # de publicação não roda e o site continua com a última versão boa.
 name: Atualizar e publicar painel

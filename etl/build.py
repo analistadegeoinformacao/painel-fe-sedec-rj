@@ -371,6 +371,7 @@ def main(argv=None):
     for nome in sorted(resultados):
         h.update(nome.encode()); h.update((tmp / f"{nome}.json").read_bytes())
     (tmp / "versao.txt").write_text(h.hexdigest() + "\n", encoding="utf-8")
+    meta["versao_dados"] = h.hexdigest()  # o navegador só recarrega os dados quando ela muda
     (tmp / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
     if destino.exists():
         shutil.rmtree(destino)

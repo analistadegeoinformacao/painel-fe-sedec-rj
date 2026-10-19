@@ -20,7 +20,7 @@ test("os três ambientes carregam todas as abas sem erro de JavaScript", async (
   // qualquer arquivo do PRÓPRIO site que falhe (404 etc.) reprova o teste
   page.on("response", (r) => r.url().startsWith("http://127.0.0.1") && r.status() >= 400 && erros.push(`${r.status()} ${r.url()}`));
   await abrir(page);
-  await expect(page.locator("#status-dados")).toContainText("Dados de");
+  await expect(page.locator("#status-dados")).toContainText("Última leitura");
 
   for (const [amb, abas] of Object.entries(AMBIENTES)) {
     await page.click(`.ambientes a[data-amb="${amb}"]`);
@@ -77,11 +77,12 @@ test("nenhum dado pessoal no JSON publicado", async ({ request }) => {
 });
 
 test("botão Atualizar busca a versão mais recente e carrega dados novos", async ({ page }) => {
-  let gerado = null;
+  let gerado = null, versao = null;
   await page.route(/data\/meta\.json/, async (route) => {
     const r = await route.fetch();
     const meta = await r.json();
     if (gerado) meta.gerado_em = gerado;
+    if (versao) meta.versao_dados = versao;
     await route.fulfill({ response: r, json: meta });
   });
   await abrir(page);
@@ -89,7 +90,11 @@ test("botão Atualizar busca a versão mais recente e carrega dados novos", asyn
   await expect(botao).toBeVisible();
   await botao.click();
   await expect(page.locator("#status-dados")).toContainText("Já está com os dados mais recentes");
-  gerado = "2099-01-01T00:00:00-03:00";            // simula uma publicação nova
+  gerado = "2099-01-01T00:00:00-03:00";            // planilha conferida de novo, sem dados novos
+  await botao.click();
+  await expect(page.locator("#status-dados")).toContainText("Já está com os dados mais recentes");
+  await expect(page.locator("#status-dados")).toContainText("Última leitura: 01/01", { timeout: 8000 });  // a hora avança
+  gerado = "2099-01-02T00:00:00-03:00"; versao = "outra";  // dados novos
   await botao.click();
   await expect(page.locator("#status-dados")).toContainText("Dados novos carregados");
   await expect(botao).toBeEnabled();
