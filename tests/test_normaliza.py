@@ -81,3 +81,9 @@ def test_latlon_arredonda_e_valida():
 def test_sao_francisco_do_itabapoana_digitado_errado():
     ref = N.Referencia()
     assert ref.municipio("São Francisco do Itabapoana") == ref.municipio("São Francisco de Itabapoana")
+
+
+def test_itaipava_e_petropolis():
+    ref = N.Referencia()
+    assert ref.municipio("Itaipava") == ref.municipio("Petrópolis")
+    assert ref.municipio("ITAIPAVA - RJ") == ref.municipio("Petrópolis")

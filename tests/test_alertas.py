@@ -44,3 +44,9 @@ def test_mensagem_desconhecida_vira_aviso():
     avisos = []
     A.estruturar([{"data": "2026-10-15T10:00", "mensagem": "Bom dia a todos"}], REF, avisos.append)
     assert avisos
+
+
+def test_itaipava_nas_mensagens_conta_como_petropolis():
+    r = _um("TOQUE DE AVISO DE CHUVA (13/10/2026 - 18h35)\n\nMunicípio:\nItaipava: 3 sirenes\n\nFonte: CEMADEN-RJ")
+    _, cod = REF.municipio("Petrópolis")
+    assert r["municipios"] == [cod] and r["envios"] == 1

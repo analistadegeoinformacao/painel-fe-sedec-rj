@@ -47,8 +47,14 @@ def _achar_municipios(trecho, ref):
     """Códigos IBGE dos municípios do RJ citados no trecho (comparação sem acento/maiúscula)."""
     global _NOMES
     if _NOMES is None:
-        _NOMES = sorted(((N.chave(re.sub(r"\s*-\s*RJ$", "", l["municipio"])), l["cod_ibge"]) for l in ref.linhas),
-                        key=lambda t: -len(t[0]))
+        pares = [(N.chave(re.sub(r"\s*-\s*RJ$", "", l["municipio"])), l["cod_ibge"]) for l in ref.linhas]
+        # distritos que aparecem no lugar do município (ex.: Itaipava -> Petrópolis)
+        for distrito, mun in N.DISTRITOS.items():
+            try:
+                pares.append((N.chave(distrito), ref.municipio(mun)[1]))
+            except ValueError:
+                pass
+        _NOMES = sorted(pares, key=lambda t: -len(t[0]))
     k = " " + re.sub(r"[^A-Z0-9]+", " ", N.chave(trecho)) + " "
     achados = []
     for nome, cod in _NOMES:

@@ -154,6 +154,12 @@ def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limi
             try:
                 if t == "municipio":
                     reg[campo], reg["cod_ibge"] = ref.municipio(v)
+                elif t == "nome_municipio":
+                    # só exibição (ex.: estação de temperatura): distrito vira o município; desconhecido fica como veio
+                    try:
+                        reg[campo] = ref.municipio(v)[0]
+                    except ValueError:
+                        reg[campo] = CONVERSORES["texto"](v)
                 elif t == "redec":
                     reg[campo] = ref.redec(v)
                 elif t == "latlon":

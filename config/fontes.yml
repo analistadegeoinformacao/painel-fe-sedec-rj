@@ -417,7 +417,7 @@ conjuntos:
       temp_c:        ["TEMP MAIOR"]
       municipio_ur:  ["MUNICÍPIO UR"]
       ur_pct:        ["UR MENOR"]
-    tipos: {data: data, temp_c: decimal, ur_pct: decimal}
+    tipos: {data: data, temp_c: decimal, ur_pct: decimal, municipio_temp: nome_municipio, municipio_ur: nome_municipio}
 
 ignoradas:
   - BASE_DADOS            # substituída por referencia/municipios_rj.csv (com código IBGE)
