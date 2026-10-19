@@ -193,6 +193,19 @@ conjuntos:
       cell_broadcast: ["DCA / Cell Broadcast"]
     tipos: {data: data, idap: sim_nao, cell_broadcast: inteiro}
 
+  # Mensagens de alerta coladas como chegam no WhatsApp (uma por linha). O ETL reconhece
+  # IDAP, Cell Broadcast (DCA) e sirenes e conta os envios de cada mensagem (etl/alertas.py).
+  alertas_msg:
+    aba: "ALERTAS-MENSAGENS"
+    titulo: "Mensagens de alerta (IDAP, Cell Broadcast, sirenes)"
+    min_linhas: 0
+    obrigatorias: [data, mensagem]
+    colunas:
+      data:     ["DATA"]
+      mensagem: ["MENSAGEM"]
+    tipos: {data: datahora, mensagem: multilinha}
+    interpretar: alertas
+
   ajuda_humanitaria:
     aba: "AJUDA HUMANITÁRIA"
     titulo: "Ações de ajuda humanitária"

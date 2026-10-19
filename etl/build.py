@@ -36,6 +36,8 @@ CONVERSORES = {
     "datahora": N.datahora,
     "hora": N.hora,
     "sim_nao": N.sim_nao,
+    # texto longo com quebras de linha preservadas (mensagens de alerta)
+    "multilinha": lambda v: None if N.vazio(v) else "\n".join(l.rstrip() for l in str(v).strip().split("\n")),
 }
 
 
@@ -288,6 +290,9 @@ def main(argv=None):
             dados, extra = [], []
         else:
             dados, extra = processar(nome, spec, abas[spec["aba"]], ref, rel, cfg["limites"])
+        if spec.get("interpretar") == "alertas":
+            from etl import alertas as A
+            dados = A.estruturar(dados, ref, lambda m, n=nome: rel.aviso(n, m))
         if spec.get("proximidade_uc"):
             dados = cruzar_ucs(nome, spec["proximidade_uc"], dados, rel, ucs_meta)
         if spec.get("compactar"):

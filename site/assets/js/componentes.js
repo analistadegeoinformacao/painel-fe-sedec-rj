@@ -78,6 +78,7 @@ export function tabela(el, { colunas, linhas, nome = "dados", porPagina = 50, or
 
   function celula(c, l) {
     const v = l[c.campo];
+    if (c.formato && c.tipo === "longo") return `<div class="longo" title="Clique para expandir">${esc(c.formato(v, l))}</div>`;
     if (c.formato) return c.tipo === "html" ? c.formato(v, l) : esc(c.formato(v, l));
     if (v === null || v === undefined || v === "") return `<span style="color:var(--texto-3)">—</span>`;
     if (c.tipo === "num") return fmt(v);

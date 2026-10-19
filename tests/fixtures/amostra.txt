@@ -191,3 +191,74 @@ leitura por h (medida),leitura por h (local)
 ## Sheet name: NÍVEL DE RESPOSTA
 NÍVEL DE RESPOSTA
 1
+## Sheet name: ALERTAS-MENSAGENS
+DATA,MENSAGEM
+15/10/2026 16:30,"📱 ALERTA IDAP
+
+1-Tipo: Chuvas Intensas para os municípios não autônomos das regiões Costa Verde, Sul I, Sul II, Serrana I, Serrana II e Baixada Fluminense.
+
+-Vigência: 16h25 até às 00h00 de 16/10
+
+-Descrição do Alerta: A atuação de áreas de instabilidade ocasionará pancadas de chuva moderada a pontualmente muito forte hoje (15/10).
+
+
+2-Tipo: Chuvas Intensas para os municípios não autônomos das regiões Baixada Litorânea, Metropolitana, Noroeste e Norte.
+
+-Vigência: 17h35 até às 00h00 de 16/10
+
+-Descrição do Alerta: A atuação de áreas de instabilidade ocasionará pancadas de chuva moderada a pontualmente muito forte hoje (15/10).
+
+🔊 SIRENES MOBILIZADAS
+ Não houve"
+14/10/2026 14:00,"SEDEC-RJ
+CEMADEN-RJ
+
+ALERTA VIA IDAP
+
+-Tipo: Chuvas Intensas com raios para todos os municípios não autônomos de todas as regiões do estado.
+
+-Vigência: 14h00 até às 00h00 de 15/10"
+14/10/2026 17:10,"SEDEC-RJ
+CEMADEN-RJ
+
+DEFESA CIVIL ALERTA (DCA/CBS)
+14/10/2026
+
+Município:
+Teresópolis: 01 Alerta
+Guapimirim: 02 Alertas
+
+Total: 03 CBS"
+13/10/2026 16:43,"SEDEC-RJ
+CEMADEN-RJ
+
+ENVIO DE DEFESA CIVIL ALERTA (CELLBROADCAST)
+Data/horário: 13/10/2026 - 16:43
+
+Tipo: SEVERO
+Categoria: INUNDAÇÃO
+
+Município:
+Rio Bonito
+
+Mensagem:
+ERJ alerta para inundacao no municipio de Rio Bonito. ABRIGUE-SE. Emergencia 193 e 199."
+13/10/2026 18:35,"SEDEC-RJ
+CEMADEN-RJ
+
+TOQUE DE AVISO DE CHUVA (13/10/2026 - 18h35)
+
+Município:
+Teresópolis: 24 sirenes
+Magé: 10 estações
+
+Fonte: CEMADEN-RJ"
+13/10/2026 19:10,"SEDEC-RJ
+CEMADEN-RJ
+
+TOQUE DE AVISO DE CHUVA - sirenes DESLIGADAS (13/10/2026 - 19h05)
+
+Município:
+Teresópolis: 24 sirenes
+
+Fonte: CEMADEN-RJ"

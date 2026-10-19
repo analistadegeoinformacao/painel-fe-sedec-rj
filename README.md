@@ -43,6 +43,10 @@ Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──�
   `referencia/ucs_rj.geojson` (UCs de proteção integral, sem zonas de amortecimento) e marca a UC e a faixa
   (dentro / até 500 m / até 1 km). A coordenada é descartada antes de publicar. Painel: cartões "Eventos em UC ou
   até 1 km" e "UC mais pressionada" (Visão geral) e ranking das UCs (Subtipos e territórios). Conta eventos.
+- **Mensagens de alerta (Eventos REDECs › Resposta):** aba ALERTAS-MENSAGENS (DATA | MENSAGEM), com a mensagem
+  colada como chega no WhatsApp. `etl/alertas.py` reconhece IDAP, Cell Broadcast e sirenes e conta envios
+  (IDAP: blocos "Tipo"; CB: "N Alerta(s)" por município; sirenes: municípios acionados — "desligadas" não contam).
+  Cartões clicáveis abrem a lista com o texto completo. Mensagem não reconhecida aparece na Qualidade.
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
 ## Por que este desenho não quebra a cada commit

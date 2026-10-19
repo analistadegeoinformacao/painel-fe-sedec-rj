@@ -19,14 +19,14 @@ const AMBIENTES = {
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   redecs: { abas: ["geral", "decretos", "resposta", "registros", "consulta", "qualidade"],
             conjuntos: ["eventos", "boletins", "danos_humanos", "decretos", "decretos_historico", "alertas",
-                        "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h", "nivel_resposta"],
+                        "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h", "nivel_resposta", "alertas_msg"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   fogo:   { abas: ["geral", "territorios", "condicoes", "registros", "depuracao", "qualidade"],
             conjuntos: ["fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_nivel_resposta", "fogo_ultimo_dia", "fogo"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
-const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "" };
+const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "" };
 const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
@@ -53,7 +53,7 @@ const CAMPO_DATA = {
   fogo_sisgeo: (l) => l.data_ocorrencia?.slice(0, 10), fogo_abertos: (l) => l.data_ocorrencia?.slice(0, 10),
   fogo_temperatura: (l) => l.data, fogo_umidade: (l) => l.data,
   sisgeo: (l) => l.data_ocorrencia?.slice(0, 10), eventos: (l) => l.data, boletins: (l) => l.data,
-  alertas: (l) => l.data, ajuda_humanitaria: (l) => l.data, pontos_apoio: (l) => l.data,
+  alertas: (l) => l.data, alertas_msg: (l) => l.data, ajuda_humanitaria: (l) => l.data, pontos_apoio: (l) => l.data,
 };
 
 // Depuração do SisGeO (feita no ETL): linhas com "depuracao" (situacao | motivo | ambos) não contam
@@ -68,6 +68,14 @@ function filtrar(nome, { comPeriodo = true, depuracao = "validas", semTipo = fal
     if (comPeriodo && fd && (st.de || st.ate)) {
       const d = fd(l);
       if (!d || (st.de && d < st.de) || (st.ate && d > st.ate)) return false;
+    }
+    if (nome === "alertas_msg") {
+      // mensagem sem local identificado vale para o estado todo; IDAP por região vale para a REDEC citada
+      if (st.municipio && l.municipios.length && !l.municipios.includes(st.municipio)) return false;
+      const rMun = st.municipio ? redecDoCod.get(st.municipio) : "";
+      if (st.municipio && !l.municipios.length && l.redecs.length && !l.redecs.includes(rMun)) return false;
+      if (st.redec && l.redecs.length && !l.redecs.includes(st.redec)) return false;
+      return true;
     }
     if (st.redec && (l.redec ?? redecDoCod.get(l.cod_ibge)) !== st.redec) return false;
     if (st.municipio && l.cod_ibge !== st.municipio) return false;
@@ -109,7 +117,7 @@ function montarFiltros() {
   ordenar(contarPor((BASE.dados.sisgeo || []).filter((l) => !l.depuracao), "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
-    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "" });
+    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "" });
     preencherMunicipios();
     atualizar();
   });
@@ -329,6 +337,8 @@ const SISGEO = {
 const NATUREZAS = [["inundacao", "Inundação / alagamento"], ["deslizamento", "Deslizamento"], ["desabamento", "Desabamento"],
   ["destelhamento", "Destelhamento"], ["salvamento", "Salvamento de pessoa"], ["queda_arvore", "Queda de árvore"], ["outros", "Outros"]];
 
+const ROTULO_ALERTA = { idap: "IDAP", cb: "Cell Broadcast", sirene: "Sirenes" };
+
 const REDECS = {
   geral() {
     const ev = filtrar("eventos"), dec = filtrar("decretos", { comPeriodo: false }), dh = filtrar("danos_humanos", { comPeriodo: false });
@@ -385,13 +395,37 @@ const REDECS = {
     }));
   },
   resposta() {
-    const aj = filtrar("ajuda_humanitaria"), pa = filtrar("pontos_apoio"), al = filtrar("alertas"), sev = filtrar("severidade", { comPeriodo: false });
+    const aj = filtrar("ajuda_humanitaria"), pa = filtrar("pontos_apoio"), sev = filtrar("severidade", { comPeriodo: false });
+    const msg = filtrar("alertas_msg");
+    const doTipo = (t) => (msg || []).filter((l) => l.tipo === t);
+    const abrir = (t) => () => { st.alerta = t; atualizar(); requestAnimationFrame(() => document.getElementById("r-alertas")?.scrollIntoView({ behavior: "smooth", block: "start" })); };
+    const cartaoMsg = (t, rotulo, sub) => {
+      const ls = doTipo(t), n = soma(ls, "envios");
+      return { rotulo, valor: msg ? n : "—", sub: msg ? sub(ls) : "aba ALERTAS-MENSAGENS indisponível",
+        ...(ls.length ? { acao: abrir(t), rotuloAcao: "Ver mensagens", dicaAcao: "Abrir o texto das mensagens" } : {}) };
+    };
     seguro("r-kpis-resposta", (el) => kpis(el, [
       { rotulo: "Ações de ajuda humanitária", valor: aj?.length ?? "—", destaque: true },
       { rotulo: "Pontos de apoio", valor: pa?.length ?? "—" },
-      { rotulo: "Dias com alerta IDAP", valor: al ? al.filter((l) => l.idap).length : "—" },
-      { rotulo: "Envios Cell Broadcast", valor: al ? soma(al, "cell_broadcast") : "—" },
+      cartaoMsg("idap", "Envios IDAP", (ls) => `${fmt(ls.length)} mensagem(ns) no período`),
+      cartaoMsg("cb", "Envios Cell Broadcast", (ls) => `${fmt(ls.length)} mensagem(ns) no período`),
+      cartaoMsg("sirene", "Acionamentos de sirenes", (ls) => `${fmt(soma(ls, "sirenes"))} sirenes/estações acionadas`),
     ]));
+    seguro("r-alertas-filtro", (el) => {
+      const ops = [["idap", "IDAP"], ["cb", "Cell Broadcast"], ["sirene", "Sirenes"], ["", "Todas"]];
+      el.innerHTML = ops.map(([v, r]) => `<button type="button" class="botao-texto" data-alerta="${v}" aria-pressed="${(st.alerta || "") === v}">${r} (${fmt(v ? doTipo(v).length : (msg || []).length)})</button>`).join("");
+      el.querySelectorAll("[data-alerta]").forEach((b) => b.addEventListener("click", () => { st.alerta = b.dataset.alerta; atualizar(); }));
+    });
+    seguro("r-alertas", (el) => tabela(el, {
+      nome: "mensagens_alerta", porPagina: 15, ordem: { campo: "quando", dir: -1 },
+      linhas: msg && (st.alerta ? doTipo(st.alerta) : msg).map((l) => ({ ...l, quando: `${l.data || ""} ${l.hora || ""}`, tipo_nome: ROTULO_ALERTA[l.tipo] || "Outra" })),
+      colunas: [
+        { campo: "quando", titulo: "Data", formato: (v) => `${fmtData(v.slice(0, 10))} ${v.slice(11)}` }, { campo: "tipo_nome", titulo: "Tipo" },
+        { campo: "envios", titulo: "Envios / acionam.", tipo: "num" }, { campo: "resumo", titulo: "Resumo", tipo: "longo" },
+        { campo: "texto", titulo: "Mensagem (clique para abrir)", tipo: "longo",
+          formato: (v) => String(v || "").replace(/^(\s*[_*"]*\s*(SEDEC-?RJ|CEMADEN-RJ)[_*\s]*\n)+/i, "").trim() }, // sem o cabeçalho fixo
+      ],
+    }));
     seguro("r-ajuda", (el) => tabela(el, {
       nome: "ajuda_humanitaria", linhas: aj, porPagina: 15, ordem: { campo: "data", dir: -1 },
       colunas: [{ campo: "data", titulo: "Data", formato: fmtData }, { campo: "municipio", titulo: "Município", formato: titulo },

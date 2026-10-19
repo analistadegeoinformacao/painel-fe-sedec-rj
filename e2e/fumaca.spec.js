@@ -281,3 +281,14 @@ test("SisGeO · Fogo: cartões de UC e ranking das UCs", async ({ page }) => {
     await expect(page.locator("#fv-ucs svg")).toBeVisible();
   }
 });
+
+test("Resposta: envios IDAP/Cell Broadcast/sirenes e mensagens ao clicar", async ({ page }) => {
+  await abrir(page, "#amb=redecs&aba=resposta");
+  await expect(page.locator("#r-kpis-resposta .kpi__rotulo")).toHaveText(["Ações de ajuda humanitária", "Pontos de apoio", "Envios IDAP", "Envios Cell Broadcast", "Acionamentos de sirenes"]);
+  const idap = page.locator("#r-kpis-resposta button.kpi", { hasText: "Envios IDAP" });
+  if (await idap.count()) {
+    await idap.click();
+    await expect(page.locator("#r-alertas-filtro [aria-pressed=true]")).toContainText("IDAP");
+    await expect(page.locator("#r-alertas tbody tr").first()).toContainText("IDAP");
+  }
+});
