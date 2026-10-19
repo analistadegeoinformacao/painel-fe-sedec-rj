@@ -306,3 +306,13 @@ test("Decretação: padrão só vigentes; cartão alterna para todos os registra
   await page.locator("#r-kpis-decretos button.kpi", { hasText: "Decretos registrados" }).click();
   await expect(page.locator("#r-decretos-titulo")).toHaveText("Decretos municipais vigentes");
 });
+
+test("mapa: botão enquadra o estado do RJ", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo");
+  const botao = page.locator("#s-mapa .botao-enquadrar");
+  await expect(botao).toBeVisible();
+  await page.locator("#s-mapa .leaflet-control-zoom-in").click();
+  await page.locator("#s-mapa .leaflet-control-zoom-in").click();
+  await botao.click();
+  await expect(page.locator("#s-mapa .leaflet-control-zoom-out")).not.toHaveClass(/disabled/);
+});

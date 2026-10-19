@@ -287,3 +287,4 @@ body:not([data-amb="fogo"]) [data-so-amb="fogo"] { display: none; }
 :root[data-tema-efetivo="escuro"] .botao-tema .icone-sol { display: block; }
 :root[data-tema-efetivo="escuro"] .botao-tema .icone-lua { display: none; }
 .botao-texto[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
+.leaflet-bar a.botao-enquadrar { display: grid; place-items: center; color: #333; }

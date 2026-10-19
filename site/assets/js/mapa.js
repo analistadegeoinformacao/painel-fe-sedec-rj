@@ -81,6 +81,20 @@ export async function criarMapa(el, aoClicar) {
   }
   const limites = camada.getBounds();
   mapa.fitBounds(limites, { padding: [8, 8] });
+  // botão logo abaixo do + / −: volta a enquadrar o estado inteiro com um clique
+  const enquadrar = L.control({ position: "topleft" });
+  enquadrar.onAdd = () => {
+    const div = L.DomUtil.create("div", "leaflet-bar");
+    const a = L.DomUtil.create("a", "botao-enquadrar", div);
+    a.href = "#";
+    a.title = a.ariaLabel = "Enquadrar o estado do RJ";
+    a.setAttribute("role", "button");
+    a.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>`;
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.on(a, "click", (e) => { L.DomEvent.preventDefault(e); mapa.fitBounds(limites, { padding: [8, 8] }); });
+    return div;
+  };
+  enquadrar.addTo(mapa);
   new ResizeObserver(() => mapa.invalidateSize()).observe(el);
   let legenda;
 
