@@ -756,7 +756,8 @@ function montarBotaoAtualizar() {
     botao.disabled = false;
     rotulo.textContent = "Atualizar";
     el.textContent = msg;
-    setTimeout(() => status(BASE.meta), 4000);
+    clearTimeout(botao._volta); // cliques seguidos: só o último devolve o selo ao normal
+    botao._volta = setTimeout(() => status(BASE.meta), 4000);
   });
 }
 
