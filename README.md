@@ -100,7 +100,7 @@ O GitHub consulta a planilha **a cada 2 min** (horários de pico podem atrasar e
 republica o site quando os dados mudaram — ou a cada 10 min, como sinal de vida (o selo "Última leitura" mostra a hora da última conferência). Sem tokens e sem nada a renovar.
 
 - **Botão Atualizar** (topo do painel): carrega na hora a versão mais recente já publicada.
-- **Painel aberto numa tela**: confere sozinho a cada 5 min e recarrega quando há dados novos.
+- **Painel aberto numa tela**: confere sozinho a cada 2 min e recarrega quando há dados novos.
 - **Publicar imediatamente** (sem esperar os 10 min): *Actions › Atualizar e publicar painel › Run workflow*.
 
 > Alternativa sem Apps Script: `--fonte google` com conta de serviço do Google Cloud (a Sheets API também é gratuita,

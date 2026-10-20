@@ -715,7 +715,7 @@ const RENDER = { sisgeo: SISGEO, redecs: REDECS, fogo: FOGO };
 // ------------------------------------------------ dados novos
 // O GitHub consulta a planilha a cada ~10 min e só republica quando algo mudou.
 // O botão "Atualizar" busca na hora a versão mais recente publicada; um painel
-// deixado aberto também confere sozinho a cada 5 min.
+// deixado aberto também confere sozinho a cada 2 min.
 async function verificarDadosNovos() {
   const r = await fetch(`data/meta.json?t=${Date.now()}`, { cache: "no-store" });
   if (!r.ok) throw new Error(`meta.json: HTTP ${r.status}`);
@@ -839,8 +839,8 @@ async function iniciar() {
   status(BASE.meta);
   montarFiltros();
   montarBotaoAtualizar();
-  // painel aberto numa tela: confere a cada 5 min se há dados novos e recarrega sozinho
-  setInterval(() => verificarDadosNovos().catch(() => {}), 5 * 60 * 1000);
+  // painel aberto numa tela: confere a cada 2 min se há dados novos e recarrega sozinho
+  setInterval(() => verificarDadosNovos().catch(() => {}), 2 * 60 * 1000);
 
   document.querySelector(".ambientes").addEventListener("click", (e) => {
     const a = e.target.closest("a[data-amb]");
