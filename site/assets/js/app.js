@@ -353,7 +353,7 @@ const REDECS = {
         const n = dh ? soma(dh, campo) : null;
         const ativo = st.danos === campo;
         return { rotulo, valor: n ?? "—", sub: "situação atual · aba DANOS HUMANOS", destaque: ativo,
-          ...(n ? { acao: () => { st.danos = ativo ? "" : campo; atualizar(); }, rotuloAcao: ativo ? "Fechar" : "Ver de onde vem",
+          ...(n ? { acao: () => { st.danos = ativo ? "" : campo; atualizar(); }, rotuloAcao: ativo ? "Fechar" : "Clique para detalhar",
             dicaAcao: ativo ? "Fechar a lista" : `Mostrar as linhas da aba DANOS HUMANOS que somam ${fmt(n)}` } : {}) };
       }),
     ]));
