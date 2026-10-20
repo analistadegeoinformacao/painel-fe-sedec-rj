@@ -321,3 +321,16 @@ test("mapa: botão enquadra o estado do RJ", async ({ page }) => {
   await botao.click();
   await expect(page.locator("#s-mapa .leaflet-control-zoom-out")).not.toHaveClass(/disabled/);
 });
+
+test("REDECs: cartão de danos humanos mostra as linhas que somam o número", async ({ page }) => {
+  await abrir(page, "#amb=redecs");
+  const cartao = page.locator("#r-kpis button.kpi", { hasText: "Afetados" });
+  test.skip(await cartao.count() === 0, "amostra sem afetados");
+  const total = Number((await cartao.locator(".kpi__valor").innerText()).replace(/\D/g, ""));
+  await cartao.click();
+  await expect(page.locator("#r-danos-titulo")).toContainText("Afetados");
+  const vals = await page.locator("#r-danos tbody tr").evaluateAll((trs) => trs.map((tr) => tr.children[4].innerText));
+  expect(vals.reduce((s, v) => s + Number(v.replace(/\D/g, "")), 0)).toBe(total);
+  await cartao.click();
+  await expect(page.locator("#r-danos")).toBeHidden();
+});

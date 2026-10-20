@@ -26,7 +26,7 @@ const AMBIENTES = {
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
-const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "", decretos: "" };
+const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "", decretos: "", danos: "" };
 const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
@@ -117,7 +117,7 @@ function montarFiltros() {
   ordenar(contarPor((BASE.dados.sisgeo || []).filter((l) => !l.depuracao), "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
-    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "", decretos: "" });
+    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "", decretos: "", danos: "" });
     preencherMunicipios();
     atualizar();
   });
@@ -337,6 +337,7 @@ const SISGEO = {
 const NATUREZAS = [["inundacao", "Inundação / alagamento"], ["deslizamento", "Deslizamento"], ["desabamento", "Desabamento"],
   ["destelhamento", "Destelhamento"], ["salvamento", "Salvamento de pessoa"], ["queda_arvore", "Queda de árvore"], ["outros", "Outros"]];
 
+const DANOS = [["desalojados", "Desalojados"], ["desabrigados", "Desabrigados"], ["afetados", "Afetados"], ["obitos", "Óbitos"]];
 const ROTULO_ALERTA = { idap: "IDAP", cb: "Cell Broadcast", sirene: "Sirenes" };
 
 const REDECS = {
@@ -348,11 +349,31 @@ const REDECS = {
       { rotulo: "Decretos vigentes", valor: dec ? dec.filter(vigente).length : "—", sub: "situação hoje" },
       // danos humanos: SEMPRE da aba DANOS HUMANOS (número atual por município, corrigido para mais ou para menos
       // pela equipe). Não somar os eventos: o mesmo desalojado apareceria em vários registros.
-      { rotulo: "Desalojados", valor: dh ? soma(dh, "desalojados") : "—", sub: "situação atual · aba DANOS HUMANOS" },
-      { rotulo: "Desabrigados", valor: dh ? soma(dh, "desabrigados") : "—", sub: "situação atual · aba DANOS HUMANOS" },
-      { rotulo: "Afetados", valor: dh ? soma(dh, "afetados") : "—", sub: "situação atual · aba DANOS HUMANOS" },
-      { rotulo: "Óbitos", valor: dh ? soma(dh, "obitos") : "—", sub: "situação atual · aba DANOS HUMANOS" },
+      ...DANOS.map(([campo, rotulo]) => {
+        const n = dh ? soma(dh, campo) : null;
+        const ativo = st.danos === campo;
+        return { rotulo, valor: n ?? "—", sub: "situação atual · aba DANOS HUMANOS", destaque: ativo,
+          ...(n ? { acao: () => { st.danos = ativo ? "" : campo; atualizar(); }, rotuloAcao: ativo ? "Fechar" : "Ver de onde vem",
+            dicaAcao: ativo ? "Fechar a lista" : `Mostrar as linhas da aba DANOS HUMANOS que somam ${fmt(n)}` } : {}) };
+      }),
     ]));
+    // ao clicar num cartão de danos humanos: só as linhas da aba DANOS HUMANOS que compõem aquele número
+    seguro("r-danos", (el) => {
+      const sec = el.closest(".cartao");
+      const item = DANOS.find(([c]) => c === st.danos);
+      if (!item || !dh) { sec.hidden = true; return; }
+      sec.hidden = false;
+      const [campo, rotulo] = item;
+      const linhas = dh.filter((l) => (l[campo] || 0) > 0);
+      document.getElementById("r-danos-titulo").textContent = `${rotulo}: ${fmt(soma(linhas, campo))} — de onde vem`;
+      tabela(el, {
+        nome: `danos_humanos_${campo}`, linhas, porPagina: 100, ordem: { campo, dir: -1 },
+        colunas: [
+          { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
+          ...DANOS.map(([c, r]) => ({ campo: c, titulo: c === campo ? `▶ ${r}` : r, tipo: "num" })),
+        ],
+      });
+    });
     seguro("r-redec", (el) => { if (!indisponivel(el, ev)) barrasH(el, porRedec(ev), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "eventos" }); });
     seguro("r-serie", (el) => {
       if (indisponivel(el, ev)) return;
