@@ -1,6 +1,6 @@
 # Vigia da planilha: o agendamento do GitHub ("schedule") atrasa muito — na prática
 # roda de 3 em 3 horas. Este fluxo fica ligado (~5h45) olhando a planilha a cada
-# 5 min e, quando os dados mudam (ou a última publicação tem mais de 1 h), dispara
+# 2 min e, quando os dados mudam (ou a última publicação tem mais de 10 min), dispara
 # "Atualizar e publicar painel". Ao terminar, religa a si mesmo. Não precisa de
 # token pessoal: usa o token automático do próprio GitHub (permissão actions: write).
 # Repositório público = minutos de Actions gratuitos.
@@ -32,7 +32,7 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt
 
-      - name: Olhar a planilha a cada 5 min
+      - name: Olhar a planilha a cada 2 min
         env:
           APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
           APPS_SCRIPT_TOKEN: ${{ secrets.APPS_SCRIPT_TOKEN }}
@@ -46,12 +46,13 @@ jobs:
               decisao=$(GITHUB_OUTPUT= python -m etl.precisa_publicar --base "$SITE" --evento schedule --dados /tmp/dados)
               echo "$(date -u +%H:%M) $decisao"
               if echo "$decisao" | grep -q "^publicar=true"; then
-                gh workflow run publicar.yml --ref main && sleep 480 && continue
+                # espera a publicação terminar (~3 min) antes de olhar de novo, para não disparar em dobro
+                gh workflow run publicar.yml --ref main && sleep 240 && continue
               fi
             else
               echo "$(date -u +%H:%M) leitura falhou: $(tail -2 /tmp/etl.log | tr '\n' ' ')"
             fi
-            sleep 300
+            sleep 120
           done
 
       - name: Religar o vigia

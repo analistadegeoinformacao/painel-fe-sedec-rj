@@ -4,7 +4,7 @@ Painel estático (GitHub Pages) alimentado pela planilha **NOVA BASE ANALISTAS**
 SEDEC-RJ · FE-SEDEC · NI²AD.
 
 ```
-Google Sheets ──(GitHub Actions, a cada 10 min)──► ETL Python ──► validação ──► JSON ──► teste no navegador ──► GitHub Pages
+Google Sheets ──(GitHub Actions, a cada 2 min)──► ETL Python ──► validação ──► JSON ──► teste no navegador ──► GitHub Pages
                                                        │ falhou?
                                                        └─► nada é publicado; o site continua com a última versão boa
 ```
@@ -96,7 +96,7 @@ Já configurado no repositório: Pages via GitHub Actions e proteção da branch
 
 ### Frequência de atualização
 
-O GitHub consulta a planilha **a cada 10 min** (horários de pico podem atrasar execuções agendadas) e só
+O GitHub consulta a planilha **a cada 2 min** (horários de pico podem atrasar execuções agendadas) e só
 republica o site quando os dados mudaram — ou a cada 10 min, como sinal de vida (o selo "Última leitura" mostra a hora da última conferência). Sem tokens e sem nada a renovar.
 
 - **Botão Atualizar** (topo do painel): carrega na hora a versão mais recente já publicada.
