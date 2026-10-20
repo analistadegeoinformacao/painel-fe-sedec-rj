@@ -288,3 +288,5 @@ body:not([data-amb="fogo"]) [data-so-amb="fogo"] { display: none; }
 :root[data-tema-efetivo="escuro"] .botao-tema .icone-lua { display: none; }
 .botao-texto[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
 .leaflet-bar a.botao-enquadrar { display: grid; place-items: center; color: #333; }
+/* detalhe dos danos humanos: números centralizados sob o título de cada coluna */
+#r-danos th:nth-child(n+3), #r-danos td:nth-child(n+3) { text-align: center; }
