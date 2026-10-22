@@ -154,7 +154,7 @@ def contar_depuracao(regs, chaves) -> dict:
 
 def clima_com_alerta(nome, regra, resultados, ref, rel):
     """Condição climática diferente da válida (ex.: Tempo seco) volta a contar quando houve alerta
-    (IDAP / Cell Broadcast) para o município ou para a região dele no dia da ocorrência ou na véspera:
+    (os tipos do contrato: IDAP / Cell Broadcast / acionamento de sirene) para o município ou para a região dele no dia da ocorrência ou na véspera:
     cobre ventania/vendaval e solo encharcado depois da chuva. Alerta que cita municípios vale para
     eles; alerta só por região (REDEC) vale para a região; IDAP "todos, exceto…" vale para o estado."""
     import re

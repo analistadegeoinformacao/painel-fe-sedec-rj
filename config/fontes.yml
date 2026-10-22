@@ -138,9 +138,10 @@ conjuntos:
       situacoes_validas: ["Ocorrência atendida com prestação de serviço", "Encerrada com empenho de viatura"]
       # só no SisGeO · Chuvas: ocorrência com condição climática preenchida e diferente destas sai da contagem
       condicoes_validas: ["Tempo Chuvoso"]
-      # ...mas outra condição (ex.: Tempo seco) volta a contar se houve alerta IDAP ou Cell Broadcast
-      # (aba ALERTAS-MENSAGENS) para o município ou a região dele no dia da ocorrência ou na véspera
-      clima_com_alerta: {conjunto: alertas_msg, tipos: [idap, cb], dias_antes: 1}
+      # ...mas outra condição (ex.: Tempo seco) volta a contar se houve alerta IDAP, Cell Broadcast ou
+      # acionamento de sirene (aba ALERTAS-MENSAGENS; sirenes desligadas não contam) para o município
+      # ou a região dele no dia da ocorrência ou na véspera
+      clima_com_alerta: {conjunto: alertas_msg, tipos: [idap, cb, sirene], dias_antes: 1}
 
   danos_humanos:
     aba: "DANOS HUMANOS"
