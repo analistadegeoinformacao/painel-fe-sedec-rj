@@ -13,7 +13,6 @@ interrompe a publicação (o site no ar continua com a última versão boa).
 from __future__ import annotations
 
 import argparse
-import re
 import json
 import os
 import shutil
@@ -129,16 +128,9 @@ def depurar(nome, dep, saida, cols, rel):
         rel.aviso(nome, "coluna de situação ausente: depuração por situação não aplicada")
     if climas and not usa_clima:
         rel.aviso(nome, "coluna de condição climática ausente: depuração por condição climática não aplicada")
-    # texto livre que exclui (ex.: fogo em lixo citado na Avaliação do cenário / Informações complementares).
-    # As colunas de texto livre só são lidas aqui e NUNCA são publicadas.
-    tx = dep.get("texto_exclui") or {}
-    tx_cols = [c for c in tx.get("colunas", []) if c in cols]
-    if tx and not tx_cols:
-        rel.aviso(nome, f"colunas de {tx.get('rotulo', 'texto')} ausentes: depuração por {tx.get('rotulo', 'texto')} não aplicada")
-    tx_rx = re.compile(tx["padrao"]) if tx_cols else None
+    cont = Counter()
     for reg in saida:
         motivo = reg.pop("motivo_exclusao", None)
-        textos = {c: reg.pop(c, None) for c in tx.get("colunas", [])}
         criterios = []
         if usa_sit and N.chave(reg.get("situacao") or "") not in validas:
             criterios.append("situacao")
@@ -148,15 +140,9 @@ def depurar(nome, dep, saida, cols, rel):
         if (usa_clima and not N.vazio(reg.get("condicao_climatica")) and N.chave(reg["condicao_climatica"]) not in climas
                 and N.chave(reg.get("tipo") or "") not in tipos_livres):
             criterios.append("clima")
-        if tx_rx:
-            onde = [tx["nomes"].get(c, c) for c in tx_cols if textos.get(c) and tx_rx.search(N.chave(textos[c]))]
-            if onde:
-                criterios.append(tx["criterio"])
-                if "motivo" not in reg:
-                    reg["motivo"] = f"{tx['rotulo'].capitalize()} citado em {' e '.join(onde)}"
         if criterios:
             reg["depuracao"] = "+".join(criterios)
-    chaves = ("validas", "situacao", "motivo") + (("clima",) if climas else ()) + ((tx["criterio"],) if tx else ()) + ("ambos",)
+    chaves = ("validas", "situacao", "motivo") + (("clima",) if climas else ()) + ("ambos",)
     rel.depuracao[nome] = contar_depuracao(saida, chaves)
 
 

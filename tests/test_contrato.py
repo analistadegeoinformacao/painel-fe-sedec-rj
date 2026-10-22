@@ -339,23 +339,3 @@ def test_depuracao_tipos_sem_clima_e_motivo_sempre_exclui():
     rel = build.Relatorio()
     build.depurar("sisgeo", dep, regs, {"situacao": 0, "condicao_climatica": 1, "motivo_exclusao": 2}, rel)
     assert [r.get("depuracao") for r in regs] == [None, None, "clima", "motivo", "motivo"]
-
-
-def test_fogo_em_lixo_no_texto_exclui_e_texto_nao_e_publicado():
-    import yaml
-    cfg = yaml.safe_load(open(Path(__file__).parents[1] / "config" / "fontes.yml", encoding="utf-8"))
-    dep = cfg["conjuntos"]["fogo_sisgeo"]["depuracao"]
-    ok = {"situacao": "Encerrada com empenho de viatura"}
-    regs = [{**ok, "avaliacao_cenario": "Fogo em LIXO na via pública", "info_complementar": ""},
-            {**ok, "avaliacao_cenario": "Vegetação rasteira", "info_complementar": "havia uma lixeira queimando"},
-            {**ok, "avaliacao_cenario": "Lixão municipal", "info_complementar": None},
-            {**ok, "avaliacao_cenario": "Mata ciliar", "info_complementar": "Lixívia? não; capim seco"},
-            {**ok, "avaliacao_cenario": "Fogo no lixo", "motivo_exclusao": "Fogo no lixo"},
-            {"situacao": "Cancelada", "avaliacao_cenario": "lixo", "info_complementar": ""}]
-    rel = build.Relatorio()
-    build.depurar("fogo_sisgeo", dep, regs, {"situacao": 0, "avaliacao_cenario": 1, "info_complementar": 2, "motivo_exclusao": 3}, rel)
-    assert [r.get("depuracao") for r in regs] == ["lixo", "lixo", "lixo", None, "motivo+lixo", "situacao+lixo"]
-    assert regs[1]["motivo"] == "Fogo em lixo citado em Informações complementares"
-    assert regs[4]["motivo"] == "Fogo no lixo"
-    assert not any("avaliacao_cenario" in r or "info_complementar" in r for r in regs), "texto livre não pode sair"
-    assert rel.depuracao["fogo_sisgeo"] == {"validas": 1, "situacao": 0, "motivo": 0, "lixo": 3, "ambos": 2}
