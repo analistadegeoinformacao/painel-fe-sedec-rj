@@ -227,3 +227,30 @@ def test_avisos_trazem_numero_da_linha_e_linha_nao_e_publicada(tmp_path):
     assert rep and re.search(r"linha \d+ repete a linha \d+", rep[0])
     for f in saida.glob("*.json"):
         assert '"_linha"' not in f.read_text(encoding="utf-8"), f.name
+
+
+def test_colunas_em_outra_ordem_e_posicao_no_lugar_de_latlon(tmp_path):
+    """Download colado direto: colunas em outra ordem e 'Posição' no lugar de 'Latitude/Longitude'."""
+    import csv as _csv, io as _io
+    texto = (Path(__file__).parent / "fixtures" / "amostra_fogo.txt").read_text(encoding="utf-8")
+    partes = texto.split("## Sheet name: ")
+    k = next(i for i, p in enumerate(partes) if p.startswith("SISGEO_FV\n"))
+    cab, corpo = partes[k].split("\n", 1)
+    linhas = list(_csv.reader(_io.StringIO(corpo)))
+    h = linhas[0]
+    largura = len(h)
+    linhas = [r + [""] * (largura - len(r)) for r in linhas]
+    ordem = list(reversed(range(largura)))
+    linhas = [[r[i] for i in ordem] for r in linhas]
+    linhas[0] = ["Posição" if c == "Latitude/Longitude" else c for c in linhas[0]]
+    out = _io.StringIO(); _csv.writer(out, lineterminator="\n").writerows(linhas)
+    partes[k] = cab + "\n" + out.getvalue()
+    fogo = tmp_path / "fogo.txt"; fogo.write_text("## Sheet name: ".join(partes), encoding="utf-8")
+    ref_saida = tmp_path / "ref"
+    assert build.main(["--fonte", "texto", "--origem", str(AMOSTRA), "--origem-fogo",
+                       str(Path(__file__).parent / "fixtures" / "amostra_fogo.txt"), "--saida", str(ref_saida)]) == 0
+    saida = tmp_path / "data"
+    assert build.main(["--fonte", "texto", "--origem", str(AMOSTRA), "--origem-fogo", str(fogo), "--saida", str(saida)]) == 0
+    a = (ref_saida / "fogo_sisgeo.json").read_text(encoding="utf-8")
+    b = (saida / "fogo_sisgeo.json").read_text(encoding="utf-8")
+    assert a == b, "mesma planilha em outra ordem deve gerar exatamente os mesmos dados"
