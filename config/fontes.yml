@@ -325,7 +325,10 @@ conjuntos:
       municipio:       ["Município"]
       motivo_exclusao: ["Motivo da Exclusão"]   # só para a depuração; publicado higienizado na aba Depuração
       latlon:          ["Latitude/Longitude", "Posição"]   # só para o cruzamento com UCs; NUNCA publicado (ver proximidade_uc)
-      # DE FORA DE PROPÓSITO: Efetivo, Endereço, Viatura, Avaliação/Atualização Cenário
+      # texto livre: só lido na depuração (procura "lixo"); NUNCA publicado
+      avaliacao_cenario: ["Avaliação do cenário", "Avaliação Cenário"]
+      info_complementar: ["Informações complementares", "Atualização Cenário"]
+      # DE FORA DE PROPÓSITO: Efetivo, Endereço, Viatura
     tipos: {redec: redec, data_ocorrencia: datahora, vitimas: inteiro, municipio: municipio, latlon: latlon}
     casas_decimais_coord: 5
     # Cruzamento com unidades de conservação (etl/ucs.py): cada ocorrência ganha a UC e a faixa
@@ -339,6 +342,14 @@ conjuntos:
     # aparecem só na aba Depuração (com o motivo, higienizado: sem nº longos nem e-mails).
     depuracao:
       situacoes_validas: ["Ocorrência atendida com prestação de serviço", "Encerrada com empenho de viatura"]
+      # fogo em lixo citado na Avaliação do cenário ou nas Informações complementares também sai
+      # (lixo, lixos, lixeira, lixão — sem diferenciar acento/maiúscula)
+      texto_exclui:
+        criterio: lixo
+        rotulo: "fogo em lixo"
+        colunas: [avaliacao_cenario, info_complementar]
+        nomes: {avaliacao_cenario: "Avaliação do cenário", info_complementar: "Informações complementares"}
+        padrao: '\bLIX(O|OS|EIRA|EIRAS|AO|OES)\b'
 
     compactar: true     # ~17 mil linhas: município/REDEC saem do JSON e voltam pelo código IBGE
 

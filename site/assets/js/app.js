@@ -703,7 +703,7 @@ const FOGO = {
 };
 
 // ---- aba Depuração (SisGeO · Chuvas e SisGeO · Fogo)
-const ROTULO_DEP = { situacao: "Situação", motivo: "Motivo da exclusão", clima: "Condição climática" };
+const ROTULO_DEP = { situacao: "Situação", motivo: "Motivo da exclusão", clima: "Condição climática", lixo: "Fogo em lixo" };
 // "situacao+clima" -> "Situação e Condição climática"
 const rotuloDep = (d) => String(d || "").split("+").map((k) => ROTULO_DEP[k] || k).join(" e ");
 const categoriaDep = (d) => (String(d).includes("+") ? "ambos" : d);
@@ -714,13 +714,15 @@ function abaDepuracao(nome, p) {
     const c = contarPor(exc.map((l) => ({ k: categoriaDep(l.depuracao) })), "k"), total = validas.length + exc.length;
     const pct = (n) => (total ? `${Math.round((100 * n) / total)}% do registrado` : "");
     const comClima = "clima" in (BASE.meta.conjuntos[nome]?.depuracao || {});
+    const comLixo = "lixo" in (BASE.meta.conjuntos[nome]?.depuracao || {});
     kpis(el, [
       { rotulo: "Registradas", valor: total, sub: descricaoPeriodo() },
       { rotulo: "Válidas", valor: validas.length, sub: pct(validas.length), destaque: true },
       { rotulo: "Excluídas por situação", valor: c.get("situacao") || 0, sub: "situação diferente das válidas" },
       { rotulo: "Excluídas por motivo", valor: c.get("motivo") || 0, sub: "com Motivo da Exclusão preenchido" },
       ...(comClima ? [{ rotulo: "Excluídas por condição climática", valor: c.get("clima") || 0, sub: "sem Tempo Chuvoso e sem alerta no dia ou na véspera" }] : []),
-      { rotulo: comClima ? "Por mais de um critério" : "Por situação e motivo", valor: c.get("ambos") || 0, sub: `total excluído: ${fmt(exc.length)} (${pct(exc.length) || "0%"})` },
+      ...(comLixo ? [{ rotulo: "Excluídas por fogo em lixo", valor: c.get("lixo") || 0, sub: "citado na Avaliação do cenário ou Informações complementares" }] : []),
+      { rotulo: comClima || comLixo ? "Por mais de um critério" : "Por situação e motivo", valor: c.get("ambos") || 0, sub: `total excluído: ${fmt(exc.length)} (${pct(exc.length) || "0%"})` },
     ]);
   });
   seguro(`${p}-dep-situacao`, (el) => {
