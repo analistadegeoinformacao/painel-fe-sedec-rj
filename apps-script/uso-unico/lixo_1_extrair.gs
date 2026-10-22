@@ -3,8 +3,8 @@
  * "lixo" (lixo, lixos, lixeira, lixão…) na Avaliação do cenário ou nas Informações complementares
  * e ainda estão SEM Motivo da Exclusão, para o Claude ler e decidir caso a caso.
  *
- * NÃO altera a planilha de fogo. Cria no seu Drive planilhas novas "LIXO REVISAR - parte N"
- * (até 250 ocorrências cada) com: linha, IdEvento, Ocorrência e o trecho do texto onde o lixo aparece.
+ * NÃO altera a planilha de fogo. Cria no seu Drive documentos "LIXO REVISAR TEXTO - parte N"
+ * (até 250 ocorrências cada), uma por linha: linha | IdEvento | Ocorrência | AV: trecho | IC: trecho.
  * Depois da revisão, essas planilhas podem ser apagadas.
  *
  * COMO USAR: script.google.com › Novo projeto › cole este arquivo › salve ›
@@ -54,14 +54,17 @@ function extrair() {
     if (!av && !inf) continue;
     linhas.push([r + 1, l[cEv], l[cOc], av ? trecho_(l[cAv]) : '', inf ? trecho_(l[cIn]) : '']);
   }
+  // documentos de texto (o Drive entrega o texto inteiro; de planilha ele só mostra uma amostra)
   var partes = Math.ceil(linhas.length / POR_PARTE);
   for (var p = 0; p < partes; p++) {
     var bloco = linhas.slice(p * POR_PARTE, (p + 1) * POR_PARTE);
-    var nova = SpreadsheetApp.create('LIXO REVISAR - parte ' + (p + 1) + ' de ' + partes);
-    var aba = nova.getSheets()[0];
-    aba.getRange(1, 1, 1, 5).setValues([['linha', 'IdEvento', 'Ocorrência', 'Avaliação do cenário (trecho)', 'Informações complementares (trecho)']]);
-    aba.getRange(2, 1, bloco.length, 5).setNumberFormat('@').setValues(bloco);
-    Logger.log('Parte ' + (p + 1) + ': ' + bloco.length + ' ocorrências — ' + nova.getUrl());
+    var doc = DocumentApp.create('LIXO REVISAR TEXTO - parte ' + (p + 1) + ' de ' + partes);
+    var texto = bloco.map(function (l) {
+      return '#' + l[0] + ' | ' + l[1] + ' | ' + l[2] + (l[3] ? ' | AV: ' + l[3] : '') + (l[4] ? ' | IC: ' + l[4] : '');
+    }).join('\n');
+    doc.getBody().setText(texto);
+    doc.saveAndClose();
+    Logger.log('Parte ' + (p + 1) + ': ' + bloco.length + ' ocorrências — ' + doc.getUrl());
   }
   Logger.log('Total separado para revisão: ' + linhas.length + ' (só as que ainda estão sem Motivo da Exclusão).');
 }
