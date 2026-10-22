@@ -123,6 +123,7 @@ def depurar(nome, dep, saida, cols, rel):
     climas = {N.chave(s) for s in dep.get("condicoes_validas", [])}
     usa_sit = "situacao" in cols
     usa_clima = bool(climas) and "condicao_climatica" in cols
+    tipos_livres = {N.chave(t) for t in dep.get("clima_nao_se_aplica_aos_tipos", [])}
     if not usa_sit:
         rel.aviso(nome, "coluna de situação ausente: depuração por situação não aplicada")
     if climas and not usa_clima:
@@ -136,7 +137,8 @@ def depurar(nome, dep, saida, cols, rel):
         if not N.vazio(motivo):
             criterios.append("motivo")
             reg["motivo"] = higienizar_motivo(motivo)
-        if usa_clima and not N.vazio(reg.get("condicao_climatica")) and N.chave(reg["condicao_climatica"]) not in climas:
+        if (usa_clima and not N.vazio(reg.get("condicao_climatica")) and N.chave(reg["condicao_climatica"]) not in climas
+                and N.chave(reg.get("tipo") or "") not in tipos_livres):
             criterios.append("clima")
         if criterios:
             reg["depuracao"] = "+".join(criterios)

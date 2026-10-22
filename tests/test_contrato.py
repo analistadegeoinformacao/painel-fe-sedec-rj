@@ -323,3 +323,19 @@ def test_bairros_do_rio_viram_rio_de_janeiro():
     ref = N.Referencia()
     for v in ("Bandeirante", "Recreio dos Bandeirantes", "Jpa", "Jacarepaguá"):
         assert ref.municipio(v)[0] == ref.municipio("Rio de Janeiro")[0]
+
+
+def test_depuracao_tipos_sem_clima_e_motivo_sempre_exclui():
+    """Inundação/Alagamento e Deslizamento/Desabamento contam com qualquer condição climática;
+    Motivo da Exclusão preenchido exclui sempre, mesmo com Tempo Chuvoso ou tipo isento."""
+    dep = {"situacoes_validas": ["Encerrada com empenho de viatura"], "condicoes_validas": ["Tempo Chuvoso"],
+           "clima_nao_se_aplica_aos_tipos": ["Inundação/Alagamento", "Deslizamento/Desabamento"]}
+    base = {"situacao": "Encerrada com empenho de viatura"}
+    regs = [{**base, "tipo": "Inundação/Alagamento", "condicao_climatica": "Tempo seco"},
+            {**base, "tipo": "DESLIZAMENTO/DESABAMENTO", "condicao_climatica": "Tempo seco"},
+            {**base, "tipo": "Corte de Árvore", "condicao_climatica": "Tempo seco"},
+            {**base, "tipo": "Corte de Árvore", "condicao_climatica": "Tempo Chuvoso", "motivo_exclusao": "Árvore podada"},
+            {**base, "tipo": "Inundação/Alagamento", "condicao_climatica": "Tempo seco", "motivo_exclusao": "vazamento"}]
+    rel = build.Relatorio()
+    build.depurar("sisgeo", dep, regs, {"situacao": 0, "condicao_climatica": 1, "motivo_exclusao": 2}, rel)
+    assert [r.get("depuracao") for r in regs] == [None, None, "clima", "motivo", "motivo"]

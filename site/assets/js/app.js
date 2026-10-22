@@ -720,6 +720,10 @@ function abaDepuracao(nome, p) {
     if (indisponivel(el, porSit)) return;
     barrasH(el, ordenar(contarPor(porSit.map((l) => ({ s: l.situacao || "(sem situação)" })), "s"), 10), { unidade: "ocorrências" });
   });
+  seguro(`${p}-dep-municipio`, (el) => {
+    if (!indisponivel(el, exc)) barrasH(el, ordenar(contarPor(exc, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
+      { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
+  });
   seguro(`${p}-dep-redec`, (el) => { if (!indisponivel(el, exc)) barrasH(el, porRedec(exc), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
   seguro(`${p}-dep-tabela`, (el) => tabela(el, {
     nome: `${nome}_excluidas_depuracao`, linhas: exc?.map((l) => ({ ...l, exclusao: rotuloDep(l.depuracao) })),

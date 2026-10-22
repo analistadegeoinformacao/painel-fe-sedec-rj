@@ -142,6 +142,8 @@ conjuntos:
       # acionamento de sirene (aba ALERTAS-MENSAGENS; sirenes desligadas não contam) para o município
       # ou a região dele no dia da ocorrência ou na véspera
       clima_com_alerta: {conjunto: alertas_msg, tipos: [idap, cb, sirene], dias_antes: 1}
+      # estes tipos contam com qualquer condição climática (Motivo da Exclusão e situação continuam valendo)
+      clima_nao_se_aplica_aos_tipos: ["Inundação/Alagamento", "Deslizamento/Desabamento"]
 
   danos_humanos:
     aba: "DANOS HUMANOS"
