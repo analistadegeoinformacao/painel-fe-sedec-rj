@@ -169,6 +169,9 @@ class Referencia:
         if vazio(v):
             return None, None
         k = self._k_mun(v)
+        # geocodificação do SisGeO às vezes devolve a região no lugar do município:
+        # "Região Geográfica Imediata de Nova Friburgo" -> Nova Friburgo
+        k = re.sub(r"^REGIAO GEOGRAFICA (IMEDIATA|INTERMEDIARIA) (DE|DO|DA|DOS|DAS) ", "", k)
         r = self._mun.get(self._k_mun(DISTRITOS.get(k, k)))
         if not r:
             raise ValueError(f"município desconhecido: {v!r}")

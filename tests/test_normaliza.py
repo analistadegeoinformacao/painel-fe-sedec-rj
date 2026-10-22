@@ -93,3 +93,9 @@ def test_data_no_formato_de_sistema():
     assert N.datahora("2026-10-18 08:03:00") == "2026-10-18T08:03"
     assert N.data("2026-10-18") == "2026-10-18"
     assert N.datahora("18/10/2026 08:03") == "2026-10-18T08:03"
+
+
+def test_regiao_geografica_imediata_vira_o_municipio():
+    ref = N.Referencia()
+    assert ref.municipio("Região Geográfica Imediata de Nova Friburgo") == ref.municipio("Nova Friburgo")
+    assert ref.municipio("REGIÃO GEOGRÁFICA IMEDIATA DE CAMPOS DOS GOYTACAZES") == ref.municipio("Campos dos Goytacazes")
