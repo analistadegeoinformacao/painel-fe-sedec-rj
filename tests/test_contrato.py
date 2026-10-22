@@ -292,3 +292,34 @@ def test_chuvas_condicao_climatica_tempo_chuvoso(tmp_path):
     assert clima and {r["condicao_climatica"] for r in clima} <= {"Tempo seco", "Nublado"}
     meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
     assert meta["conjuntos"]["sisgeo"]["depuracao"]["clima"] > 0
+
+
+def test_tempo_seco_volta_a_contar_com_alerta_no_dia_ou_na_vespera():
+    """Tempo seco com alerta IDAP/CB para o município (ou só para a região dele) no dia ou na véspera
+    é válida; sem alerta, ou alerta de sirene, ou alerta de 2 dias antes, continua excluída."""
+    ref = N.Referencia()
+    _, rio = ref.municipio("Rio de Janeiro")
+    _, petro = ref.municipio("Petrópolis")
+    _, campos = ref.municipio("Campos dos Goytacazes")
+    redec_petro = ref.redec_do_municipio(petro)
+    seco = lambda d, cod, dep="clima": {"data_ocorrencia": d + "T10:00", "cod_ibge": cod, "condicao_climatica": "Tempo seco", "depuracao": dep}
+    regs = [seco("2026-10-10", rio), seco("2026-10-11", rio), seco("2026-10-12", rio),   # alerta dia 10
+            seco("2026-10-10", petro),                                                  # alerta só por região
+            seco("2026-10-10", campos),                                                 # só sirene
+            seco("2026-10-11", rio, "situacao+clima")]
+    alertas = [{"tipo": "idap", "data": "2026-10-10", "envios": 1, "municipios": [rio], "redecs": []},
+               {"tipo": "cb", "data": "2026-10-10", "envios": 2, "municipios": [], "redecs": [redec_petro]},
+               {"tipo": "sirene", "data": "2026-10-10", "envios": 1, "municipios": [campos], "redecs": []}]
+    rel = build.Relatorio()
+    rel.depuracao["sisgeo"] = {"validas": 0, "situacao": 0, "motivo": 0, "clima": 5, "ambos": 1}
+    build.clima_com_alerta("sisgeo", {"conjunto": "alertas_msg", "tipos": ["idap", "cb"], "dias_antes": 1},
+                           {"sisgeo": regs, "alertas_msg": alertas}, ref, rel)
+    assert [r.get("depuracao") for r in regs] == [None, None, "clima", None, "clima", "situacao"]
+    assert rel.depuracao["sisgeo"] == {"validas": 3, "situacao": 1, "motivo": 0, "clima": 2, "ambos": 0}
+    assert rel.clima_com_alerta["sisgeo"] == 4
+
+
+def test_bairros_do_rio_viram_rio_de_janeiro():
+    ref = N.Referencia()
+    for v in ("Bandeirante", "Recreio dos Bandeirantes", "Jpa", "Jacarepaguá"):
+        assert ref.municipio(v)[0] == ref.municipio("Rio de Janeiro")[0]

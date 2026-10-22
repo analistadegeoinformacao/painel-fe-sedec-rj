@@ -710,7 +710,7 @@ function abaDepuracao(nome, p) {
       { rotulo: "Válidas", valor: validas.length, sub: pct(validas.length), destaque: true },
       { rotulo: "Excluídas por situação", valor: c.get("situacao") || 0, sub: "situação diferente das válidas" },
       { rotulo: "Excluídas por motivo", valor: c.get("motivo") || 0, sub: "com Motivo da Exclusão preenchido" },
-      ...(comClima ? [{ rotulo: "Excluídas por condição climática", valor: c.get("clima") || 0, sub: "condição diferente de Tempo Chuvoso" }] : []),
+      ...(comClima ? [{ rotulo: "Excluídas por condição climática", valor: c.get("clima") || 0, sub: "sem Tempo Chuvoso e sem alerta no dia ou na véspera" }] : []),
       { rotulo: comClima ? "Por mais de um critério" : "Por situação e motivo", valor: c.get("ambos") || 0, sub: `total excluído: ${fmt(exc.length)} (${pct(exc.length) || "0%"})` },
     ]);
   });

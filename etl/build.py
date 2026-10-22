@@ -47,6 +47,7 @@ class Relatorio:
         self.avisos: dict[str, list[str]] = defaultdict(list)
         self.excluidos: dict[str, int] = {}
         self.depuracao: dict[str, dict] = {}
+        self.clima_com_alerta: dict[str, int] = {}
 
     def erro(self, conj, msg):
         self.erros.append(f"[{conj}] {msg}")
@@ -139,9 +140,59 @@ def depurar(nome, dep, saida, cols, rel):
             criterios.append("clima")
         if criterios:
             reg["depuracao"] = "+".join(criterios)
-        cont["validas" if not criterios else (criterios[0] if len(criterios) == 1 else "ambos")] += 1
     chaves = ("validas", "situacao", "motivo") + (("clima",) if climas else ()) + ("ambos",)
-    rel.depuracao[nome] = {k: cont.get(k, 0) for k in chaves}
+    rel.depuracao[nome] = contar_depuracao(saida, chaves)
+
+
+def contar_depuracao(regs, chaves) -> dict:
+    cont = Counter()
+    for reg in regs:
+        crit = [c for c in (reg.get("depuracao") or "").split("+") if c]
+        cont["validas" if not crit else (crit[0] if len(crit) == 1 else "ambos")] += 1
+    return {k: cont.get(k, 0) for k in chaves}
+
+
+def clima_com_alerta(nome, regra, resultados, ref, rel):
+    """Condição climática diferente da válida (ex.: Tempo seco) volta a contar quando houve alerta
+    (IDAP / Cell Broadcast) para o município ou para a região dele no dia da ocorrência ou na véspera:
+    cobre ventania/vendaval e solo encharcado depois da chuva. Alerta que cita municípios vale para
+    eles; alerta só por região (REDEC) vale para a região; IDAP "todos, exceto…" vale para o estado."""
+    import re
+    from datetime import date, timedelta
+    tipos = set(regra.get("tipos", ["idap", "cb"]))
+    dias = int(regra.get("dias_antes", 1))
+    por_mun, por_redec, estado = set(), set(), set()
+    for a in resultados.get(regra["conjunto"], []):
+        if a.get("tipo") not in tipos or not a.get("data") or not a.get("envios"):
+            continue
+        if a.get("municipios"):
+            por_mun.update((a["data"], c) for c in a["municipios"])
+        elif a.get("redecs"):
+            por_redec.update((a["data"], r) for r in a["redecs"])
+        elif a["tipo"] == "idap" and re.search(r"(?i)\bexceto\b", a.get("texto") or ""):
+            estado.add(a["data"])
+    regs = resultados.get(nome, [])
+    revistas = 0
+    for reg in regs:
+        crit = (reg.get("depuracao") or "").split("+")
+        if "clima" not in crit or not reg.get("data_ocorrencia"):
+            continue
+        cod = reg.get("cod_ibge")
+        redec = ref.redec_do_municipio(cod) if cod else reg.get("redec")
+        d0 = date.fromisoformat(reg["data_ocorrencia"][:10])
+        for k in range(dias + 1):
+            d = (d0 - timedelta(days=k)).isoformat()
+            if (d, cod) in por_mun or (d, redec) in por_redec or d in estado:
+                crit.remove("clima")
+                if crit:
+                    reg["depuracao"] = "+".join(crit)
+                else:
+                    reg.pop("depuracao")
+                revistas += 1
+                break
+    if nome in rel.depuracao:
+        rel.depuracao[nome] = contar_depuracao(regs, tuple(rel.depuracao[nome]))
+    rel.clima_com_alerta[nome] = revistas
 
 
 def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limites):
@@ -354,6 +405,15 @@ def main(argv=None):
             resultados[alvo] = extra
             meta_conj[alvo] = {"titulo": "Boletins sem município (sirenes, Cell Broadcast)",
                                "aba": spec["aba"], "linhas": len(extra)}
+
+    # depuração por condição climática x alertas (depois do laço: precisa das mensagens de alerta já interpretadas)
+    for nome, spec in conjuntos.items():
+        regra = (spec.get("depuracao") or {}).get("clima_com_alerta")
+        if regra and nome in resultados:
+            clima_com_alerta(nome, regra, resultados, ref, rel)
+            if nome in meta_conj and nome in rel.depuracao:
+                meta_conj[nome]["depuracao"] = rel.depuracao[nome]
+                meta_conj[nome]["clima_com_alerta"] = rel.clima_com_alerta[nome]
 
     for msg in rel.erros:
         print("ERRO  ", msg, file=sys.stderr)
