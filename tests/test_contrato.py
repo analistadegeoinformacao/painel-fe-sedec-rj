@@ -339,3 +339,17 @@ def test_depuracao_tipos_sem_clima_e_motivo_sempre_exclui():
     rel = build.Relatorio()
     build.depurar("sisgeo", dep, regs, {"situacao": 0, "condicao_climatica": 1, "motivo_exclusao": 2}, rel)
     assert [r.get("depuracao") for r in regs] == [None, None, "clima", "motivo", "motivo"]
+
+
+def test_motivo_revisar_nao_exclui_e_vai_para_a_qualidade():
+    dep = {"situacoes_validas": ["Encerrada com empenho de viatura"], "prefixo_revisar": "REVISAR"}
+    ok = {"situacao": "Encerrada com empenho de viatura"}
+    regs = [{**ok, "_linha": 10, "motivo_exclusao": "REVISAR: fogo no lixo?"},
+            {**ok, "_linha": 11, "motivo_exclusao": "Fogo no lixo"},
+            {**ok, "_linha": 12, "motivo_exclusao": "revisar"}]
+    rel = build.Relatorio()
+    build.depurar("fogo_sisgeo", dep, regs, {"situacao": 0, "motivo_exclusao": 1}, rel)
+    assert [r.get("depuracao") for r in regs] == [None, "motivo", None]
+    assert "motivo" not in regs[0]
+    aviso = rel.avisos["fogo_sisgeo"][0]
+    assert "2 ocorrência(s) marcadas para revisar" in aviso and "linhas 10, 12" in aviso

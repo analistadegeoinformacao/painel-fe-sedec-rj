@@ -128,9 +128,15 @@ def depurar(nome, dep, saida, cols, rel):
         rel.aviso(nome, "coluna de situação ausente: depuração por situação não aplicada")
     if climas and not usa_clima:
         rel.aviso(nome, "coluna de condição climática ausente: depuração por condição climática não aplicada")
-    cont = Counter()
+    # motivo começando com o prefixo de revisão (ex.: "REVISAR: fogo no lixo?") NÃO exclui:
+    # a ocorrência segue válida e a linha aparece na Qualidade dos dados até alguém decidir
+    revisar = N.chave(dep.get("prefixo_revisar") or "")
+    a_revisar = []
     for reg in saida:
         motivo = reg.pop("motivo_exclusao", None)
+        if revisar and not N.vazio(motivo) and N.chave(motivo).startswith(revisar):
+            a_revisar.append(reg.get("_linha"))
+            motivo = None
         criterios = []
         if usa_sit and N.chave(reg.get("situacao") or "") not in validas:
             criterios.append("situacao")
@@ -142,6 +148,9 @@ def depurar(nome, dep, saida, cols, rel):
             criterios.append("clima")
         if criterios:
             reg["depuracao"] = "+".join(criterios)
+    if a_revisar:
+        rel.aviso(nome, f"{len(a_revisar)} ocorrência(s) marcadas para revisar no Motivo da Exclusão "
+                        f"(\"{dep['prefixo_revisar']}…\"; ainda contam como válidas) — {linhas_txt(a_revisar, 200)}")
     chaves = ("validas", "situacao", "motivo") + (("clima",) if climas else ()) + ("ambos",)
     rel.depuracao[nome] = contar_depuracao(saida, chaves)
 

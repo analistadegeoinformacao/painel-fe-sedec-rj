@@ -339,6 +339,9 @@ conjuntos:
     # aparecem só na aba Depuração (com o motivo, higienizado: sem nº longos nem e-mails).
     depuracao:
       situacoes_validas: ["Ocorrência atendida com prestação de serviço", "Encerrada com empenho de viatura"]
+      # Motivo da Exclusão começando com "REVISAR" não exclui: a linha vai para a Qualidade dos dados
+      # até ser trocado por um motivo de verdade (ex.: "Fogo no lixo") ou apagado
+      prefixo_revisar: "REVISAR"
 
     compactar: true     # ~17 mil linhas: município/REDEC saem do JSON e voltam pelo código IBGE
 
