@@ -102,7 +102,8 @@ jobs:
         working-directory: e2e
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          # usa o Google Chrome que já vem instalado no runner: baixar o Chromium e as dependências
+          # do sistema (apt) às vezes levava 10+ min e atrasava a "Última leitura"
           npx playwright test
 
       - name: Guardar print do painel
