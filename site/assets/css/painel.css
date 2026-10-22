@@ -123,12 +123,32 @@ body[data-amb="fogo"] { --acento: #a16207; --acento-suave: #fdf3dc; }
 .filtros { position: sticky; top: 0; z-index: 900; display: flex; flex-wrap: wrap; align-items: end; gap: 10px 14px;
   padding: 12px clamp(16px, 3vw, 32px); background: color-mix(in srgb, var(--fundo) 92%, transparent); backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--borda); }
-.filtros label { display: grid; gap: 3px; font-size: 11.5px; font-weight: 500; color: var(--texto-2); text-transform: uppercase; letter-spacing: .04em; }
+.filtros > label, .filtros > .filtro { display: grid; gap: 3px; font-size: 11.5px; font-weight: 500; color: var(--texto-2); text-transform: uppercase; letter-spacing: .04em; }
 .filtros input, .filtros select { text-transform: none; letter-spacing: 0; font-size: 13.5px; color: var(--texto); background: var(--superficie);
   border: 1px solid var(--borda); border-radius: 7px; padding: 6px 9px; min-width: 0; max-width: 260px; }
 .filtros__periodo { display: inline-flex; background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; padding: 2px; }
 .filtros__periodo button, .alternador button { border: 0; background: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--texto-2); }
 .filtros__periodo button[aria-pressed="true"], .alternador button[aria-pressed="true"] { background: var(--marca); color: #fff; }
+/* REDEC e município: lista com várias escolhas */
+.multi { position: relative; text-transform: none; letter-spacing: 0; }
+.multi__botao { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 150px; max-width: 260px;
+  font: inherit; font-size: 13.5px; font-weight: 400; color: var(--texto); background: var(--superficie); border: 1px solid var(--borda);
+  border-radius: 7px; padding: 6px 9px; cursor: pointer; text-align: left; }
+.multi__botao span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.multi__botao::after { content: ""; flex: none; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg); opacity: .6; }
+.multi--ativo .multi__botao { border-color: var(--serie); box-shadow: inset 0 0 0 1px var(--serie); }
+.multi__painel { position: absolute; z-index: 1000; top: calc(100% + 4px); left: 0; min-width: 100%; width: max-content; max-width: min(320px, 90vw);
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 6px; }
+.multi__busca { width: 100%; max-width: none !important; margin-bottom: 4px; }
+.multi__limpar { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 6px; cursor: pointer;
+  font: inherit; font-size: 13px; color: var(--serie); border-bottom: 1px solid var(--borda); }
+.multi__lista { list-style: none; margin: 4px 0 0; padding: 0; max-height: 300px; overflow-y: auto; }
+.multi__lista label { display: flex !important; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; cursor: pointer;
+  font-size: 13.5px !important; font-weight: 400 !important; color: var(--texto) !important; text-transform: none !important; letter-spacing: 0 !important; }
+.multi__lista label:hover, .multi__limpar:hover { background: var(--fundo); }
+.filtros .multi__lista input { margin: 0; padding: 0; width: auto; flex: none; accent-color: var(--serie); }
+.multi__vazio { padding: 6px 8px; color: var(--texto-2); font-size: 13px; }
 .botao-limpar { border: 1px solid var(--borda); background: var(--superficie); border-radius: 7px; padding: 6px 12px; cursor: pointer; font-weight: 500; }
 .botao-limpar:hover { border-color: var(--acento); color: var(--acento); }
 
@@ -223,7 +243,9 @@ td .longo.aberto { -webkit-line-clamp: unset; }
   .ambientes a { flex: 1; text-align: center; }
   .kpi__valor { font-size: 24px; }
   .filtros { position: static; }
-  .filtros label { flex: 1 1 140px; }
+  .filtros > label, .filtros > .filtro { flex: 1 1 140px; }
+  .multi__botao { max-width: none; }
+  .multi__painel { width: 100%; max-width: none; }
   .filtros input, .filtros select { max-width: none; width: 100%; }
 }
 @media print {

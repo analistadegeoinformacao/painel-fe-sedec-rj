@@ -104,14 +104,15 @@ export async function criarMapa(el, aoClicar) {
       mapa.fitBounds(limites, { padding: [8, 8] });
     },
     /** valores: Map(cod_ibge -> número) */
-    pintar(valores, rotulo, unidade, selecionado = "") {
+    pintar(valores, rotulo, unidade, selecionado = []) {
+      const sel = [].concat(selecionado || []);
       linhaEstado?.setStyle({ color: css("--contorno") }); // acompanha o tema claro/escuro
       const classes = classesPara(valores.values());
       const maior = Math.max(0, ...valores.values());
       camada.eachLayer((lyr) => {
         const id = lyr.feature.properties.id;
         const v = valores.get(id) || 0;
-        lyr.setStyle({ fillColor: cor(v, classes), weight: id === selecionado ? 2.5 : 0.9, color: id === selecionado ? css("--texto") : css("--limite-mun") });
+        lyr.setStyle({ fillColor: cor(v, classes), weight: sel.includes(id) ? 2.5 : 0.9, color: sel.includes(id) ? css("--texto") : css("--limite-mun") });
         lyr.bindTooltip(`<b>${titulo(lyr.feature.properties.name)}</b><br>${fmt(v)} ${unidade}`, { sticky: true, className: "dica-mapa" });
       });
       legenda?.remove();

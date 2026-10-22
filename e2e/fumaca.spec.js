@@ -56,16 +56,45 @@ test("cada ambiente mostra só a sua fonte", async ({ page }) => {
 test("link direto abre o ambiente e a aba certos, com o filtro aplicado", async ({ page }) => {
   await abrir(page, "#amb=redecs&aba=decretos&redec=REDEC%2011%20-%20NOROESTE");
   await expect(page.locator(".painel-aba[data-amb='redecs'][data-aba='decretos']")).toBeVisible();
-  await expect(page.locator("#f-redec")).toHaveValue("REDEC 11 - NOROESTE");
+  await expect(page.locator("#f-redec")).toHaveAttribute("data-valor", "REDEC 11 - NOROESTE");
 });
 
 test("filtro de REDEC reduz os números e é mantido ao trocar de ambiente", async ({ page }) => {
   await abrir(page);
   const total = await page.locator("#s-kpis .kpi__sub").first().innerText();
-  await page.selectOption("#f-redec", { index: 1 });
+  await page.click("#f-redec .multi__botao");
+  await page.locator("#f-redec .multi__lista input").nth(0).check();
   await expect(page.locator("#s-kpis .kpi__sub").first()).not.toHaveText(total);
   await page.click('.ambientes a[data-amb="redecs"]');
-  await expect(page.locator("#f-redec")).not.toHaveValue("");
+  await expect(page.locator("#f-redec")).not.toHaveAttribute("data-valor", "");
+});
+
+test("REDEC e município aceitam várias escolhas, e o link guarda todas", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo&aba=depuracao");
+  const kpi = page.locator("#s-dep-kpis .kpi__valor").first(); // Registradas
+  const n = async () => Number((await kpi.innerText()).replace(/\D/g, ""));
+  const total = await n();
+  await page.click("#f-redec .multi__botao");
+  await page.locator("#f-redec .multi__lista input").nth(0).check();
+  await expect.poll(n).toBeLessThan(total);
+  const uma = await n();
+  await page.locator("#f-redec .multi__lista input").nth(1).check();
+  await expect(page.locator("#f-redec .multi__botao")).toHaveText("2 selecionadas");
+  await expect.poll(n).toBeGreaterThan(uma);
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get("redec")).toMatch(/^REDEC 1 - CAPITAL,REDEC 2 /);
+  // municípios oferecidos = só os das duas REDECs; busca e escolha de dois
+  await page.click("#f-municipio .multi__botao");
+  await page.fill("#f-municipio .multi__busca", "rio de jan");
+  await expect(page.locator("#f-municipio .multi__lista input")).toHaveCount(1);
+  await page.locator("#f-municipio .multi__lista input").check();
+  await page.fill("#f-municipio .multi__busca", "duque");
+  await page.locator("#f-municipio .multi__lista input").check();
+  await expect(page.locator("#f-municipio .multi__botao")).toHaveText("2 selecionados");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#f-municipio .multi__painel")).toBeHidden();
+  await page.click("#f-limpar");
+  await expect(page.locator("#f-redec .multi__botao")).toHaveText("Todas");
+  await expect.poll(n).toBe(total);
 });
 
 test("nenhum dado pessoal no JSON publicado", async ({ request }) => {

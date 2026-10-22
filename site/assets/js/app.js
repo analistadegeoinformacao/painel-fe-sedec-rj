@@ -1,5 +1,5 @@
 import { carregar } from "./dados.js";
-import { seguro, kpis, tabela, indisponivel } from "./componentes.js";
+import { seguro, kpis, tabela, indisponivel, multiSelecao } from "./componentes.js";
 import { barrasH, serieDiaria, rosca, colunasPorMes, redimensionarTodos } from "./graficos.js";
 import { criarMapa } from "./mapa.js";
 import { iniciarAnalytics, registrarAba } from "./analytics.js";
@@ -31,6 +31,11 @@ const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
 const mapas = {}; // amb -> Promise<mapa>
+// REDEC e município aceitam várias escolhas: no estado (e no link) ficam como lista separada por vírgula
+const lista = (v) => (v ? String(v).split(",").filter(Boolean) : []);
+const redecsSel = () => lista(st.redec);
+const munsSel = () => lista(st.municipio);
+let ctrlRedec, ctrlMun;
 
 // ----------------------------------------------------------------- URL
 // #amb=redecs&aba=decretos&redec=... -> cada ambiente/recorte tem seu próprio link
@@ -62,6 +67,7 @@ function filtrar(nome, { comPeriodo = true, depuracao = "validas", semTipo = fal
   const linhas = BASE.dados[nome];
   if (linhas === null || linhas === undefined) return null;
   const fd = CAMPO_DATA[nome];
+  const rs = redecsSel(), ms = munsSel();
   return linhas.filter((l) => {
     if (depuracao === "validas" && l.depuracao) return false;
     if (depuracao === "excluidas" && !l.depuracao) return false;
@@ -71,14 +77,13 @@ function filtrar(nome, { comPeriodo = true, depuracao = "validas", semTipo = fal
     }
     if (nome === "alertas_msg") {
       // mensagem sem local identificado vale para o estado todo; IDAP por região vale para a REDEC citada
-      if (st.municipio && l.municipios.length && !l.municipios.includes(st.municipio)) return false;
-      const rMun = st.municipio ? redecDoCod.get(st.municipio) : "";
-      if (st.municipio && !l.municipios.length && l.redecs.length && !l.redecs.includes(rMun)) return false;
-      if (st.redec && l.redecs.length && !l.redecs.includes(st.redec)) return false;
+      if (ms.length && l.municipios.length && !l.municipios.some((c) => ms.includes(c))) return false;
+      if (ms.length && !l.municipios.length && l.redecs.length && !l.redecs.some((r) => ms.some((c) => redecDoCod.get(c) === r))) return false;
+      if (rs.length && l.redecs.length && !l.redecs.some((r) => rs.includes(r))) return false;
       return true;
     }
-    if (st.redec && (l.redec ?? redecDoCod.get(l.cod_ibge)) !== st.redec) return false;
-    if (st.municipio && l.cod_ibge !== st.municipio) return false;
+    if (rs.length && !rs.includes(l.redec ?? redecDoCod.get(l.cod_ibge))) return false;
+    if (ms.length && !ms.includes(l.cod_ibge)) return false;
     if (st.tipo && !semTipo && nome === "sisgeo" && l.tipo !== st.tipo) return false; // filtro só do ambiente SisGeO
     return true;
   });
@@ -94,16 +99,20 @@ function aplicarPeriodo(p) {
 const descricaoPeriodo = () =>
   !st.de && !st.ate ? "todo o período" : `${st.de ? fmtData(st.de) : "início"} a ${st.ate ? fmtData(st.ate) : "hoje"}`;
 
+// municípios oferecidos = os das REDECs escolhidas (todos, se nenhuma); escolhas fora delas saem
 function preencherMunicipios() {
-  const sel = document.getElementById("f-municipio");
-  sel.length = 1;
-  BASE.meta.municipios.filter((m) => !st.redec || m.redec === st.redec)
-    .forEach((m) => sel.add(new Option(titulo(m.municipio), m.cod_ibge)));
+  const rs = redecsSel();
+  const ops = BASE.meta.municipios.filter((m) => !rs.length || rs.includes(m.redec))
+    .map((m) => ({ valor: m.cod_ibge, rotulo: titulo(m.municipio) }));
+  st.municipio = ctrlMun.opcoes(ops, munsSel()).join(",");
 }
 
 function montarFiltros() {
-  const selR = document.getElementById("f-redec");
-  BASE.meta.redecs.forEach((r) => selR.add(new Option(rotuloRedec(r), r)));
+  ctrlRedec = multiSelecao(document.getElementById("f-redec"), { todos: "Todas", plural: "selecionadas",
+    aoMudar: (v) => { st.redec = v.join(","); preencherMunicipios(); atualizar(); } });
+  ctrlMun = multiSelecao(document.getElementById("f-municipio"), { todos: "Todos", plural: "selecionados", busca: true,
+    aoMudar: (v) => { st.municipio = v.join(","); atualizar(); } });
+  ctrlRedec.opcoes(BASE.meta.redecs.map((r) => ({ valor: r, rotulo: rotuloRedec(r) })), redecsSel());
   preencherMunicipios();
   document.querySelector(".filtros__periodo").addEventListener("click", (e) => {
     const b = e.target.closest("button");
@@ -111,8 +120,6 @@ function montarFiltros() {
   });
   document.getElementById("f-de").addEventListener("change", (e) => { st.de = e.target.value; st.periodo = ""; atualizar(); });
   document.getElementById("f-ate").addEventListener("change", (e) => { st.ate = e.target.value; st.periodo = ""; atualizar(); });
-  selR.addEventListener("change", (e) => { st.redec = e.target.value; st.municipio = ""; preencherMunicipios(); atualizar(); });
-  document.getElementById("f-municipio").addEventListener("change", (e) => { st.municipio = e.target.value; atualizar(); });
   const selT = document.getElementById("f-tipo");
   ordenar(contarPor((BASE.dados.sisgeo || []).filter((l) => !l.depuracao), "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
@@ -127,8 +134,8 @@ function sincronizarControles() {
   document.body.dataset.amb = st.amb;
   document.getElementById("f-de").value = st.de;
   document.getElementById("f-ate").value = st.ate;
-  document.getElementById("f-redec").value = st.redec;
-  document.getElementById("f-municipio").value = st.municipio;
+  ctrlRedec.marcar(redecsSel());
+  ctrlMun.marcar(munsSel());
   document.getElementById("f-tipo").value = st.tipo;
   document.querySelectorAll(".filtros__periodo button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.periodo === st.periodo));
   document.querySelectorAll(".ambientes a").forEach((a) => (a.dataset.amb === st.amb ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
@@ -210,8 +217,10 @@ function mostrarNR() {
 
 const ordenar = (mapa, n = Infinity) => [...mapa.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
 const nomeMun = (cod) => titulo(BASE.meta.municipios.find((m) => m.cod_ibge === cod)?.municipio || cod);
-const alternarRedec = (r) => { st.redec = st.redec === r ? "" : r; st.municipio = ""; preencherMunicipios(); atualizar(); };
-const alternarMunicipio = (cod) => { st.municipio = st.municipio === cod ? "" : cod; atualizar(); };
+// clique numa barra ou no mapa: acrescenta ou retira da seleção
+const alternar = (v, x) => { const s = lista(v); return (s.includes(x) ? s.filter((y) => y !== x) : [...s, x]).join(","); };
+const alternarRedec = (r) => { st.redec = alternar(st.redec, r); preencherMunicipios(); atualizar(); };
+const alternarMunicipio = (cod) => { st.municipio = alternar(st.municipio, cod); atualizar(); };
 const porRedec = (linhas) => { const c = contarPor(linhas, "redec"); return BASE.meta.redecs.map((r) => [rotuloRedec(r), c.get(r) || 0, r]); };
 const muns = (linhas) => new Set((linhas || []).map((l) => l.cod_ibge).filter(Boolean)).size;
 
@@ -297,7 +306,7 @@ const SISGEO = {
         { rotulo: "REDEC com mais ocorrências", texto: true, ...lider("redec", rotuloRedec) },
       ]);
     });
-    seguro("s-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+    seguro("s-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "ocorrências" }); });
     seguro("s-serie", (el) => {
       if (indisponivel(el, sis)) return;
       const c = comparativoDiario("sisgeo", CAMPO_DATA.sisgeo, "s-serie-nota", "ocorrências");
@@ -312,9 +321,9 @@ const SISGEO = {
     seguro("s-top-mun", (el) => {
       if (indisponivel(el, sis)) return;
       barrasH(el, ordenar(contarPor(sis, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
-        { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
+        { aoClicar: alternarMunicipio, selecionado: munsSel(), unidade: "ocorrências" });
     });
-    mapaDo("sisgeo", "s-mapa").then((m) => m?.pintar(contarPor(sis || [], "cod_ibge"), "Ocorrências", "ocorrência(s)", st.municipio));
+    mapaDo("sisgeo", "s-mapa").then((m) => m?.pintar(contarPor(sis || [], "cod_ibge"), "Ocorrências", "ocorrência(s)", munsSel()));
   },
   tipos() {
     const sis = filtrar("sisgeo");
@@ -323,9 +332,9 @@ const SISGEO = {
     seguro("s-tipos-mun", (el) => {
       if (indisponivel(el, sis)) return;
       barrasH(el, ordenar(contarPor(sis, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
-        { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
+        { aoClicar: alternarMunicipio, selecionado: munsSel(), unidade: "ocorrências" });
     });
-    seguro("s-tipos-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+    seguro("s-tipos-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "ocorrências" }); });
   },
   registros() {
     seguro("s-tabela", (el) => tabela(el, { nome: "sisgeo", linhas: filtrar("sisgeo"), ordem: { campo: "data_ocorrencia", dir: -1 }, colunas: COLUNAS_SISGEO }));
@@ -374,7 +383,7 @@ const REDECS = {
         ],
       });
     });
-    seguro("r-redec", (el) => { if (!indisponivel(el, ev)) barrasH(el, porRedec(ev), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "eventos" }); });
+    seguro("r-redec", (el) => { if (!indisponivel(el, ev)) barrasH(el, porRedec(ev), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "eventos" }); });
     seguro("r-serie", (el) => {
       if (indisponivel(el, ev)) return;
       const c = comparativoDiario("eventos", CAMPO_DATA.eventos, "r-serie-nota", "eventos");
@@ -389,9 +398,9 @@ const REDECS = {
       if (st.camada === "decretos") {
         const v = new Map();
         (dec || []).filter(vigente).forEach((l) => v.set(l.cod_ibge, 1));
-        m.pintar(v, "Decretos vigentes", "decreto(s) vigente(s)", st.municipio);
+        m.pintar(v, "Decretos vigentes", "decreto(s) vigente(s)", munsSel());
       } else {
-        m.pintar(contarPor(ev || [], "cod_ibge"), "Eventos", "evento(s)", st.municipio);
+        m.pintar(contarPor(ev || [], "cod_ibge"), "Eventos", "evento(s)", munsSel());
       }
     });
   },
@@ -578,7 +587,7 @@ const FOGO = {
           sub: ucTop !== undefined ? `${fmt(nTop)} eventos dentro ou até 1 km · ${BASE.meta.ucs[ucTop]?.esfera || ""}` : (uc ? "nenhum evento em UC ou até 1 km" : "") },
       ]);
     });
-    seguro("fv-redec", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+    seguro("fv-redec", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "ocorrências" }); });
     seguro("fv-serie", (el) => {
       if (indisponivel(el, fv)) return;
       const c = comparativoDiario("fogo_sisgeo", CAMPO_DATA.fogo_sisgeo, "fv-serie-nota", "ocorrências");
@@ -610,7 +619,7 @@ const FOGO = {
         ],
       });
     });
-    mapaDo("fogo", "fv-mapa").then((m) => m?.pintar(contarPor(fv || [], "cod_ibge"), "Ocorrências de fogo", "ocorrência(s)", st.municipio));
+    mapaDo("fogo", "fv-mapa").then((m) => m?.pintar(contarPor(fv || [], "cod_ibge"), "Ocorrências de fogo", "ocorrência(s)", munsSel()));
   },
 
   territorios() {
@@ -620,9 +629,9 @@ const FOGO = {
     seguro("fv-mun", (el) => {
       if (indisponivel(el, fv)) return;
       barrasH(el, ordenar(contarPor(fv, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
-        { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
+        { aoClicar: alternarMunicipio, selecionado: munsSel(), unidade: "ocorrências" });
     });
-    seguro("fv-redec2", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+    seguro("fv-redec2", (el) => { if (!indisponivel(el, fv)) barrasH(el, porRedec(fv), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "ocorrências" }); });
     seguro("fv-ucs", (el) => {
       if (indisponivel(el, fv)) return;
       const uc = eventosPertoDeUC(fv);
@@ -722,9 +731,9 @@ function abaDepuracao(nome, p) {
   });
   seguro(`${p}-dep-municipio`, (el) => {
     if (!indisponivel(el, exc)) barrasH(el, ordenar(contarPor(exc, "cod_ibge"), 10).map(([k, v]) => [nomeMun(k), v, k]),
-      { aoClicar: alternarMunicipio, selecionado: st.municipio, unidade: "ocorrências" });
+      { aoClicar: alternarMunicipio, selecionado: munsSel(), unidade: "ocorrências" });
   });
-  seguro(`${p}-dep-redec`, (el) => { if (!indisponivel(el, exc)) barrasH(el, porRedec(exc), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
+  seguro(`${p}-dep-redec`, (el) => { if (!indisponivel(el, exc)) barrasH(el, porRedec(exc), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "ocorrências" }); });
   seguro(`${p}-dep-tabela`, (el) => tabela(el, {
     nome: `${nome}_excluidas_depuracao`, linhas: exc?.map((l) => ({ ...l, exclusao: rotuloDep(l.depuracao) })),
     ordem: { campo: "data_ocorrencia", dir: -1 },

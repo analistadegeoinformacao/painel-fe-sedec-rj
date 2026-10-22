@@ -60,7 +60,7 @@ export function barrasH(el, itens, { aoClicar, selecionado, unidade = "registros
         type: "bar", barMaxWidth: 18, barCategoryGap: "35%",
         data: dados.map((d) => ({
           value: d[1], chave: d[2] ?? d[0],
-          itemStyle: { color: selecionado && (d[2] ?? d[0]) === selecionado ? t.destaque : t.serie, borderRadius: [0, 4, 4, 0] },
+          itemStyle: { color: [].concat(selecionado || []).includes(d[2] ?? d[0]) ? t.destaque : t.serie, borderRadius: [0, 4, 4, 0] },
         })),
         label: { show: true, position: "right", color: t.texto2, fontSize: 12, formatter: (p) => fmt(p.value) },
         emphasis: { itemStyle: { color: t.destaque } },

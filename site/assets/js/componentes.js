@@ -124,3 +124,57 @@ export function tabela(el, { colunas, linhas, nome = "dados", porPagina = 50, or
   el.querySelector(".t-csv").addEventListener("click", () => baixarCSV(nome, colunas, filtradas()));
   desenhar();
 }
+
+/** Lista suspensa com várias escolhas (caixas de seleção), no lugar de um <select>.
+ *  O botão mostra "Todas", o nome da única escolhida ou "N selecionadas".
+ *  Devolve { opcoes(lista, marcados), marcar(valores) }; aoMudar(valores) a cada clique. */
+export function multiSelecao(el, { todos, plural, busca = false, aoMudar }) {
+  el.classList.add("multi");
+  el.innerHTML = `<button type="button" class="multi__botao" aria-haspopup="true" aria-expanded="false"><span></span></button>
+    <div class="multi__painel" hidden>
+      ${busca ? `<input type="search" class="multi__busca" placeholder="Buscar…" aria-label="Buscar">` : ""}
+      <button type="button" class="multi__limpar">${todos} (limpar seleção)</button>
+      <ul class="multi__lista"></ul>
+    </div>`;
+  const botao = el.querySelector(".multi__botao"), painel = el.querySelector(".multi__painel");
+  const lista = el.querySelector(".multi__lista"), campo = el.querySelector(".multi__busca");
+  const k = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  let ops = [], sel = new Set();
+  const rotulo = () => {
+    const v = [...sel];
+    botao.firstElementChild.textContent = !v.length ? todos : v.length === 1 ? (ops.find((o) => o.valor === v[0])?.rotulo ?? todos) : `${v.length} ${plural}`;
+    botao.title = v.length > 1 ? v.map((x) => ops.find((o) => o.valor === x)?.rotulo ?? x).join(", ") : "";
+    el.dataset.valor = v.join(",");
+    el.classList.toggle("multi--ativo", v.length > 0);
+  };
+  const desenhar = () => {
+    const q = campo ? k(campo.value.trim()) : "";
+    const vis = ops.filter((o) => !q || k(o.rotulo).includes(q));
+    lista.innerHTML = vis.map((o) => `<li><label><input type="checkbox" value="${esc(o.valor)}"${sel.has(o.valor) ? " checked" : ""}> <span>${esc(o.rotulo)}</span></label></li>`).join("")
+      || `<li class="multi__vazio">Nenhum resultado</li>`;
+  };
+  const abrir = (sim) => {
+    painel.hidden = !sim;
+    botao.setAttribute("aria-expanded", sim);
+    if (sim) { if (campo) { campo.value = ""; campo.focus(); } desenhar(); }
+  };
+  botao.addEventListener("click", () => abrir(painel.hidden));
+  campo?.addEventListener("input", desenhar);
+  lista.addEventListener("change", (e) => {
+    const v = e.target.value;
+    e.target.checked ? sel.add(v) : sel.delete(v);
+    rotulo(); aoMudar([...sel]);
+  });
+  el.querySelector(".multi__limpar").addEventListener("click", () => { sel.clear(); desenhar(); rotulo(); aoMudar([]); abrir(false); });
+  document.addEventListener("click", (e) => { if (!painel.hidden && !el.contains(e.target)) abrir(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !painel.hidden) { abrir(false); botao.focus(); } });
+  return {
+    opcoes(lista_, marcados = []) { ops = lista_; sel = new Set(marcados.filter((v) => ops.some((o) => o.valor === v))); desenhar(); rotulo(); return [...sel]; },
+    marcar(valores) {
+      const igual = valores.length === sel.size && valores.every((v) => sel.has(v));
+      sel = new Set(valores);
+      if (!igual && !painel.hidden) desenhar(); // sem redesenhar à toa: a caixa clicada mantém o foco
+      rotulo();
+    },
+  };
+}
