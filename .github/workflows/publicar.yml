@@ -80,6 +80,7 @@ jobs:
           python -c "import json;m=json.load(open('site/data/meta.json'));print('::notice title=Linhas lidas::'+' · '.join(f'{k}={v[\"linhas\"]}' for k,v in m['conjuntos'].items()))"
           python -c "import json;m=json.load(open('site/data/meta.json'));[print(f'::notice title=Depuração {k}::'+json.dumps(v['depuracao'],ensure_ascii=False)) for k,v in m['conjuntos'].items() if 'depuracao' in v]"
           python -c "import json,collections;d=json.load(open('site/data/sisgeo.json'));c=collections.Counter((r.get('condicao_climatica') or '(vazia)', r.get('tipo') or '?') for r in d if 'situacao' not in (r.get('depuracao') or '') and 'motivo' not in (r.get('depuracao') or ''));print('::notice title=Condição climática x tipo (sisgeo)::'+' · '.join(f'{a} / {b}={n}' for (a,b),n in c.most_common(40)))"
+          python -c "import json;d=json.load(open('site/data/sisgeo.json'));print('::notice title=Sem município (sisgeo, ordem da planilha)::'+' · '.join(f'{r.get(\"situacao\")} / depuração={r.get(\"depuracao\") or \"válida\"}' for r in d if not r.get('cod_ibge'))[:3000])"
           # avisos da Qualidade dos dados, também visíveis no resumo da execução
           python -c "import json;m=json.load(open('site/data/meta.json'));[print(f'::notice title=Qualidade {k}::'+' || '.join(v)[:3000]) for k,v in m.get('avisos',{}).items() if v]"
 
