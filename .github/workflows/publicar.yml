@@ -96,6 +96,10 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: e2e/package-lock.json
+      - name: Carimbar a versão do código nos endereços (evita mistura de arquivos em cache)
+        if: steps.decidir.outputs.publicar == 'true'
+        run: python etl/carimbar.py site
+
       - name: Teste de fumaça no navegador (com os dados recém-gerados)
         if: steps.decidir.outputs.publicar == 'true'
         working-directory: e2e
