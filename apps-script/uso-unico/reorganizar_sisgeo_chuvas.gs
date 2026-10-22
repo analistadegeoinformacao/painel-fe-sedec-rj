@@ -5,7 +5,7 @@
  * Resultado:
  *   A        REDEC (sua fórmula continua aqui)
  *   B … U    as 20 colunas do download, na ordem em que ele vem
- *   V …      suas colunas extras (Motivo da Exclusão, Atualização Cenário, Durações…)
+ *   V …      suas colunas extras (Motivo da Exclusão, Durações…)
  *
  * COMO USAR (≈5 min):
  *  1. https://script.google.com › Novo projeto (projeto SEPARADO; não mexe nos scripts da planilha).
@@ -31,7 +31,8 @@ var ORDEM_DOWNLOAD = ['IdEvento', 'Ocorrência', 'Data Ocorrência', 'Unidade', 
   'Situação', 'Município', 'Vítimas Qtd', 'Avaliação do cenário', 'Condição climática', 'Informações complementares'];
 
 // Nome antigo na sua aba -> nome no download (mesma informação)
-var RENOMEAR = { 'Latitude/Longitude': 'Posição', 'VítimaQtd': 'Vítimas Qtd', 'Avaliação Cenário': 'Avaliação do cenário' };
+var RENOMEAR = { 'Latitude/Longitude': 'Posição', 'VítimaQtd': 'Vítimas Qtd', 'Avaliação Cenário': 'Avaliação do cenário',
+  'Atualização Cenário': 'Informações complementares' };
 
 function chave_(s) {
   return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
