@@ -66,6 +66,12 @@ def mapear_colunas(cabecalho, spec_colunas):
     return achadas
 
 
+def nomes_aba(spec) -> list[str]:
+    """'aba' pode ser um nome ou uma lista de nomes aceitos (o primeiro que existir na planilha vale)."""
+    a = spec["aba"]
+    return list(a) if isinstance(a, (list, tuple)) else [a]
+
+
 def linhas_txt(linhas, maximo=60) -> str:
     """'linhas 12, 15, 40' (com teto, para o aviso não ficar enorme)."""
     ls = sorted(set(int(x) for x in linhas if x))
@@ -285,7 +291,7 @@ def main(argv=None):
     origens_locais = {"principal": a.origem, "fogo": a.origem_fogo}
     abas_por_planilha = {}
     for pid, pcfg in planilhas.items():
-        pedidas = [c["aba"] for c in conjuntos.values() if c.get("planilha", "principal") == pid]
+        pedidas = [n for c in conjuntos.values() if c.get("planilha", "principal") == pid for n in nomes_aba(c)]
         if not pedidas:
             continue
         if a.fonte in ("texto", "xlsx"):
@@ -310,6 +316,7 @@ def main(argv=None):
     ucs_meta = []
     for nome, spec in conjuntos.items():
         abas = abas_por_planilha.get(spec.get("planilha", "principal"), {})
+        spec["aba"] = next((n for n in nomes_aba(spec) if n in abas), nomes_aba(spec)[0])
         if spec["aba"] not in abas:
             (rel.erro if spec.get("min_linhas", 0) > 0 else rel.aviso)(nome, f"aba '{spec['aba']}' não encontrada")
             dados, extra = [], []

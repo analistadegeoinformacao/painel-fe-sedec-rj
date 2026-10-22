@@ -87,3 +87,9 @@ def test_itaipava_e_petropolis():
     ref = N.Referencia()
     assert ref.municipio("Itaipava") == ref.municipio("Petrópolis")
     assert ref.municipio("ITAIPAVA - RJ") == ref.municipio("Petrópolis")
+
+
+def test_data_no_formato_de_sistema():
+    assert N.datahora("2026-10-18 08:03:00") == "2026-10-18T08:03"
+    assert N.data("2026-10-18") == "2026-10-18"
+    assert N.datahora("18/10/2026 08:03") == "2026-10-18T08:03"

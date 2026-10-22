@@ -94,7 +94,7 @@ conjuntos:
     separar_sem_municipio: boletins
 
   sisgeo:
-    aba: "SISGEO"
+    aba: ["SISGEO_CHUVAS", "SISGEO"]   # aba renomeada para SISGEO_CHUVAS; o nome antigo continua aceito
     titulo: "Ocorrências SisGeO (CBMERJ)"
     min_linhas: 1
     obrigatorias: [ocorrencia, data_ocorrencia, tipo, municipio]
@@ -107,7 +107,7 @@ conjuntos:
       tipo:            ["Tipo"]
       subtipo:         ["Subtipo"]
       situacao:        ["Situação"]
-      vitimas:         ["VítimaQtd"]
+      vitimas:         ["VítimaQtd", "Vítimas Qtd"]
       municipio:       ["Município"]
       latlon:          ["Latitude/Longitude", "Posição"]
       duracao_s:       ["Duração (segundos)"]
@@ -312,7 +312,7 @@ conjuntos:
       unidade:         ["Unidade"]
       subtipo:         ["Subtipo"]
       situacao:        ["Situação"]
-      vitimas:         ["VítimaQtd"]
+      vitimas:         ["VítimaQtd", "Vítimas Qtd"]
       municipio:       ["Município"]
       motivo_exclusao: ["Motivo da Exclusão"]   # só para a depuração; publicado higienizado na aba Depuração
       latlon:          ["Latitude/Longitude", "Posição"]   # só para o cruzamento com UCs; NUNCA publicado (ver proximidade_uc)

@@ -87,6 +87,10 @@ def _parse(v) -> datetime | None:
         return v
     if isinstance(v, date):
         return datetime(v.year, v.month, v.day)
+    iso = re.match(r"^\s*(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?", str(v))
+    if iso:  # formato de sistema (ex.: download do SisGeO colado como texto): 2026-10-18 08:03:00
+        a, mo, d, h, mi, se = iso.groups()
+        return datetime(int(a), int(mo), int(d), int(h or 0), int(mi or 0), int(se or 0))
     m = _RE_DATA.search(_limpa_data(v))
     if not m:
         raise ValueError(f"data ilegível: {v!r}")

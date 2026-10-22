@@ -254,3 +254,12 @@ def test_colunas_em_outra_ordem_e_posicao_no_lugar_de_latlon(tmp_path):
     a = (ref_saida / "fogo_sisgeo.json").read_text(encoding="utf-8")
     b = (saida / "fogo_sisgeo.json").read_text(encoding="utf-8")
     assert a == b, "mesma planilha em outra ordem deve gerar exatamente os mesmos dados"
+
+
+def test_aba_renomeada_para_sisgeo_chuvas(tmp_path):
+    texto = AMOSTRA.read_text(encoding="utf-8").replace("## Sheet name: SISGEO\n", "## Sheet name: SISGEO_CHUVAS\n")
+    origem = tmp_path / "base.txt"; origem.write_text(texto, encoding="utf-8")
+    rc, saida = rodar(tmp_path, origem)
+    assert rc == 0
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert meta["conjuntos"]["sisgeo"]["aba"] == "SISGEO_CHUVAS" and meta["conjuntos"]["sisgeo"]["linhas"] > 0
