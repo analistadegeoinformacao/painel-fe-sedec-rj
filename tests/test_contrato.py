@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from etl import build
+from etl import normaliza as N
 
 AMOSTRA = Path(__file__).parent / "fixtures" / "amostra.txt"
 
@@ -169,13 +170,13 @@ def test_depuracao_por_situacao_e_por_motivo(tmp_path):
     meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
     dep = meta["conjuntos"]["sisgeo"]["depuracao"]
     # amostra: 1 falso aviso, 1 com motivo, 1 cancelada COM motivo; "atendida com prestação de serviço" é válida
-    assert dep == {"validas": 36, "situacao": 1, "motivo": 1, "ambos": 1}
+    assert dep == {"validas": 36, "situacao": 1, "motivo": 1, "clima": 0, "ambos": 1}
     sis = json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
     validas = [r for r in sis if "depuracao" not in r]
     assert {r["situacao"] for r in validas} <= {"Encerrada com empenho de viatura", "Ocorrência atendida com prestação de serviço"}
     assert not any("motivo_exclusao" in r for r in sis), "coluna bruta do motivo não pode ser publicada"
     com_motivo = [r for r in sis if r.get("motivo")]
-    assert len(com_motivo) == 2 and all(r["depuracao"] in ("motivo", "ambos") for r in com_motivo)
+    assert len(com_motivo) == 2 and all("motivo" in r["depuracao"] for r in com_motivo)
     fv = meta["conjuntos"]["fogo_sisgeo"]["depuracao"]
     assert fv["motivo"] == 1 and fv["situacao"] >= 1
 
@@ -263,3 +264,31 @@ def test_aba_renomeada_para_sisgeo_chuvas(tmp_path):
     assert rc == 0
     meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
     assert meta["conjuntos"]["sisgeo"]["aba"] == "SISGEO_CHUVAS" and meta["conjuntos"]["sisgeo"]["linhas"] > 0
+
+
+def test_chuvas_condicao_climatica_tempo_chuvoso(tmp_path):
+    """SisGeO · Chuvas: condição climática preenchida e diferente de 'Tempo Chuvoso' sai da contagem;
+    vazia não exclui (registros antigos sem a informação)."""
+    import csv as _csv, io as _io
+    partes = AMOSTRA.read_text(encoding="utf-8").split("## Sheet name: ")
+    k = next(i for i, p in enumerate(partes) if p.startswith("SISGEO\n"))
+    nome, corpo = partes[k].split("\n", 1)
+    linhas = list(_csv.reader(_io.StringIO(corpo)))
+    linhas = [l for l in linhas if l]
+    linhas[0].append("Condição climática")
+    valores = ["Tempo Chuvoso", "Tempo seco", "", "tempo chuvoso", "Nublado"]
+    for i, l in enumerate(linhas[1:]):
+        l.append(valores[i % len(valores)])
+    out = _io.StringIO(); _csv.writer(out, lineterminator="\n").writerows(linhas)
+    partes[k] = nome + "\n" + out.getvalue()
+    origem = tmp_path / "base.txt"; origem.write_text("## Sheet name: ".join(partes), encoding="utf-8")
+    rc, saida = rodar(tmp_path, origem)
+    assert rc == 0
+    sis = json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
+    validas = [r for r in sis if "depuracao" not in r]
+    assert all(N.chave(r.get("condicao_climatica") or "TEMPO CHUVOSO") == "TEMPO CHUVOSO" for r in validas)
+    assert any(r.get("condicao_climatica") is None for r in validas), "vazia não exclui"
+    clima = [r for r in sis if "clima" in r.get("depuracao", "")]
+    assert clima and {r["condicao_climatica"] for r in clima} <= {"Tempo seco", "Nublado"}
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert meta["conjuntos"]["sisgeo"]["depuracao"]["clima"] > 0

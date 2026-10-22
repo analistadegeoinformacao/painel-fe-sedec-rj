@@ -111,27 +111,37 @@ def higienizar_motivo(texto) -> str:
 
 
 def depurar(nome, dep, saida, cols, rel):
-    """Depuração do SisGeO: só é válida a ocorrência com situação na lista de válidas
-    E sem nada escrito em "Motivo da Exclusão". As demais continuam publicadas (para a
-    aba Depuração) com o campo "depuracao" = situacao | motivo | ambos. O texto do motivo
-    sai em "motivo", higienizado (texto livre: sem sequências longas de números nem e-mails,
+    """Depuração do SisGeO: só é válida a ocorrência com situação na lista de válidas,
+    sem nada escrito em "Motivo da Exclusão" e — quando o contrato pede (SisGeO · Chuvas) —
+    com condição climática na lista de válidas (ex.: "Tempo Chuvoso"; vazia não exclui).
+    As demais continuam publicadas (para a aba Depuração) com "depuracao" = critérios que
+    excluíram, unidos por "+" (situacao | motivo | clima | situacao+clima …). O texto do
+    motivo sai em "motivo", higienizado (sem sequências longas de números nem e-mails,
     no máximo 120 caracteres)."""
     validas = {N.chave(s) for s in dep["situacoes_validas"]}
+    climas = {N.chave(s) for s in dep.get("condicoes_validas", [])}
     usa_sit = "situacao" in cols
+    usa_clima = bool(climas) and "condicao_climatica" in cols
     if not usa_sit:
         rel.aviso(nome, "coluna de situação ausente: depuração por situação não aplicada")
+    if climas and not usa_clima:
+        rel.aviso(nome, "coluna de condição climática ausente: depuração por condição climática não aplicada")
     cont = Counter()
     for reg in saida:
         motivo = reg.pop("motivo_exclusao", None)
-        por_sit = usa_sit and N.chave(reg.get("situacao") or "") not in validas
-        por_mot = not N.vazio(motivo)
-        tipo = "ambos" if por_sit and por_mot else "situacao" if por_sit else "motivo" if por_mot else None
-        if tipo:
-            reg["depuracao"] = tipo
-        if por_mot:
+        criterios = []
+        if usa_sit and N.chave(reg.get("situacao") or "") not in validas:
+            criterios.append("situacao")
+        if not N.vazio(motivo):
+            criterios.append("motivo")
             reg["motivo"] = higienizar_motivo(motivo)
-        cont[tipo or "validas"] += 1
-    rel.depuracao[nome] = {k: cont.get(k, 0) for k in ("validas", "situacao", "motivo", "ambos")}
+        if usa_clima and not N.vazio(reg.get("condicao_climatica")) and N.chave(reg["condicao_climatica"]) not in climas:
+            criterios.append("clima")
+        if criterios:
+            reg["depuracao"] = "+".join(criterios)
+        cont["validas" if not criterios else (criterios[0] if len(criterios) == 1 else "ambos")] += 1
+    chaves = ("validas", "situacao", "motivo") + (("clima",) if climas else ()) + ("ambos",)
+    rel.depuracao[nome] = {k: cont.get(k, 0) for k in chaves}
 
 
 def processar(nome, spec, linhas_brutas, ref: N.Referencia, rel: Relatorio, limites):

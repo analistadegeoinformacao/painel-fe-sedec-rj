@@ -694,35 +694,42 @@ const FOGO = {
 };
 
 // ---- aba Depuração (SisGeO · Chuvas e SisGeO · Fogo)
-const ROTULO_DEP = { situacao: "Situação", motivo: "Motivo da exclusão", ambos: "Situação e motivo" };
+const ROTULO_DEP = { situacao: "Situação", motivo: "Motivo da exclusão", clima: "Condição climática" };
+// "situacao+clima" -> "Situação e Condição climática"
+const rotuloDep = (d) => String(d || "").split("+").map((k) => ROTULO_DEP[k] || k).join(" e ");
+const categoriaDep = (d) => (String(d).includes("+") ? "ambos" : d);
 function abaDepuracao(nome, p) {
   const validas = filtrar(nome), exc = filtrar(nome, { depuracao: "excluidas" });
   seguro(`${p}-dep-kpis`, (el) => {
     if (indisponivel(el, validas && exc && [...validas, ...exc])) return;
-    const c = contarPor(exc, "depuracao"), total = validas.length + exc.length;
+    const c = contarPor(exc.map((l) => ({ k: categoriaDep(l.depuracao) })), "k"), total = validas.length + exc.length;
     const pct = (n) => (total ? `${Math.round((100 * n) / total)}% do registrado` : "");
+    const comClima = "clima" in (BASE.meta.conjuntos[nome]?.depuracao || {});
     kpis(el, [
       { rotulo: "Registradas", valor: total, sub: descricaoPeriodo() },
       { rotulo: "Válidas", valor: validas.length, sub: pct(validas.length), destaque: true },
       { rotulo: "Excluídas por situação", valor: c.get("situacao") || 0, sub: "situação diferente das válidas" },
       { rotulo: "Excluídas por motivo", valor: c.get("motivo") || 0, sub: "com Motivo da Exclusão preenchido" },
-      { rotulo: "Por situação e motivo", valor: c.get("ambos") || 0, sub: `total excluído: ${fmt(exc.length)} (${pct(exc.length) || "0%"})` },
+      ...(comClima ? [{ rotulo: "Excluídas por condição climática", valor: c.get("clima") || 0, sub: "condição diferente de Tempo Chuvoso" }] : []),
+      { rotulo: comClima ? "Por mais de um critério" : "Por situação e motivo", valor: c.get("ambos") || 0, sub: `total excluído: ${fmt(exc.length)} (${pct(exc.length) || "0%"})` },
     ]);
   });
   seguro(`${p}-dep-situacao`, (el) => {
     if (indisponivel(el, exc)) return;
-    const porSit = exc.filter((l) => l.depuracao !== "motivo");
+    const porSit = exc.filter((l) => String(l.depuracao).includes("situacao"));
     if (indisponivel(el, porSit)) return;
     barrasH(el, ordenar(contarPor(porSit.map((l) => ({ s: l.situacao || "(sem situação)" })), "s"), 10), { unidade: "ocorrências" });
   });
   seguro(`${p}-dep-redec`, (el) => { if (!indisponivel(el, exc)) barrasH(el, porRedec(exc), { aoClicar: alternarRedec, selecionado: st.redec, unidade: "ocorrências" }); });
   seguro(`${p}-dep-tabela`, (el) => tabela(el, {
-    nome: `${nome}_excluidas_depuracao`, linhas: exc?.map((l) => ({ ...l, exclusao: ROTULO_DEP[l.depuracao] })),
+    nome: `${nome}_excluidas_depuracao`, linhas: exc?.map((l) => ({ ...l, exclusao: rotuloDep(l.depuracao) })),
     ordem: { campo: "data_ocorrencia", dir: -1 },
     colunas: [
       { campo: "data_ocorrencia", titulo: "Data", formato: fmtData }, { campo: "id_evento", titulo: "Evento" },
       { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "exclusao", titulo: "Excluída por" },
-      { campo: "motivo", titulo: "Motivo da exclusão", tipo: "longo" }, { campo: "situacao", titulo: "Situação" }, { campo: "municipio", titulo: "Município", formato: titulo },
+      { campo: "motivo", titulo: "Motivo da exclusão", tipo: "longo" }, { campo: "situacao", titulo: "Situação" },
+      ...("clima" in (BASE.meta.conjuntos[nome]?.depuracao || {}) ? [{ campo: "condicao_climatica", titulo: "Condição climática" }] : []),
+      { campo: "municipio", titulo: "Município", formato: titulo },
       { campo: "redec", titulo: "REDEC", formato: rotuloRedec }, { campo: "subtipo", titulo: "Subtipo" },
       { campo: "unidade", titulo: "Unidade" },
     ],

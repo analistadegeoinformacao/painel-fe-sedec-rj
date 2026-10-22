@@ -112,6 +112,7 @@ conjuntos:
       latlon:          ["Latitude/Longitude", "Posição"]
       duracao_s:       ["Duração (segundos)"]
       motivo_exclusao: ["Motivo da Exclusão"]   # só para a depuração; publicado higienizado na aba Depuração
+      condicao_climatica: ["Condição climática"]   # depuração: só "Tempo Chuvoso" é válida (vazia não exclui)
       # DE FORA DE PROPÓSITO (dados pessoais / texto livre):
       #   Efetivo (nomes e matrículas), Endereço, Avaliação Cenário, Atualização Cenário
     tipos:
@@ -135,6 +136,8 @@ conjuntos:
     # aparecem só na aba Depuração (com o motivo, higienizado: sem nº longos nem e-mails).
     depuracao:
       situacoes_validas: ["Ocorrência atendida com prestação de serviço", "Encerrada com empenho de viatura"]
+      # só no SisGeO · Chuvas: ocorrência com condição climática preenchida e diferente destas sai da contagem
+      condicoes_validas: ["Tempo Chuvoso"]
 
   danos_humanos:
     aba: "DANOS HUMANOS"
