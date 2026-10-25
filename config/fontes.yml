@@ -144,6 +144,8 @@ conjuntos:
       clima_com_alerta: {conjunto: alertas_msg, tipos: [idap, cb, sirene], dias_antes: 1}
       # estes tipos contam com qualquer condição climática (Motivo da Exclusão e situação continuam valendo)
       clima_nao_se_aplica_aos_tipos: ["Inundação/Alagamento", "Deslizamento/Desabamento"]
+      # subtipos sem relação com chuvas intensas: saem sempre (com qualquer condição climática ou alerta)
+      subtipos_sem_relacao: ["Retirada de Anel, Adornos e Afins"]
 
   danos_humanos:
     aba: "DANOS HUMANOS"

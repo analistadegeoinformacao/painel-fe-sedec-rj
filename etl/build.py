@@ -124,6 +124,8 @@ def depurar(nome, dep, saida, cols, rel):
     usa_sit = "situacao" in cols
     usa_clima = bool(climas) and "condicao_climatica" in cols
     tipos_livres = {N.chave(t) for t in dep.get("clima_nao_se_aplica_aos_tipos", [])}
+    # subtipos sem relação com chuva (ex.: retirada de anel): saem sempre, com qualquer clima ou alerta
+    subtipos_fora = {N.chave(t) for t in dep.get("subtipos_sem_relacao", [])}
     if not usa_sit:
         rel.aviso(nome, "coluna de situação ausente: depuração por situação não aplicada")
     if climas and not usa_clima:
@@ -146,12 +148,14 @@ def depurar(nome, dep, saida, cols, rel):
         if (usa_clima and not N.vazio(reg.get("condicao_climatica")) and N.chave(reg["condicao_climatica"]) not in climas
                 and N.chave(reg.get("tipo") or "") not in tipos_livres):
             criterios.append("clima")
+        if subtipos_fora and N.chave(reg.get("subtipo") or "") in subtipos_fora:
+            criterios.append("subtipo")
         if criterios:
             reg["depuracao"] = "+".join(criterios)
     if a_revisar:
         rel.aviso(nome, f"{len(a_revisar)} ocorrência(s) marcadas para revisar no Motivo da Exclusão "
                         f"(\"{dep['prefixo_revisar']}…\"; ainda contam como válidas) — {linhas_txt(a_revisar, 200)}")
-    chaves = ("validas", "situacao", "motivo") + (("clima",) if climas else ()) + ("ambos",)
+    chaves = ("validas", "situacao", "motivo") + (("clima",) if climas else ()) + (("subtipo",) if subtipos_fora else ()) + ("ambos",)
     rel.depuracao[nome] = contar_depuracao(saida, chaves)
 
 

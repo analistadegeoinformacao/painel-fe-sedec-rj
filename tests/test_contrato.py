@@ -170,7 +170,7 @@ def test_depuracao_por_situacao_e_por_motivo(tmp_path):
     meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
     dep = meta["conjuntos"]["sisgeo"]["depuracao"]
     # amostra: 1 falso aviso, 1 com motivo, 1 cancelada COM motivo; "atendida com prestação de serviço" é válida
-    assert dep == {"validas": 36, "situacao": 1, "motivo": 1, "clima": 0, "ambos": 1}
+    assert dep == {"validas": 36, "situacao": 1, "motivo": 1, "clima": 0, "subtipo": 0, "ambos": 1}
     sis = json.loads((saida / "sisgeo.json").read_text(encoding="utf-8"))
     validas = [r for r in sis if "depuracao" not in r]
     assert {r["situacao"] for r in validas} <= {"Encerrada com empenho de viatura", "Ocorrência atendida com prestação de serviço"}
@@ -353,3 +353,21 @@ def test_motivo_revisar_nao_exclui_e_vai_para_a_qualidade():
     assert "motivo" not in regs[0]
     aviso = rel.avisos["fogo_sisgeo"][0]
     assert "2 ocorrência(s) marcadas para revisar" in aviso and "linhas 10, 12" in aviso
+
+
+def test_subtipo_sem_relacao_com_chuva_sai_sempre():
+    dep = {"situacoes_validas": ["Encerrada com empenho de viatura"], "condicoes_validas": ["Tempo Chuvoso"],
+           "subtipos_sem_relacao": ["Retirada de Anel, Adornos e Afins"]}
+    ok = {"situacao": "Encerrada com empenho de viatura", "tipo": "Salvamento de Pessoa"}
+    regs = [{**ok, "subtipo": "Retirada de Anel, Adornos e Afins", "condicao_climatica": "Tempo Chuvoso"},
+            {**ok, "subtipo": "RETIRADA DE ANEL, ADORNOS E AFINS", "condicao_climatica": "Tempo seco"},
+            {**ok, "subtipo": "Em Elevador", "condicao_climatica": "Tempo Chuvoso"}]
+    rel = build.Relatorio()
+    build.depurar("sisgeo", dep, regs, {"situacao": 0, "condicao_climatica": 1, "subtipo": 2}, rel)
+    assert [r.get("depuracao") for r in regs] == ["subtipo", "clima+subtipo", None]
+    # o alerta só devolve a condição climática: o subtipo continua excluindo
+    build.clima_com_alerta("sisgeo", {"conjunto": "a", "tipos": ["idap"], "dias_antes": 1},
+                           {"sisgeo": [dict(regs[1], data_ocorrencia="2026-10-10T10:00", cod_ibge="3304557")],
+                            "a": [{"tipo": "idap", "data": "2026-10-10", "envios": 1, "municipios": ["3304557"], "redecs": []}]},
+                           N.Referencia(), rel)
+    assert rel.depuracao["sisgeo"]["subtipo"] == 1
