@@ -378,10 +378,15 @@ test("REDECs: danos humanos mostram a situação na data escolhida (último retr
     if (!ret.length) return null;
     const datas = [...new Set(ret.map((l) => l.data_ref))];
     const dia = datas[Math.floor(datas.length / 2)];
+    // fonte atual (retrato mais recente) vale sempre; as históricas, só até o seu último dia
+    const fim = new Map();
+    for (const l of ret) fim.set(l.id_fonte || "", l.data_ref);
+    const atual = ret.at(-1).id_fonte || "";
     const ult = new Map();
     for (const l of ret) { if (l.data_ref > dia) break; ult.set(l.cod_ibge, l); }
+    const validos = [...ult.values()].filter((l) => (l.id_fonte || "") === atual || dia <= fim.get(l.id_fonte || ""));
     const n = (v) => (typeof v === "number" ? v : 0);
-    const s = (f) => [...ult.values()].reduce((t, l) => t + f(l), 0);
+    const s = (f) => validos.reduce((t, l) => t + f(l), 0);
     return { dia, linhas: h.length, desalojados: s((l) => n(l.desalojados)), desabrigados: s((l) => n(l.desabrigados)), obitos: s((l) => n(l.obitos)),
       afetados: s((l) => n(l.desalojados) + n(l.desabrigados) + n(l.obitos) + n(l.outros_afetados)) };
   });
@@ -400,10 +405,10 @@ test("REDECs: danos humanos mostram a situação na data escolhida (último retr
 });
 
 test("REDECs: danos humanos da amostra (números conferidos à mão)", async ({ page }) => {
-  // só roda com tests/fixtures/amostra_historico.txt (19 linhas): em 23/02, Angra 300 + Barra Mansa 90 + Rio Bonito 40 + Cambuci 3
+  // só roda com tests/fixtures/amostra_historico.txt (21 linhas): em 23/02, Angra 300 + Barra Mansa 90 + Rio Bonito 40 + Cambuci 3
   await abrir(page, "#amb=redecs&ate=2026-02-23&periodo=");
   const linhas = await page.evaluate(async () => (await (await fetch("data/danos_historico.json", { cache: "no-cache" })).json()).length);
-  test.skip(linhas !== 19, "dados reais: conferência pela própria base no teste anterior");
+  test.skip(linhas !== 21, "dados reais: conferência pela própria base no teste anterior");
   const valor = async (rotulo) => Number((await page.locator("#r-kpis .kpi").filter({ has: page.locator(".kpi__rotulo", { hasText: new RegExp(`^${rotulo}$`) }) })
     .locator(".kpi__valor").innerText()).replace(/\D/g, ""));
   expect(await valor("Desalojados")).toBe(433);
@@ -411,4 +416,15 @@ test("REDECs: danos humanos da amostra (números conferidos à mão)", async ({ 
   await page.goto("about:blank");
   await abrir(page, "#amb=redecs&ate=2026-03-02&periodo=");
   expect(await valor("Desalojados")).toBe(396); // Rio Bonito zerou em 25/02 e Barra Mansa em 02/03
+  await expect(page.locator("#r-kpis .kpi", { hasText: "dados históricos · situação em 02/03/2026" }).first()).toBeVisible();
+  // dados históricos (F002) vão até 02/03; a fonte atual (F003) começa em 20/03: no meio, sem dados (não repete 02/03)
+  await page.goto("about:blank");
+  await abrir(page, "#amb=redecs&ate=2026-03-10&periodo=");
+  await expect(page.locator("#r-kpis .kpi", { hasText: "sem dados em 10/03/2026" }).first()).toBeVisible();
+  expect(await page.locator("#r-kpis .kpi").filter({ has: page.locator(".kpi__rotulo", { hasText: /^Desalojados$/ }) }).locator(".kpi__valor").innerText()).toBe("—");
+  // a partir de 20/03 só a fonte atual vale: Angra 50 desalojados (Cambuci zerou; os históricos não entram)
+  await page.goto("about:blank");
+  await abrir(page, "#amb=redecs&ate=2026-03-25&periodo=");
+  expect(await valor("Desalojados")).toBe(50);
+  expect(await valor("Afetados")).toBe(60);
 });

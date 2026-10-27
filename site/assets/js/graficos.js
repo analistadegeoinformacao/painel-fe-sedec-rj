@@ -89,6 +89,8 @@ export function serieDiaria(el, pontos, { unidade = "ocorrências", anterior = n
   const comparar = Array.isArray(anterior) && anterior.length > 0;
   const realAnterior = comparar ? anterior.map(([, , real]) => real) : null;
   const curto = pontos.length <= 31;
+  const vazio = (i) => i < 0 || i >= pontos.length || pontos[i][1] === null || pontos[i][1] === undefined;
+  const isolados = curto ? [] : pontos.map((_, i) => i).filter((i) => !vazio(i) && vazio(i - 1) && vazio(i + 1));
   const corRef = css("--referencia") || "#e5484d";
   const nomeAtual = `${titulo1(unidade)} ${rotuloAtual}`.trim();
   const nomeAnterior = `${titulo1(unidade)} (ano anterior) ${rotuloAnterior}`.trim();
@@ -114,6 +116,12 @@ export function serieDiaria(el, pontos, { unidade = "ocorrências", anterior = n
     areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1,
       colorStops: [{ offset: 0, color: t.serie + "33" }, { offset: 1, color: t.serie + "00" }] } },
     label: rotulo(t.texto, 700), labelLayout: { hideOverlap: true },
+    // ponto sem vizinhos (ex.: primeiro dia depois de um período sem dados) não desenha linha: marca com um círculo
+    markPoint: isolados.length ? {
+      symbol: "circle", symbolSize: 9, itemStyle: { color: t.serie },
+      label: { show: true, position: "top", distance: 6, color: t.texto, fontSize: 12, fontWeight: 700, formatter: (p) => fmt(p.value) },
+      data: isolados.map((i) => ({ coord: [pontos[i][0], pontos[i][1]], value: pontos[i][1] })),
+    } : undefined,
     markLine: referencia ? {
       silent: true, symbol: "none",
       lineStyle: { color: corRef, type: [8, 5], width: 2 },

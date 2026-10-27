@@ -62,6 +62,10 @@ Os danos humanos do ambiente Eventos REDECs vêm da planilha **Histórico de Dan
 - **Cartões (Visão geral):** situação na data "Até" (sem filtro: hoje) = soma do **último retrato de cada município
   até aquela data**. Datas diferentes nunca se somam. Clicar num cartão lista os municípios e a data do retrato de cada um.
   O gráfico "Evolução dos danos humanos" faz a mesma conta para cada dia do período.
+- **Dados históricos x dados atuais:** a fonte com o retrato mais recente é a **atual** (aba DANOS HUMANOS, F003) e
+  vale até a próxima mudança. As outras são **dados históricos** (ex.: Planilha Situacional, até 03/06/2026) e valem só
+  até o seu último dia. Entre o fim dos dados históricos e o início dos atuais, cartões e gráfico ficam **sem dados**
+  (nunca repetem números antigos); nas datas dos dados históricos o cartão diz "dados históricos · situação em …".
 - **Alimentação diária:** `apps-script/historico_danos.gs`, colado na própria planilha de histórico (*Extensões ›
   Apps Script*), confere a aba DANOS HUMANOS de hora em hora. Quando ela muda, grava o retrato do dia (fonte `F003`);
   quem sai da aba ganha uma linha zerada. Instalação: rodar `instalar` uma vez.

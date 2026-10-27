@@ -362,23 +362,51 @@ function retratosDiarios() {
     .map((l) => ({ ...l, afetados: n0(l.desalojados) + n0(l.desabrigados) + n0(l.obitos) + n0(l.outros_afetados) }))
     .sort((a, b) => (a.data_ref < b.data_ref ? -1 : a.data_ref > b.data_ref ? 1 : 0));
 }
+// Fontes do histórico: a fonte ATUAL é a que tem o retrato mais recente (hoje, a aba DANOS HUMANOS, F003);
+// ela vale até a próxima mudança, porque ali "sem retrato" quer dizer "nada mudou". As demais são DADOS
+// HISTÓRICOS: cada uma vale só até o seu último dia (ex.: Planilha Situacional até 03/06/2026). Depois disso,
+// sem retrato da fonte atual, a data fica sem dados (nunca repete números de meses atrás).
+// A cobertura é calculada sobre o histórico inteiro (sem o filtro de REDEC/município).
+let COBERTURA = null;
+function cobertura() {
+  if (COBERTURA && COBERTURA.base === BASE.dados.danos_historico) return COBERTURA;
+  const fim = new Map();
+  let atual = null, maxData = "";
+  for (const l of (BASE.dados.danos_historico || []).filter(ehRetrato)) {
+    const f = l.id_fonte || "";
+    if (!fim.has(f) || l.data_ref > fim.get(f)) fim.set(f, l.data_ref);
+    if (l.data_ref > maxData) { maxData = l.data_ref; atual = f; }
+  }
+  const fimHistorico = [...fim.entries()].filter(([f]) => f !== atual).reduce((m, [, d]) => (d > m ? d : m), "");
+  const iniAtual = (BASE.dados.danos_historico || []).filter((l) => ehRetrato(l) && (l.id_fonte || "") === atual)
+    .reduce((m, l) => (!m || l.data_ref < m ? l.data_ref : m), "");
+  COBERTURA = { base: BASE.dados.danos_historico, fim, atual, fimHistorico, iniAtual };
+  return COBERTURA;
+}
+const valeEm = (l, dia, cob) => (l.id_fonte || "") === cob.atual || dia <= cob.fim.get(l.id_fonte || "");
+const ehHistorico = (dia, cob) => cob.fimHistorico && dia <= cob.fimHistorico && !(cob.iniAtual && dia >= cob.iniAtual);
 function situacaoEm(retratos, dia) {
+  const cob = cobertura();
   const ult = new Map();
   for (const l of retratos) {
     if (l.data_ref > dia) break;
     ult.set(l.cod_ibge, l);
   }
-  return [...ult.values()];
+  return [...ult.values()].filter((l) => valeEm(l, dia, cob));
 }
-// série diária do estado (ou do recorte): soma, a cada dia, o último retrato de cada município
+// série diária do estado (ou do recorte): soma, a cada dia, o último retrato válido de cada município;
+// dia sem nenhum retrato válido fica sem ponto (buraco na linha)
 function evolucaoDanos(retratos, campo, ini, fim) {
   if (!retratos.length) return [];
+  const cob = cobertura();
   const ult = new Map();
   const pontos = [];
   let i = 0;
   for (let d = retratos[0].data_ref < ini ? retratos[0].data_ref : ini; d <= fim; d = somaDias(d, 1)) {
     while (i < retratos.length && retratos[i].data_ref <= d) { ult.set(retratos[i].cod_ibge, retratos[i]); i++; }
-    if (d >= ini) pontos.push([d, ult.size ? [...ult.values()].reduce((t, l) => t + n0(l[campo]), 0) : null]);
+    if (d < ini) continue;
+    const validos = [...ult.values()].filter((l) => valeEm(l, d, cob));
+    pontos.push([d, validos.length ? validos.reduce((t, l) => t + n0(l[campo]), 0) : null]);
   }
   return pontos;
 }
@@ -392,7 +420,7 @@ function dadosDanos() {
     const dia = st.ate || hojeBRT();
     const linhas = situacaoEm(retratos, dia);
     const ultimo = linhas.reduce((m, l) => (l.data_ref > m ? l.data_ref : m), "");
-    return { historico: true, retratos, dia, linhas, ultimo };
+    return { historico: true, retratos, dia, linhas, ultimo, cob: cobertura() };
   }
   // aba DANOS HUMANOS: a coluna AFETADOS são os outros afetados; o cartão mostra o total
   const dh = filtrar("danos_humanos", { comPeriodo: false });
@@ -401,15 +429,23 @@ function dadosDanos() {
   return { historico: false, linhas };
 }
 function cartoesDanos(danos) {
-  // a data só aparece quando não é hoje: "situação atual" / "situação em 15/04/2026"
+  // "situação atual" / "dados históricos · situação em 15/04/2026" / "sem dados nesta data"
   const hoje = !danos.historico || danos.dia >= hojeBRT();
-  const sub = danos.historico
-    ? (danos.linhas.length ? (hoje ? "situação atual" : `situação em ${fmtData(danos.dia)}`) : `sem registro até ${fmtData(danos.dia)}`)
-    : "situação atual · aba DANOS HUMANOS";
+  let sub = "situação atual · aba DANOS HUMANOS";
+  if (danos.historico) {
+    const cob = danos.cob;
+    if (danos.linhas.length) {
+      sub = hoje ? "situação atual" : `${ehHistorico(danos.dia, cob) ? "dados históricos · " : ""}situação em ${fmtData(danos.dia)}`;
+    } else if (cob.fimHistorico && danos.dia > cob.fimHistorico && cob.iniAtual && danos.dia < cob.iniAtual) {
+      sub = `sem dados em ${fmtData(danos.dia)} · dados históricos até ${fmtData(cob.fimHistorico)}; dados atuais desde ${fmtData(cob.iniAtual)}`;
+    } else {
+      sub = `sem registro em ${fmtData(danos.dia)}`;
+    }
+  }
   return DANOS.map(([campo, rotulo]) => {
-    const n = danos.linhas ? soma(danos.linhas, campo) : null;
+    const n = danos.linhas && danos.linhas.length ? soma(danos.linhas, campo) : danos.linhas && !danos.historico ? 0 : null;
     const ativo = st.danos === campo;
-    const sub2 = campo === "afetados" && danos.linhas ? `${sub} · inclui desalojados, desabrigados e óbitos · outros: ${fmt(soma(danos.linhas, "outros_afetados"))}` : sub;
+    const sub2 = campo === "afetados" && danos.linhas?.length ? `${sub} · inclui desalojados, desabrigados e óbitos · outros: ${fmt(soma(danos.linhas, "outros_afetados"))}` : sub;
     return { rotulo, valor: n ?? "—", sub: sub2, destaque: ativo,
       ...(n ? { acao: () => { st.danos = ativo ? "" : campo; atualizar(); }, rotuloAcao: ativo ? "Fechar" : "Clique para detalhar",
         dicaAcao: ativo ? "Fechar a lista" : `Mostrar os municípios que somam ${fmt(n)}` } : {}) };
@@ -463,7 +499,10 @@ const REDECS = {
       const ini = st.de || danos.retratos[0].data_ref;
       const pontos = evolucaoDanos(danos.retratos, campo, ini, danos.dia);
       const nota = document.getElementById("r-evol-nota");
-      if (nota) nota.textContent = `${fmtData(ini)} a ${fmtData(danos.dia)} · cada dia soma o último retrato de cada município; dias sem retrato repetem o último valor conhecido`;
+      const cob = danos.cob;
+      const lacuna = cob.fimHistorico && cob.iniAtual && somaDias(cob.fimHistorico, 1) < cob.iniAtual
+        ? ` · sem dados de ${fmtData(somaDias(cob.fimHistorico, 1))} a ${fmtData(somaDias(cob.iniAtual, -1))} (dados históricos até ${fmtData(cob.fimHistorico)})` : "";
+      if (nota) nota.textContent = `${fmtData(ini)} a ${fmtData(danos.dia)} · cada dia soma o último retrato de cada município${lacuna}`;
       serieDiaria(el, pontos, { unidade: rotulo.toLowerCase() });
     });
     seguro("r-redec", (el) => { if (!indisponivel(el, ev)) barrasH(el, porRedec(ev), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "eventos" }); });
