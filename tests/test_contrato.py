@@ -391,7 +391,7 @@ def test_historico_de_danos_vira_conjunto_proprio(tmp_path):
     meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
     assert meta["conjuntos"]["danos_historico"]["planilha"] == "Histórico de Danos Humanos FE-SEDEC-RJ"
     h = json.loads((saida / "danos_historico.json").read_text(encoding="utf-8"))
-    assert len(h) == 19
+    assert len(h) == 21
     angra = [r for r in h if r["cod_ibge"] == "3300100" and r["data_ref"] == "2026-02-23"][0]
     assert (angra["obitos"], angra["desabrigados"], angra["desalojados"], angra["outros_afetados"]) == (3, 100, 300, 0)
     assert angra["tipo_registro"] == "RETRATO DIÁRIO" and angra["id_fonte"] == "F002"
