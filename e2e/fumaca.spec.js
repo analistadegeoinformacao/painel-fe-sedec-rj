@@ -353,13 +353,36 @@ test("mapa: botão enquadra o estado do RJ", async ({ page }) => {
 
 test("REDECs: cartão de danos humanos mostra as linhas que somam o número", async ({ page }) => {
   await abrir(page, "#amb=redecs");
-  const cartao = page.locator("#r-kpis button.kpi", { hasText: "Afetados" });
-  test.skip(await cartao.count() === 0, "amostra sem afetados");
+  const cartao = page.locator("#r-kpis button.kpi").filter({ has: page.locator(".kpi__rotulo", { hasText: /^Desalojados$/ }) });
+  test.skip(await cartao.count() === 0, "amostra sem desalojados");
   const total = Number((await cartao.locator(".kpi__valor").innerText()).replace(/\D/g, ""));
   await cartao.click();
-  await expect(page.locator("#r-danos-titulo")).toContainText("Afetados");
-  const vals = await page.locator("#r-danos tbody tr").evaluateAll((trs) => trs.map((tr) => tr.children[4].innerText));
+  await expect(page.locator("#r-danos-titulo")).toContainText("Desalojados");
+  // soma a coluna marcada com ▶ (a categoria do cartão clicado)
+  const col = await page.locator("#r-danos thead th").evaluateAll((ths) => ths.findIndex((th) => th.innerText.includes("▶")));
+  const vals = await page.locator("#r-danos tbody tr").evaluateAll((trs, c) => trs.map((tr) => tr.children[c].innerText), col);
   expect(vals.reduce((s, v) => s + Number(v.replace(/\D/g, "")), 0)).toBe(total);
   await cartao.click();
   await expect(page.locator("#r-danos")).toBeHidden();
+});
+
+test("REDECs: danos humanos mostram a situação na data escolhida (último retrato de cada município)", async ({ page }) => {
+  const valor = async (rotulo) => Number((await page.locator("#r-kpis .kpi").filter({ has: page.locator(".kpi__rotulo", { hasText: new RegExp(`^${rotulo}$`) }) })
+    .locator(".kpi__valor").innerText()).replace(/\D/g, ""));
+  // amostra_historico.txt: em 23/02, Angra 300 + Barra Mansa 90 + Rio Bonito 40 + Cambuci 3 desalojados
+  await abrir(page, "#amb=redecs&ate=2026-02-23&periodo=");
+  test.skip(!(await page.locator("#r-kpis .kpi", { hasText: "situação em 23/02/2026" }).count()), "sem histórico de danos nesta execução");
+  expect(await valor("Desalojados")).toBe(433);
+  expect(await valor("Desabrigados")).toBe(105);
+  expect(await valor("Óbitos")).toBe(4);
+  // afetados = desalojados + desabrigados + óbitos + outros afetados (0 + 4000 + 1200 + 200)
+  expect(await valor("Afetados")).toBe(433 + 105 + 4 + 5400);
+  // em 02/03: Rio Bonito zerou em 25/02 e Barra Mansa em 02/03; datas diferentes nunca se somam
+  await page.goto("about:blank"); // só trocar o # não recarrega a página
+  await abrir(page, "#amb=redecs&ate=2026-03-02&periodo=");
+  expect(await valor("Desalojados")).toBe(396);
+  expect(await valor("Afetados")).toBe(396 + 8 + 4 + 600);
+  await expect(page.locator("#r-evol")).toBeVisible();
+  await page.locator("#r-evol-alt [data-evol='obitos']").click();
+  await expect(page.locator("#r-evol-alt [data-evol='obitos']")).toHaveAttribute("aria-pressed", "true");
 });

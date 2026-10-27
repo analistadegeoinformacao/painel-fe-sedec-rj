@@ -371,3 +371,49 @@ def test_subtipo_sem_relacao_com_chuva_sai_sempre():
                             "a": [{"tipo": "idap", "data": "2026-10-10", "envios": 1, "municipios": ["3304557"], "redecs": []}]},
                            N.Referencia(), rel)
     assert rel.depuracao["sisgeo"]["subtipo"] == 1
+
+
+# ------------------------------------------------- histórico de danos humanos
+AMOSTRA_HIST = Path(__file__).parent / "fixtures" / "amostra_historico.txt"
+
+
+def rodar_historico(tmp_path, hist=AMOSTRA_HIST):
+    saida = tmp_path / "data"
+    args = ["--fonte", "texto", "--origem", str(AMOSTRA), "--saida", str(saida)]
+    if hist:
+        args += ["--origem-historico", str(hist)]
+    return build.main(args), saida
+
+
+def test_historico_de_danos_vira_conjunto_proprio(tmp_path):
+    rc, saida = rodar_historico(tmp_path)
+    assert rc == 0
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert meta["conjuntos"]["danos_historico"]["planilha"] == "Histórico de Danos Humanos FE-SEDEC-RJ"
+    h = json.loads((saida / "danos_historico.json").read_text(encoding="utf-8"))
+    assert len(h) == 19
+    angra = [r for r in h if r["cod_ibge"] == "3300100" and r["data_ref"] == "2026-02-23"][0]
+    assert (angra["obitos"], angra["desabrigados"], angra["desalojados"], angra["outros_afetados"]) == (3, 100, 300, 0)
+    assert angra["tipo_registro"] == "RETRATO DIÁRIO" and angra["id_fonte"] == "F002"
+    # compactado: município e REDEC voltam no navegador pelo código IBGE
+    assert "municipio" not in angra and "redec" not in angra
+    # o total não é publicado (o painel soma as quatro categorias) nem as observações
+    assert not {"total_afetados", "obs"} & set(angra)
+    # vazio continua vazio (não informado), zero continua zero
+    campos = [r for r in h if r["cod_ibge"] == "3301009"][0]
+    assert campos["outros_afetados"] is None and campos["obitos"] == 0
+
+
+def test_sem_planilha_de_historico_publica_o_resto(tmp_path):
+    rc, saida = rodar_historico(tmp_path, hist=None)
+    assert rc == 0
+    assert json.loads((saida / "danos_historico.json").read_text(encoding="utf-8")) == []
+    meta = json.loads((saida / "meta.json").read_text(encoding="utf-8"))
+    assert meta["conjuntos"]["danos_humanos"]["linhas"] > 0
+
+
+def test_historico_sem_coluna_obrigatoria_bloqueia(tmp_path):
+    quebrada = tmp_path / "hist.txt"
+    quebrada.write_text(AMOSTRA_HIST.read_text(encoding="utf-8").replace("DATA_REF", "DATA"), encoding="utf-8")
+    rc, _ = rodar_historico(tmp_path, quebrada)
+    assert rc == 1

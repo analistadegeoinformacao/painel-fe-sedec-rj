@@ -34,7 +34,8 @@ var PAINEL_PLANILHA_ID = '1SN6hpLNlyKrSYUSu0gUlzF8OaIUeuDMA4i0Gq3bpeGY';
 // Planilhas que a ponte aceita ler (lista fechada: nenhuma outra é lida).
 var PAINEL_PLANILHAS_PERMITIDAS = [
   PAINEL_PLANILHA_ID,                               // NOVA BASE ANALISTAS (chuvas)
-  '1rlC6lxivHTj0xLmjDzENe4NEHMN6EFI6d8d2QSDXPVA'    // PLANILHA FOGO EM VEGETAÇÃO
+  '1rlC6lxivHTj0xLmjDzENe4NEHMN6EFI6d8d2QSDXPVA',   // PLANILHA FOGO EM VEGETAÇÃO
+  '1CGGPQ5y0ZoSV2fybEaUQZSBCrXTxcWBv2nq-VS9bMYM'    // HISTÓRICO DE DANOS HUMANOS
 ];
 
 function doPost(e) {

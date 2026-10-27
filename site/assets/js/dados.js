@@ -2,7 +2,7 @@
 // independente: se um falhar, os outros painéis continuam funcionando.
 const VERSAO_CONTRATO = 1;
 const CONJUNTOS = [
-  "sisgeo", "eventos", "boletins", "danos_humanos", "decretos", "decretos_historico",
+  "sisgeo", "eventos", "boletins", "danos_humanos", "danos_historico", "decretos", "decretos_historico",
   "alertas", "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h",
   "nivel_resposta", "alertas_msg", "fogo_sisgeo", "fogo_abertos", "fogo_risco", "fogo_temperatura", "fogo_umidade", "fogo_nivel_resposta", "fogo_ultimo_dia",
 ];
