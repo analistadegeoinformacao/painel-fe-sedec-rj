@@ -401,13 +401,15 @@ function dadosDanos() {
   return { historico: false, linhas };
 }
 function cartoesDanos(danos) {
+  // a data só aparece quando não é hoje: "situação atual" / "situação em 15/04/2026"
+  const hoje = !danos.historico || danos.dia >= hojeBRT();
   const sub = danos.historico
-    ? (danos.linhas.length ? `situação em ${fmtData(danos.dia)} · último retrato de cada município` : `sem retrato até ${fmtData(danos.dia)}`)
+    ? (danos.linhas.length ? (hoje ? "situação atual" : `situação em ${fmtData(danos.dia)}`) : `sem registro até ${fmtData(danos.dia)}`)
     : "situação atual · aba DANOS HUMANOS";
   return DANOS.map(([campo, rotulo]) => {
     const n = danos.linhas ? soma(danos.linhas, campo) : null;
     const ativo = st.danos === campo;
-    const sub2 = campo === "afetados" && danos.linhas ? `${sub} · inclui desalojados, desabrigados e óbitos (outros: ${fmt(soma(danos.linhas, "outros_afetados"))})` : sub;
+    const sub2 = campo === "afetados" && danos.linhas ? `${sub} · inclui desalojados, desabrigados e óbitos · outros: ${fmt(soma(danos.linhas, "outros_afetados"))}` : sub;
     return { rotulo, valor: n ?? "—", sub: sub2, destaque: ativo,
       ...(n ? { acao: () => { st.danos = ativo ? "" : campo; atualizar(); }, rotuloAcao: ativo ? "Fechar" : "Clique para detalhar",
         dicaAcao: ativo ? "Fechar a lista" : `Mostrar os municípios que somam ${fmt(n)}` } : {}) };
@@ -433,7 +435,7 @@ const REDECS = {
       const [campo, rotulo] = item;
       const linhas = danos.linhas.filter((l) => (l[campo] || 0) > 0);
       document.getElementById("r-danos-titulo").textContent = danos.historico
-        ? `${rotulo}: ${fmt(soma(linhas, campo))} em ${fmtData(danos.dia)} — de onde vem`
+        ? `${rotulo}: ${fmt(soma(linhas, campo))} ${danos.dia >= hojeBRT() ? "hoje" : `em ${fmtData(danos.dia)}`} — de onde vem`
         : `${rotulo}: ${fmt(soma(linhas, campo))} — de onde vem`;
       document.getElementById("r-danos-dica").textContent = danos.historico
         ? "último retrato de cada município até a data escolhida"
