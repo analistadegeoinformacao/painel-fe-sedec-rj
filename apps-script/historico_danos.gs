@@ -70,7 +70,8 @@ function registrarRetrato() {
       hist.getRange(ini, 10, n, 8).setValues(plano.gravar.map(function (r) {
         return ['RETRATO DIÁRIO', '', 'PRELIMINAR', '', '', HD_FONTE, r.nomeFonte || '', r.saiu ? HD_OBS_SAIU : ''];
       }));
-      hist.getRange(ini, 1, n, 1).setNumberFormat('yyyy-mm-dd');
+      // mesmo formato de data das linhas que já existem (dd/mm/aaaa ou aaaa-mm-dd: o painel lê os dois)
+      hist.getRange(ini, 1, n, 1).setNumberFormat(hist.getRange(2, 1).getNumberFormat());
     }
     hdRegistrarFonte_(livro, hoje);
     console.log('Retrato de ' + hoje + ': ' + plano.gravar.length + ' linha(s) gravada(s), ' +
@@ -201,7 +202,9 @@ function hdRegistrarFonte_(livro, hoje) {
       'RETRATO DIÁRIO', 'desde ' + hoje, '', hoje,
       'Script historico_danos.gs (conferência de hora em hora). Um retrato por dia em que a aba mudou; vale a última versão do dia. ' +
       'AFETADOS da aba = OUTROS_AFETADOS. Quem sai da aba ganha uma linha zerada.']]);
-    aba.getRange(linha, 7).setFormula('=COUNTIF(HISTORICO!O:O,A' + linha + ')');
+    // separador de argumentos conforme o idioma da planilha (pt_BR usa ";")
+    var sep = /^en/.test(livro.getSpreadsheetLocale()) ? ',' : ';';
+    aba.getRange(linha, 7).setFormula('=COUNTIF(HISTORICO!O:O' + sep + 'A' + linha + ')');
   } else {
     aba.getRange(i + 1, 8).setValue(hoje);
   }
