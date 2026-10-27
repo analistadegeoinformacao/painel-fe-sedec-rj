@@ -18,7 +18,7 @@ const AMBIENTES = {
   sisgeo: { abas: ["geral", "tipos", "registros", "depuracao", "qualidade"], conjuntos: ["sisgeo", "nivel_resposta"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   redecs: { abas: ["geral", "decretos", "resposta", "registros", "consulta", "qualidade"],
-            conjuntos: ["eventos", "boletins", "danos_humanos", "decretos", "decretos_historico", "alertas",
+            conjuntos: ["eventos", "boletins", "danos_humanos", "danos_historico", "decretos", "decretos_historico", "alertas",
                         "ajuda_humanitaria", "pontos_apoio", "severidade", "s2id", "chuva_24h", "chuva_1h", "nivel_resposta", "alertas_msg"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   fogo:   { abas: ["geral", "territorios", "condicoes", "registros", "depuracao", "qualidade"],
@@ -26,7 +26,7 @@ const AMBIENTES = {
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
-const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "", decretos: "", danos: "" };
+const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "", decretos: "", danos: "", evol: "" };
 const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
@@ -124,7 +124,7 @@ function montarFiltros() {
   ordenar(contarPor((BASE.dados.sisgeo || []).filter((l) => !l.depuracao), "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
-    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "", decretos: "", danos: "" });
+    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "", decretos: "", danos: "", evol: "" });
     preencherMunicipios();
     atualizar();
   });
@@ -347,41 +347,122 @@ const NATUREZAS = [["inundacao", "Inundação / alagamento"], ["deslizamento", "
   ["destelhamento", "Destelhamento"], ["salvamento", "Salvamento de pessoa"], ["queda_arvore", "Queda de árvore"], ["outros", "Outros"]];
 
 const DANOS = [["desalojados", "Desalojados"], ["desabrigados", "Desabrigados"], ["afetados", "Afetados"], ["obitos", "Óbitos"]];
+// ---- danos humanos: histórico diário (planilha "Histórico de Danos Humanos FE-SEDEC-RJ")
+// Cada linha é um retrato ACUMULADO de um município numa data. A situação numa data D é, para cada
+// município, o seu último retrato até D. Datas diferentes nunca se somam (o mesmo desalojado de ontem
+// é o desalojado de hoje). Só entram os retratos diários: ápice e consolidados são outra natureza.
+// Afetados (total) = desalojados + desabrigados + óbitos + outros afetados.
+const n0 = (v) => (typeof v === "number" ? v : 0);
+const ehRetrato = (l) => String(l.tipo_registro || "").toUpperCase().startsWith("RETRATO") && l.data_ref && l.cod_ibge;
+const temHistorico = () => (BASE.dados.danos_historico || []).some(ehRetrato);
+function retratosDiarios() {
+  const h = filtrar("danos_historico", { comPeriodo: false });
+  if (!h) return null;
+  return h.filter(ehRetrato)
+    .map((l) => ({ ...l, afetados: n0(l.desalojados) + n0(l.desabrigados) + n0(l.obitos) + n0(l.outros_afetados) }))
+    .sort((a, b) => (a.data_ref < b.data_ref ? -1 : a.data_ref > b.data_ref ? 1 : 0));
+}
+function situacaoEm(retratos, dia) {
+  const ult = new Map();
+  for (const l of retratos) {
+    if (l.data_ref > dia) break;
+    ult.set(l.cod_ibge, l);
+  }
+  return [...ult.values()];
+}
+// série diária do estado (ou do recorte): soma, a cada dia, o último retrato de cada município
+function evolucaoDanos(retratos, campo, ini, fim) {
+  if (!retratos.length) return [];
+  const ult = new Map();
+  const pontos = [];
+  let i = 0;
+  for (let d = retratos[0].data_ref < ini ? retratos[0].data_ref : ini; d <= fim; d = somaDias(d, 1)) {
+    while (i < retratos.length && retratos[i].data_ref <= d) { ult.set(retratos[i].cod_ibge, retratos[i]); i++; }
+    if (d >= ini) pontos.push([d, ult.size ? [...ult.values()].reduce((t, l) => t + n0(l[campo]), 0) : null]);
+  }
+  return pontos;
+}
 const ROTULO_ALERTA = { idap: "IDAP", cb: "Cell Broadcast", sirene: "Sirenes" };
+
+// Cartões de danos humanos: com o histórico, situação na data "Até" (sem filtro, hoje);
+// sem ele (planilha fora do ar), a aba DANOS HUMANOS da NOVA BASE, como antes.
+function dadosDanos() {
+  if (temHistorico()) {
+    const retratos = retratosDiarios() || [];
+    const dia = st.ate || hojeBRT();
+    const linhas = situacaoEm(retratos, dia);
+    const ultimo = linhas.reduce((m, l) => (l.data_ref > m ? l.data_ref : m), "");
+    return { historico: true, retratos, dia, linhas, ultimo };
+  }
+  // aba DANOS HUMANOS: a coluna AFETADOS são os outros afetados; o cartão mostra o total
+  const dh = filtrar("danos_humanos", { comPeriodo: false });
+  const linhas = dh && dh.map((l) => ({ ...l, outros_afetados: l.afetados,
+    afetados: n0(l.desalojados) + n0(l.desabrigados) + n0(l.obitos) + n0(l.afetados) }));
+  return { historico: false, linhas };
+}
+function cartoesDanos(danos) {
+  const sub = danos.historico
+    ? (danos.linhas.length ? `situação em ${fmtData(danos.dia)} · último retrato de cada município` : `sem retrato até ${fmtData(danos.dia)}`)
+    : "situação atual · aba DANOS HUMANOS";
+  return DANOS.map(([campo, rotulo]) => {
+    const n = danos.linhas ? soma(danos.linhas, campo) : null;
+    const ativo = st.danos === campo;
+    const sub2 = campo === "afetados" && danos.linhas ? `${sub} · inclui desalojados, desabrigados e óbitos (outros: ${fmt(soma(danos.linhas, "outros_afetados"))})` : sub;
+    return { rotulo, valor: n ?? "—", sub: sub2, destaque: ativo,
+      ...(n ? { acao: () => { st.danos = ativo ? "" : campo; atualizar(); }, rotuloAcao: ativo ? "Fechar" : "Clique para detalhar",
+        dicaAcao: ativo ? "Fechar a lista" : `Mostrar os municípios que somam ${fmt(n)}` } : {}) };
+  });
+}
 
 const REDECS = {
   geral() {
-    const ev = filtrar("eventos"), dec = filtrar("decretos", { comPeriodo: false }), dh = filtrar("danos_humanos", { comPeriodo: false });
+    const ev = filtrar("eventos"), dec = filtrar("decretos", { comPeriodo: false });
+    const danos = dadosDanos();
     seguro("r-kpis", (el) => kpis(el, [
       { rotulo: "Eventos", valor: ev?.length ?? "—", sub: descricaoPeriodo(), destaque: true },
       { rotulo: "Municípios atingidos", valor: ev ? muns(ev) : "—", sub: "de 92 no estado" },
       { rotulo: "Decretos vigentes", valor: dec ? dec.filter(vigente).length : "—", sub: "situação hoje" },
-      // danos humanos: SEMPRE da aba DANOS HUMANOS (número atual por município, corrigido para mais ou para menos
-      // pela equipe). Não somar os eventos: o mesmo desalojado apareceria em vários registros.
-      ...DANOS.map(([campo, rotulo]) => {
-        const n = dh ? soma(dh, campo) : null;
-        const ativo = st.danos === campo;
-        return { rotulo, valor: n ?? "—", sub: "situação atual · aba DANOS HUMANOS", destaque: ativo,
-          ...(n ? { acao: () => { st.danos = ativo ? "" : campo; atualizar(); }, rotuloAcao: ativo ? "Fechar" : "Clique para detalhar",
-            dicaAcao: ativo ? "Fechar a lista" : `Mostrar as linhas da aba DANOS HUMANOS que somam ${fmt(n)}` } : {}) };
-      }),
+      ...cartoesDanos(danos),
     ]));
-    // ao clicar num cartão de danos humanos: só as linhas da aba DANOS HUMANOS que compõem aquele número
+    // ao clicar num cartão de danos humanos: só os municípios que compõem aquele número
     seguro("r-danos", (el) => {
       const sec = el.closest(".cartao");
       const item = DANOS.find(([c]) => c === st.danos);
-      if (!item || !dh) { sec.hidden = true; return; }
+      if (!item || !danos.linhas) { sec.hidden = true; return; }
       sec.hidden = false;
       const [campo, rotulo] = item;
-      const linhas = dh.filter((l) => (l[campo] || 0) > 0);
-      document.getElementById("r-danos-titulo").textContent = `${rotulo}: ${fmt(soma(linhas, campo))} — de onde vem`;
-      tabela(el, {
-        nome: `danos_humanos_${campo}`, linhas, porPagina: 100, ordem: { campo, dir: -1 },
-        colunas: [
-          { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
-          ...DANOS.map(([c, r]) => ({ campo: c, titulo: c === campo ? `▶ ${r}` : r, tipo: "num" })),
-        ],
-      });
+      const linhas = danos.linhas.filter((l) => (l[campo] || 0) > 0);
+      document.getElementById("r-danos-titulo").textContent = danos.historico
+        ? `${rotulo}: ${fmt(soma(linhas, campo))} em ${fmtData(danos.dia)} — de onde vem`
+        : `${rotulo}: ${fmt(soma(linhas, campo))} — de onde vem`;
+      document.getElementById("r-danos-dica").textContent = danos.historico
+        ? "último retrato de cada município até a data escolhida"
+        : "linhas da aba DANOS HUMANOS que somam o número do cartão";
+      const colunas = danos.historico
+        ? [{ campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
+          ...[["desalojados", "Desalojados"], ["desabrigados", "Desabrigados"], ["obitos", "Óbitos"], ["outros_afetados", "Outros afetados"], ["afetados", "Afetados (total)"]]
+            .map(([c, r]) => ({ campo: c, titulo: c === campo ? `▶ ${r}` : r, tipo: "num" })),
+          { campo: "data_ref", titulo: "Retrato de", formato: fmtData }]
+        : [{ campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
+          ...DANOS.map(([c, r]) => ({ campo: c, titulo: c === campo ? `▶ ${r}` : r, tipo: "num" }))];
+      tabela(el, { nome: `danos_humanos_${campo}`, linhas, porPagina: 100, ordem: { campo, dir: -1 }, colunas });
+    });
+    // evolução diária (só com o histórico): a categoria segue o cartão clicado; padrão desalojados
+    seguro("r-evol", (el) => {
+      const sec = el.closest(".cartao");
+      if (!danos.historico) { sec.hidden = true; return; }
+      sec.hidden = false;
+      const campo = st.evol || (st.danos && DANOS.some(([c]) => c === st.danos) ? st.danos : "desalojados");
+      const rotulo = DANOS.find(([c]) => c === campo)?.[1] || "Desalojados";
+      const alt = document.getElementById("r-evol-alt");
+      alt.innerHTML = DANOS.map(([c, r]) => `<button type="button" data-evol="${c}" aria-pressed="${c === campo}">${r}</button>`).join("");
+      alt.querySelectorAll("[data-evol]").forEach((b) => b.addEventListener("click", () => { st.evol = b.dataset.evol; atualizar(); }));
+      if (!danos.retratos.length) { el.innerHTML = `<div class="vazio">Sem retratos de danos humanos para os filtros selecionados.</div>`; return; }
+      const ini = st.de || danos.retratos[0].data_ref;
+      const pontos = evolucaoDanos(danos.retratos, campo, ini, danos.dia);
+      const nota = document.getElementById("r-evol-nota");
+      if (nota) nota.textContent = `${fmtData(ini)} a ${fmtData(danos.dia)} · cada dia soma o último retrato de cada município; dias sem retrato repetem o último valor conhecido`;
+      serieDiaria(el, pontos, { unidade: rotulo.toLowerCase() });
     });
     seguro("r-redec", (el) => { if (!indisponivel(el, ev)) barrasH(el, porRedec(ev), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "eventos" }); });
     seguro("r-serie", (el) => {
@@ -508,6 +589,12 @@ const REDECS = {
         { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
         { campo: "desalojados", titulo: "Desalojados", tipo: "num" }, { campo: "desabrigados", titulo: "Desabrigados", tipo: "num" },
         { campo: "afetados", titulo: "Afetados", tipo: "num" }, { campo: "obitos", titulo: "Óbitos", tipo: "num" }] },
+      danos_historico: { nota: "Histórico de danos humanos: um retrato por município e data (retratos diários, ápice e consolidados). Afetados (total) = desalojados + desabrigados + óbitos + outros afetados.", colunas: [
+        { campo: "data_ref", titulo: "Data", formato: fmtData }, { campo: "municipio", titulo: "Município", formato: titulo },
+        { campo: "redec", titulo: "REDEC", formato: rotuloRedec }, { campo: "desalojados", titulo: "Desalojados", tipo: "num" },
+        { campo: "desabrigados", titulo: "Desabrigados", tipo: "num" }, { campo: "obitos", titulo: "Óbitos", tipo: "num" },
+        { campo: "outros_afetados", titulo: "Outros afetados", tipo: "num" }, { campo: "tipo_registro", titulo: "Tipo" },
+        { campo: "origem", titulo: "Origem" }, { campo: "id_fonte", titulo: "Fonte" }] },
       boletins: { nota: "Boletins sem município na aba EVENTOS REDECS (sirenes CEMADEN-RJ, Cell Broadcast).", colunas: [
         { campo: "data", titulo: "Data", formato: fmtData }, { campo: "hora", titulo: "Hora" }, { campo: "descricao", titulo: "Boletim", tipo: "longo" }] },
       alertas: { nota: "Registro diário de alertas.", colunas: [

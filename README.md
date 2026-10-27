@@ -9,13 +9,15 @@ Google Sheets ──(GitHub Actions, a cada 2 min)──► ETL Python ──►
                                                        └─► nada é publicado; o site continua com a última versão boa
 ```
 
-## Três ambientes, duas planilhas
+## Três ambientes, três planilhas
 
 | Ambiente | Planilha de origem | Link | Abas |
 |---|---|---|---|
 | **SisGeO · Chuvas** (vermelho) | NOVA BASE ANALISTAS — sem "Fogo em Vegetação" | `#amb=sisgeo` | Visão geral · Tipos e territórios · Registros · Qualidade |
 | **Eventos REDECs** (laranja) | NOVA BASE ANALISTAS (chuvas) | `#amb=redecs` | Visão geral · Decretação · Resposta · Registros · Consulta · Qualidade |
 | **SisGeO · Fogo** (âmbar) | PLANILHA FOGO EM VEGETAÇÃO | `#amb=fogo` | Visão geral · Subtipos e territórios · Condições meteorológicas · Registros · Qualidade |
+
+Os danos humanos do ambiente Eventos REDECs vêm da planilha **Histórico de Danos Humanos FE-SEDEC-RJ** (ver abaixo).
 
 - Cada conjunto em `config/fontes.yml` declara `planilha:` (padrão: principal). Abas de planilhas diferentes nunca se
   misturam, mesmo com o mesmo nome. A ponte do Apps Script só lê as planilhas da lista `PAINEL_PLANILHAS_PERMITIDAS`
@@ -49,6 +51,23 @@ Google Sheets ──(GitHub Actions, a cada 2 min)──► ETL Python ──►
   Cartões clicáveis abrem a lista com o texto completo. Mensagem não reconhecida aparece na Qualidade.
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
+## Danos humanos: histórico diário
+
+- **Base:** planilha *Histórico de Danos Humanos FE-SEDEC-RJ*, aba `HISTORICO`: uma linha por município em cada
+  data de referência (`DATA_REF`), com desalojados, desabrigados, óbitos e outros afetados. Cada linha é um retrato
+  **acumulado** naquele dia. `TIPO_REGISTRO` separa retratos diários, ápice e consolidados; o painel usa só os
+  retratos diários (o resto aparece em *Consulta*). Regras de preenchimento: aba `LEIA-ME` da planilha.
+- **Afetados (total) = desalojados + desabrigados + óbitos + outros afetados.** As quatro categorias não se sobrepõem.
+  Na aba DANOS HUMANOS da NOVA BASE, a coluna AFETADOS são os outros afetados.
+- **Cartões (Visão geral):** situação na data "Até" (sem filtro: hoje) = soma do **último retrato de cada município
+  até aquela data**. Datas diferentes nunca se somam. Clicar num cartão lista os municípios e a data do retrato de cada um.
+  O gráfico "Evolução dos danos humanos" faz a mesma conta para cada dia do período.
+- **Alimentação diária:** `apps-script/historico_danos.gs`, colado na própria planilha de histórico (*Extensões ›
+  Apps Script*), confere a aba DANOS HUMANOS de hora em hora. Quando ela muda, grava o retrato do dia (fonte `F003`);
+  quem sai da aba ganha uma linha zerada. Instalação: rodar `instalar` uma vez.
+- **Reserva:** se a planilha de histórico não puder ser lida (ou estiver vazia), os cartões voltam a mostrar a aba
+  DANOS HUMANOS e o resto do painel publica normalmente.
+
 ## Por que este desenho não quebra a cada commit
 
 | Risco | Proteção |
@@ -68,6 +87,7 @@ Google Sheets ──(GitHub Actions, a cada 2 min)──► ETL Python ──►
 config/fontes.yml          contrato: abas, colunas, tipos, obrigatórias, limites
 referencia/municipios_rj.csv  92 municípios · código IBGE · REDEC
 apps-script/Codigo.gs      ponte gratuita planilha -> GitHub (projeto Apps Script separado, lê a planilha pelo ID)
+apps-script/historico_danos.gs  retrato diário da aba DANOS HUMANOS -> planilha de histórico (colado na planilha de histórico)
 etl/                       fonte.py (leitura) · normaliza.py (limpeza) · build.py (orquestra)
 site/                      index.html · assets/{css,js,geo,vendor} · data/ (gerado, não versionado)
 tests/                     testes do ETL + amostra anonimizada
@@ -117,7 +137,7 @@ personalizadas no GA para ver as abas mais consultadas). Sem Google Signals nem 
 ```bash
 pip install -r requirements-dev.txt
 pytest -q
-python -m etl.build --fonte xlsx --origem planilha.xlsx --origem-fogo fogo.xlsx   # ou --fonte texto / appsscript
+python -m etl.build --fonte xlsx --origem planilha.xlsx --origem-fogo fogo.xlsx --origem-historico historico.xlsx   # ou --fonte texto / appsscript
 python -m http.server 8000 --directory site                  # abrir http://localhost:8000
 cd e2e && npm ci && npx playwright install chromium && npx playwright test
 ```

@@ -159,7 +159,15 @@
     <!-- =============================== AMBIENTE REDECS =============================== -->
     <section class="painel-aba" data-amb="redecs" data-aba="geral" hidden>
       <div class="kpis" id="r-kpis"></div>
-      <article class="cartao" hidden><header class="cartao__cab"><h2 id="r-danos-titulo">Danos humanos</h2><span class="dica">linhas da aba DANOS HUMANOS que somam o número do cartão</span></header><div id="r-danos"></div></article>
+      <article class="cartao" hidden><header class="cartao__cab"><h2 id="r-danos-titulo">Danos humanos</h2><span class="dica" id="r-danos-dica">linhas da aba DANOS HUMANOS que somam o número do cartão</span></header><div id="r-danos"></div></article>
+      <article class="cartao" hidden>
+        <header class="cartao__cab">
+          <h2>Evolução dos danos humanos</h2>
+          <div class="alternador alternador--danos" role="group" aria-label="Categoria" id="r-evol-alt"></div>
+        </header>
+        <p class="dica dica--cartao" id="r-evol-nota"></p>
+        <div class="grafico" id="r-evol"></div>
+      </article>
       <div class="grade grade--mapa">
         <article class="cartao cartao--mapa">
           <header class="cartao__cab">

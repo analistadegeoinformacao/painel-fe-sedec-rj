@@ -31,6 +31,9 @@ planilhas:
   fogo:
     titulo: "PLANILHA FOGO EM VEGETAÇÃO"
     id: "1rlC6lxivHTj0xLmjDzENe4NEHMN6EFI6d8d2QSDXPVA"
+  historico:
+    titulo: "Histórico de Danos Humanos FE-SEDEC-RJ"
+    id: "1CGGPQ5y0ZoSV2fybEaUQZSBCrXTxcWBv2nq-VS9bMYM"
 
 conjuntos:
 
@@ -160,6 +163,35 @@ conjuntos:
       afetados:     ["AFETADOS"]
       obitos:       ["ÓBITOS"]
     tipos: {redec: redec, municipio: municipio, desalojados: inteiro, desabrigados: inteiro, afetados: inteiro, obitos: inteiro}
+
+  # ================== PLANILHA HISTÓRICO DE DANOS HUMANOS ==================
+  # Uma linha por município em cada data de referência (retrato acumulado naquele dia).
+  # A aba DANOS HUMANOS da NOVA BASE alimenta este histórico (apps-script/historico_danos.gs).
+  # Opcional (min_linhas 0): se a planilha não puder ser lida, os cartões de danos humanos
+  # voltam a mostrar a aba DANOS HUMANOS.
+  danos_historico:
+    planilha: historico
+    aba: "HISTORICO"
+    titulo: "Histórico diário de danos humanos"
+    min_linhas: 0
+    obrigatorias: [data_ref, municipio]
+    data_minima: "2024-01-01"     # o histórico recebe cargas de temporadas anteriores
+    colunas:
+      data_ref:        ["DATA_REF"]
+      municipio:       ["MUNICIPIO", "MUNICÍPIO"]
+      redec:           ["REDEC"]
+      obitos:          ["OBITOS", "ÓBITOS"]
+      desabrigados:    ["DESABRIGADOS"]
+      desalojados:     ["DESALOJADOS"]
+      outros_afetados: ["OUTROS_AFETADOS", "OUTROS AFETADOS"]
+      tipo_registro:   ["TIPO_REGISTRO"]
+      origem:          ["ORIGEM_DADO"]
+      status:          ["STATUS"]
+      id_fonte:        ["ID_FONTE"]
+      # DE FORA DE PROPÓSITO: TOTAL_AFETADOS (o painel soma as quatro categorias), OBS, datas de preenchimento
+    tipos: {data_ref: data, municipio: municipio, redec: redec, obitos: inteiro, desabrigados: inteiro,
+            desalojados: inteiro, outros_afetados: inteiro}
+    compactar: true     # município/REDEC saem do JSON e voltam pelo código IBGE
 
   decretos:
     aba: "DECRETAÇÃO"

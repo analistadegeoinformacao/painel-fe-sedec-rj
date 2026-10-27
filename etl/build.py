@@ -5,6 +5,7 @@ Uso:
   python -m etl.build --fonte google --origem <ID_DA_PLANILHA>
   python -m etl.build --fonte texto  --origem caminho/NOVA_BASE_ANALISTAS
   python -m etl.build --fonte xlsx   --origem caminho/planilha.xlsx
+  (planilhas secundárias em modo local: --origem-fogo e --origem-historico)
 
 Saída: site/data/*.json + site/data/meta.json
 Código de saída 1 = ERRO de contrato -> nada é gravado e o GitHub Actions
@@ -352,6 +353,7 @@ def main(argv=None):
     ap.add_argument("--fonte", choices=["appsscript", "google", "xlsx", "texto"], required=True)
     ap.add_argument("--origem", default="", help="URL do Apps Script, ID da planilha ou caminho do arquivo (planilha principal)")
     ap.add_argument("--origem-fogo", default="", help="caminho do arquivo da planilha de fogo (modos texto/xlsx)")
+    ap.add_argument("--origem-historico", default="", help="caminho do arquivo da planilha de histórico de danos humanos (modos texto/xlsx)")
     ap.add_argument("--saida", default=str(RAIZ / "site" / "data"))
     ap.add_argument("--config", default=str(RAIZ / "config" / "fontes.yml"))
     a = ap.parse_args(argv)
@@ -364,7 +366,7 @@ def main(argv=None):
     # Cada conjunto diz de qual planilha vem ("planilha:", padrão "principal").
     # Abas de planilhas diferentes nunca se misturam, mesmo com nomes iguais.
     planilhas = cfg.get("planilhas", {"principal": {}})
-    origens_locais = {"principal": a.origem, "fogo": a.origem_fogo}
+    origens_locais = {"principal": a.origem, "fogo": a.origem_fogo, "historico": a.origem_historico}
     abas_por_planilha = {}
     for pid, pcfg in planilhas.items():
         pedidas = [n for c in conjuntos.values() if c.get("planilha", "principal") == pid for n in nomes_aba(c)]

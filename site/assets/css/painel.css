@@ -167,6 +167,7 @@ main { padding: 18px clamp(16px, 3vw, 32px) 32px; display: block; }
 .cartao__cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .cartao__cab h2 { font-size: 15px; }
 .dica, .nota { color: var(--texto-3); font-size: 12.5px; }
+.dica--cartao { margin: -4px 0 10px; }
 .nota { margin: 0 0 12px; }
 .alternador { display: inline-flex; border: 1px solid var(--borda); border-radius: 8px; padding: 2px; }
 

@@ -22,7 +22,7 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: pytest -q
-      - run: python -m etl.build --fonte texto --origem tests/fixtures/amostra.txt --origem-fogo tests/fixtures/amostra_fogo.txt
+      - run: python -m etl.build --fonte texto --origem tests/fixtures/amostra.txt --origem-fogo tests/fixtures/amostra_fogo.txt --origem-historico tests/fixtures/amostra_historico.txt
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
