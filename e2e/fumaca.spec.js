@@ -369,20 +369,46 @@ test("REDECs: cartão de danos humanos mostra as linhas que somam o número", as
 test("REDECs: danos humanos mostram a situação na data escolhida (último retrato de cada município)", async ({ page }) => {
   const valor = async (rotulo) => Number((await page.locator("#r-kpis .kpi").filter({ has: page.locator(".kpi__rotulo", { hasText: new RegExp(`^${rotulo}$`) }) })
     .locator(".kpi__valor").innerText()).replace(/\D/g, ""));
-  // amostra_historico.txt: em 23/02, Angra 300 + Barra Mansa 90 + Rio Bonito 40 + Cambuci 3 desalojados
-  await abrir(page, "#amb=redecs&ate=2026-02-23&periodo=");
-  test.skip(!(await page.locator("#r-kpis .kpi", { hasText: "situação em 23/02/2026" }).count()), "sem histórico de danos nesta execução");
-  expect(await valor("Desalojados")).toBe(433);
-  expect(await valor("Desabrigados")).toBe(105);
-  expect(await valor("Óbitos")).toBe(4);
-  // afetados = desalojados + desabrigados + óbitos + outros afetados (0 + 4000 + 1200 + 200)
-  expect(await valor("Afetados")).toBe(433 + 105 + 4 + 5400);
-  // em 02/03: Rio Bonito zerou em 25/02 e Barra Mansa em 02/03; datas diferentes nunca se somam
+  // a conta esperada sai dos próprios dados publicados (amostra no PR, planilha real na publicação)
+  await abrir(page, "#amb=redecs");
+  const esperado = await page.evaluate(async () => {
+    const h = await (await fetch("data/danos_historico.json", { cache: "no-cache" })).json();
+    const ret = h.filter((l) => String(l.tipo_registro || "").toUpperCase().startsWith("RETRATO") && l.data_ref && l.cod_ibge)
+      .sort((a, b) => (a.data_ref < b.data_ref ? -1 : a.data_ref > b.data_ref ? 1 : 0));
+    if (!ret.length) return null;
+    const datas = [...new Set(ret.map((l) => l.data_ref))];
+    const dia = datas[Math.floor(datas.length / 2)];
+    const ult = new Map();
+    for (const l of ret) { if (l.data_ref > dia) break; ult.set(l.cod_ibge, l); }
+    const n = (v) => (typeof v === "number" ? v : 0);
+    const s = (f) => [...ult.values()].reduce((t, l) => t + f(l), 0);
+    return { dia, linhas: h.length, desalojados: s((l) => n(l.desalojados)), desabrigados: s((l) => n(l.desabrigados)), obitos: s((l) => n(l.obitos)),
+      afetados: s((l) => n(l.desalojados) + n(l.desabrigados) + n(l.obitos) + n(l.outros_afetados)) };
+  });
+  test.skip(!esperado, "sem histórico de danos nesta execução");
   await page.goto("about:blank"); // só trocar o # não recarrega a página
-  await abrir(page, "#amb=redecs&ate=2026-03-02&periodo=");
-  expect(await valor("Desalojados")).toBe(396);
-  expect(await valor("Afetados")).toBe(396 + 8 + 4 + 600);
+  await abrir(page, `#amb=redecs&ate=${esperado.dia}&periodo=`);
+  const [a, m, d] = esperado.dia.split("-");
+  await expect(page.locator("#r-kpis .kpi", { hasText: `situação em ${d}/${m}/${a}` }).first()).toBeVisible();
+  expect(await valor("Desalojados")).toBe(esperado.desalojados);
+  expect(await valor("Desabrigados")).toBe(esperado.desabrigados);
+  expect(await valor("Óbitos")).toBe(esperado.obitos);
+  expect(await valor("Afetados")).toBe(esperado.afetados);
   await expect(page.locator("#r-evol")).toBeVisible();
   await page.locator("#r-evol-alt [data-evol='obitos']").click();
   await expect(page.locator("#r-evol-alt [data-evol='obitos']")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("REDECs: danos humanos da amostra (números conferidos à mão)", async ({ page }) => {
+  // só roda com tests/fixtures/amostra_historico.txt (19 linhas): em 23/02, Angra 300 + Barra Mansa 90 + Rio Bonito 40 + Cambuci 3
+  await abrir(page, "#amb=redecs&ate=2026-02-23&periodo=");
+  const linhas = await page.evaluate(async () => (await (await fetch("data/danos_historico.json", { cache: "no-cache" })).json()).length);
+  test.skip(linhas !== 19, "dados reais: conferência pela própria base no teste anterior");
+  const valor = async (rotulo) => Number((await page.locator("#r-kpis .kpi").filter({ has: page.locator(".kpi__rotulo", { hasText: new RegExp(`^${rotulo}$`) }) })
+    .locator(".kpi__valor").innerText()).replace(/\D/g, ""));
+  expect(await valor("Desalojados")).toBe(433);
+  expect(await valor("Afetados")).toBe(433 + 105 + 4 + 5400);
+  await page.goto("about:blank");
+  await abrir(page, "#amb=redecs&ate=2026-03-02&periodo=");
+  expect(await valor("Desalojados")).toBe(396); // Rio Bonito zerou em 25/02 e Barra Mansa em 02/03
 });
