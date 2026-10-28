@@ -59,6 +59,7 @@ const CAMPO_DATA = {
   fogo_temperatura: (l) => l.data, fogo_umidade: (l) => l.data,
   sisgeo: (l) => l.data_ocorrencia?.slice(0, 10), eventos: (l) => l.data, boletins: (l) => l.data,
   alertas: (l) => l.data, alertas_msg: (l) => l.data, ajuda_humanitaria: (l) => l.data, pontos_apoio: (l) => l.data,
+  danos_historico: (l) => l.data_ref,
 };
 
 // Depuração do SisGeO (feita no ETL): linhas com "depuracao" (situacao | motivo | ambos) não contam
@@ -614,33 +615,20 @@ const REDECS = {
     }));
   },
   consulta() {
+    // só os dois históricos (os demais conjuntos seguem carregados e usados nas outras abas)
     const BASES = {
-      s2id: { nota: "Registros do S2iD com danos, prejuízos, homologação e reconhecimento.", colunas: [
-        { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "desalojados", titulo: "Desaloj.", tipo: "num" },
-        { campo: "desabrigados", titulo: "Desabrig.", tipo: "num" }, { campo: "afetados", titulo: "Afetados", tipo: "num" },
-        { campo: "obitos", titulo: "Óbitos", tipo: "num" }, { campo: "danos_materiais", titulo: "Danos materiais", formato: fmtMoeda },
-        { campo: "prejuizo_publico", titulo: "Prej. público", formato: fmtMoeda }, { campo: "prejuizo_privado", titulo: "Prej. privado", formato: fmtMoeda },
-        { campo: "homologacao", titulo: "Homologação estadual", tipo: "longo" }, { campo: "reconhecimento", titulo: "Reconhecimento federal", tipo: "longo" },
-        { campo: "fide", titulo: "FIDE", tipo: "longo" }] },
       decretos_historico: { nota: "Todos os decretos já registrados, inclusive encerrados.", colunas: [
         { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
         { campo: "decreto", titulo: "Decreto" }, { campo: "nivel", titulo: "Nível", tipo: "num" },
         { campo: "data_decreto", titulo: "Decretação", formato: fmtData }, { campo: "termino", titulo: "Término", formato: fmtData }] },
-      danos_humanos: { nota: "Consolidado de danos humanos por município.", colunas: [
-        { campo: "municipio", titulo: "Município", formato: titulo }, { campo: "redec", titulo: "REDEC", formato: rotuloRedec },
-        { campo: "desalojados", titulo: "Desalojados", tipo: "num" }, { campo: "desabrigados", titulo: "Desabrigados", tipo: "num" },
-        { campo: "afetados", titulo: "Afetados", tipo: "num" }, { campo: "obitos", titulo: "Óbitos", tipo: "num" }] },
-      danos_historico: { nota: "Histórico de danos humanos: um retrato por município e data (retratos diários, ápice e consolidados). Afetados (total) = desalojados + desabrigados + óbitos + outros afetados.", colunas: [
+      danos_historico: { nota: "Histórico de danos humanos: um retrato por município e data (retratos diários, ápice e consolidados). Afetados (total) = desalojados + desabrigados + óbitos + outros afetados. O filtro de período vale para a data do retrato.",
+        linhas: (ls) => ls && ls.map((l) => ({ ...l, afetados: n0(l.desalojados) + n0(l.desabrigados) + n0(l.obitos) + n0(l.outros_afetados) })),
+        ordem: { campo: "data_ref", dir: -1 }, colunas: [
         { campo: "data_ref", titulo: "Data", formato: fmtData }, { campo: "municipio", titulo: "Município", formato: titulo },
         { campo: "redec", titulo: "REDEC", formato: rotuloRedec }, { campo: "desalojados", titulo: "Desalojados", tipo: "num" },
         { campo: "desabrigados", titulo: "Desabrigados", tipo: "num" }, { campo: "obitos", titulo: "Óbitos", tipo: "num" },
-        { campo: "outros_afetados", titulo: "Outros afetados", tipo: "num" }, { campo: "tipo_registro", titulo: "Tipo" },
-        { campo: "origem", titulo: "Origem" }, { campo: "id_fonte", titulo: "Fonte" }] },
-      boletins: { nota: "Boletins sem município na aba EVENTOS REDECS (sirenes CEMADEN-RJ, Cell Broadcast).", colunas: [
-        { campo: "data", titulo: "Data", formato: fmtData }, { campo: "hora", titulo: "Hora" }, { campo: "descricao", titulo: "Boletim", tipo: "longo" }] },
-      alertas: { nota: "Registro diário de alertas.", colunas: [
-        { campo: "data", titulo: "Data", formato: fmtData }, { campo: "idap", titulo: "IDAP", formato: (v) => (v === true ? "Sim" : v === false ? "Não" : "—") },
-        { campo: "cell_broadcast", titulo: "Cell Broadcast", tipo: "num" }] },
+        { campo: "outros_afetados", titulo: "Outros afetados", tipo: "num" }, { campo: "afetados", titulo: "Afetados (total)", tipo: "num" },
+        { campo: "tipo_registro", titulo: "Tipo" }, { campo: "origem", titulo: "Origem" }, { campo: "id_fonte", titulo: "Fonte" }] },
     };
     const sel = document.getElementById("r-base");
     if (!sel.length) {
@@ -649,7 +637,8 @@ const REDECS = {
     }
     const b = BASES[sel.value];
     document.getElementById("r-nota").textContent = b.nota;
-    seguro("r-consulta", (el) => tabela(el, { nome: sel.value, linhas: filtrar(sel.value), colunas: b.colunas }));
+    const linhas = filtrar(sel.value);
+    seguro("r-consulta", (el) => tabela(el, { nome: sel.value, linhas: b.linhas ? b.linhas(linhas) : linhas, colunas: b.colunas, ...(b.ordem ? { ordem: b.ordem } : {}) }));
   },
   qualidade() { seguro("r-qualidade", (el) => qualidade(el, AMBIENTES.redecs.conjuntos)); },
 };

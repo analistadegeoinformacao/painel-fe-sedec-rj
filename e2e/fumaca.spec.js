@@ -440,3 +440,11 @@ test("REDECs: botão do mapa alterna entre Eventos e Decretos vigentes", async (
   await expect(ev).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#r-mapa")).toContainText("Eventos");
 });
+
+test("REDECs: Consulta oferece só o histórico de decretação e o histórico diário de danos humanos", async ({ page }) => {
+  await abrir(page, "#amb=redecs&aba=consulta");
+  await expect(page.locator("#r-base option")).toHaveCount(2);
+  expect(await page.locator("#r-base option").evaluateAll((os) => os.map((o) => o.value))).toEqual(["decretos_historico", "danos_historico"]);
+  await page.selectOption("#r-base", "danos_historico");
+  await expect(page.locator("#r-consulta thead")).toContainText("Afetados (total)");
+});
