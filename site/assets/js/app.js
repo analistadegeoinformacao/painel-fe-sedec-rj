@@ -1031,7 +1031,9 @@ async function iniciar() {
     atualizar();
     requestAnimationFrame(redimensionarTodos);
   });
-  document.querySelector(".alternador").addEventListener("click", (e) => {
+  // camada do mapa (Eventos / Decretos vigentes): escuta os botões [data-mapa] onde estiverem,
+  // sem depender de qual grupo de botões aparece primeiro na página
+  document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-mapa]");
     if (b) { st.camada = b.dataset.mapa; atualizar(); }
   });
