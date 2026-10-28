@@ -428,3 +428,15 @@ test("REDECs: danos humanos da amostra (números conferidos à mão)", async ({ 
   expect(await valor("Desalojados")).toBe(50);
   expect(await valor("Afetados")).toBe(60);
 });
+
+test("REDECs: botão do mapa alterna entre Eventos e Decretos vigentes", async ({ page }) => {
+  await abrir(page, "#amb=redecs");
+  const dec = page.locator("[data-mapa='decretos']"), ev = page.locator("[data-mapa='eventos']");
+  await dec.click();
+  await expect(dec).toHaveAttribute("aria-pressed", "true");
+  await expect(ev).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("#r-mapa")).toContainText("Decretos vigentes");
+  await ev.click();
+  await expect(ev).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#r-mapa")).toContainText("Eventos");
+});
