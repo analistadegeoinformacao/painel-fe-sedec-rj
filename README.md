@@ -162,3 +162,4 @@ cd e2e && npm ci && npx playwright install chromium && npx playwright test
   Para acesso restrito, ver o documento do projeto (opções: GitHub Enterprise com Pages privado, ou Cloudflare Pages + Access).
 
 <!-- 2026-11-05: commit de manutenção para forçar novo deployment no GitHub Pages (site preso na versão das 06:13). -->
+- **Autocura do vigia:** se o `gerado_em` do site no ar passa de 30 min parado apesar dos deploys darem sucesso, o vigia empurra um commit vazio para a branch `pages-bump` e roda `publicar.yml` nela (gera outro deployment do Pages). Para isso funcionar, a branch `pages-bump` precisa estar permitida em *Settings → Environments → github-pages → Deployment branches and tags*.
