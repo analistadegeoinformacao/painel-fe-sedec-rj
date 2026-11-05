@@ -12,7 +12,7 @@ on:
     - cron: "23 */2 * * *"   # religa o vigia se a corrente se romper (o duplicado espera na fila)
 
 permissions:
-  contents: read
+  contents: write   # só para empurrar a branch "pages-bump" (autocura, abaixo); a main não é tocada
   actions: write
 
 concurrency:
@@ -41,7 +41,25 @@ jobs:
         run: |
           [ -n "$APPS_SCRIPT_URL" ] || { echo "::warning::Planilha não conectada"; exit 0; }
           fim=$(( $(date +%s) + 340*60 ))
+          ultimo_bump=0
           while [ "$(date +%s)" -lt "$fim" ]; do
+            # Autocura: se o site no ar está parado há 30+ min apesar dos deploys, o Pages pode estar
+            # preso ao commit atual (deploys "success" que não trocam o conteúdo, 05/11/2026).
+            # Um commit novo (branch pages-bump) gera outro deployment. No máx. 1 tentativa a cada 40 min.
+            trav=$(python -m etl.site_travado --base "$SITE" --limite-min 30 2>/dev/null || true)
+            if echo "$trav" | grep -q "^travado=true" && [ $(( $(date +%s) - ultimo_bump )) -gt 2400 ]; then
+              ultimo_bump=$(date +%s)
+              echo "$(date -u +%H:%M) $trav — forçando novo deployment"
+              echo "::warning title=Site travado::$trav; tentando republicar com um commit novo"
+              if git fetch -q --depth=1 origin main && git checkout -q FETCH_HEAD \
+                 && git -c user.name="vigia-da-planilha" -c user.email="vigia@users.noreply.github.com" commit -q --allow-empty -m "vigia: força novo deployment do Pages ($(date -u +%FT%TZ))" \
+                 && git push -q -f origin HEAD:refs/heads/pages-bump \
+                 && gh workflow run publicar.yml --ref pages-bump; then
+                sleep 240
+                continue
+              fi
+              echo "::warning title=Autocura não funcionou::não foi possível empurrar/disparar pages-bump (confira o ambiente github-pages em Settings > Environments)"
+            fi
             if python -m etl.build --fonte appsscript --saida /tmp/dados > /tmp/etl.log 2>&1; then
               decisao=$(GITHUB_OUTPUT= python -m etl.precisa_publicar --base "$SITE" --evento schedule --dados /tmp/dados)
               echo "$(date -u +%H:%M) $decisao"
