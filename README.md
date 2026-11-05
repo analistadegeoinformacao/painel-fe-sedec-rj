@@ -160,3 +160,5 @@ cd e2e && npm ci && npx playwright install chromium && npx playwright test
 - O GitHub desativa workflows agendados de repositórios **públicos** após 60 dias sem commits. Um commit qualquer reativa.
 - GitHub Pages em conta gratuita é **público** para quem tiver o link (`noindex` só evita buscadores).
   Para acesso restrito, ver o documento do projeto (opções: GitHub Enterprise com Pages privado, ou Cloudflare Pages + Access).
+
+<!-- 2026-11-05: commit de manutenção para forçar novo deployment no GitHub Pages (site preso na versão das 06:13). -->
