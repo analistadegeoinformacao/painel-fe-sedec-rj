@@ -148,6 +148,7 @@ DISTRITOS = {
     "JACAREPAGUA": "RIO DE JANEIRO",
     "JPA": "RIO DE JANEIRO",  # Jacarepaguá
     "SAO FRANCISCO DO ITABAPOANA": "SÃO FRANCISCO DE ITABAPOANA",  # erro de digitação recorrente
+    "CACHOEIRA DE MACACU": "CACHOEIRAS DE MACACU",  # como o CEMADEN escreve nas mensagens
 }
 
 

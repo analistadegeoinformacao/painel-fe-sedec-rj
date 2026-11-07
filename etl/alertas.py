@@ -26,10 +26,31 @@ _REGIOES = [("Baixada Fluminense", 2), ("Baixada Litorânea", 9), ("Costa Verde"
 def _cabecalho(texto: str) -> str:
     for linha in texto.split("\n"):
         s = re.sub(r"[_*\s\xa0\"]+", " ", linha).strip()
-        if not s or re.match(r"^(\[Encaminhada\] )?SEDEC-?R?J?$|^CEMADEN-RJ$", s, re.I):
+        # linhas que antecedem o título: remetente, data solta ("07/11/2026") e o rótulo "IDAP" isolado
+        if not s or re.match(r"^(\[Encaminhada\] )?SEDEC-?R?J?$|^CEMADEN-RJ$|^\d{1,2}/\d{1,2}(/\d{2,4})?$|^IDAP$", s, re.I):
             continue
         return s.upper()
     return ""
+
+
+_LINHA = [("idap", r"^(📱\s*)?ALERTAS?\s+(VIA\s+)?IDAP"),
+          ("cb", r"^(ENVIO\s+DE\s+)?DEFESA\s+CIVIL\s+ALERTA|^DCA\b"),
+          ("sirene", r"^SIRENES\s+MOBILIZADAS|^TOQUE\s+DE\s+AVISO")]
+
+
+def _secoes(texto: str) -> list[tuple[str, str]]:
+    """Uma mensagem pode juntar IDAP, Cell Broadcast e sirenes. Devolve [(tipo, trecho)] na ordem em que
+    aparecem; um novo trecho começa quando a linha de título muda de tipo. O que vem antes do primeiro
+    título (remetente, data) fica de fora."""
+    secoes: list[list] = []
+    for linha in texto.split("\n"):
+        s = re.sub(r"[_*\s\xa0\"]+", " ", linha).strip().upper()
+        t = next((t for t, rx in _LINHA if re.search(rx, s)), None)
+        if t and (not secoes or secoes[-1][0] != t):
+            secoes.append([t, []])
+        if secoes:
+            secoes[-1][1].append(linha)
+    return [(t, "\n".join(ls).strip()) for t, ls in secoes]
 
 
 def tipo_da_mensagem(texto: str) -> str:
@@ -100,7 +121,8 @@ def _idap(texto, ref):
         itens = [m.group(1)] if m else []
     envios = max(1, len(itens))
     alvo = " ".join(itens)
-    if re.search(r"(?i)\bexceto\b", alvo):  # "todos, exceto …": vale para o estado inteiro
+    if re.search(r"(?i)\bexceto\b|\btodos\s+os\s+munic[ií]pios(?:\s+n[aã]o\s+aut[oô]nomos)?\s+do\s+estado", alvo):
+        # "todos, exceto …" / "todos os municípios … do estado do Rio de Janeiro": vale para o estado inteiro
         cods, redecs = [], []
     else:
         redecs = _redecs_citadas(alvo, ref)
@@ -115,8 +137,11 @@ def _idap(texto, ref):
 def _cb(texto, ref):
     pares = re.findall(r"(?im)^\s*([A-ZÀ-Ú][\wÀ-ú' ]+?)\s*:\s*0*(\d+)\s+Alertas?\b", texto)
     nomes = [n for n, _ in pares]
+    lista = [] if pares else re.findall(r"(?m)^\s*\*([^*\n]+)\*\s*[-–]\s*\S.*$", texto)
     if pares:
         envios = sum(int(q) for _, q in pares)
+    elif lista:  # "*Niterói, São Gonçalo e Itaboraí* - Chuvas Intensas (Severo - 15h40)": cada linha é um envio
+        envios, nomes = len(lista), [n.strip() for n in lista]
     else:
         enviados = re.findall(r"(?i)\bDCA\s+\w+\s+enviado\s+para\s+[^(\n]*\(([^)]+)\)", texto)
         if enviados:
@@ -183,11 +208,14 @@ def estruturar(registros: list[dict], ref, aviso) -> list[dict]:
         texto = (r.get("mensagem") or "").strip()
         if not texto:
             continue
-        t = tipo_da_mensagem(texto)
-        info = {"idap": _idap, "cb": _cb, "sirene": _sirene}.get(t, lambda *_: {"envios": 0, "municipios": [], "redecs": [], "resumo": "mensagem não reconhecida"})(texto, ref)
-        if t == "outro":
-            onde = f"linha {r['_linha']}: " if r.get("_linha") else ""
-            aviso(f"{onde}mensagem de {r.get('data') or 'data ?'} não reconhecida como IDAP, Cell Broadcast ou sirene: \"{_cabecalho(texto)[:60]}\"")
-        saida.append({"data": (r.get("data") or "")[:10] or None, "hora": (r.get("data") or "")[11:16] or None,
-                      "tipo": t, **info, "texto": texto})
+        secoes = _secoes(texto)
+        # mensagem combinada (IDAP + Cell Broadcast + sirenes): um registro por parte
+        partes = secoes if len({t for t, _ in secoes}) > 1 else [(tipo_da_mensagem(texto), texto)]
+        for t, trecho in partes:
+            info = {"idap": _idap, "cb": _cb, "sirene": _sirene}.get(t, lambda *_: {"envios": 0, "municipios": [], "redecs": [], "resumo": "mensagem não reconhecida"})(trecho, ref)
+            if t == "outro":
+                onde = f"linha {r['_linha']}: " if r.get("_linha") else ""
+                aviso(f"{onde}mensagem de {r.get('data') or 'data ?'} não reconhecida como IDAP, Cell Broadcast ou sirene: \"{_cabecalho(trecho)[:60]}\"")
+            saida.append({"data": (r.get("data") or "")[:10] or None, "hora": (r.get("data") or "")[11:16] or None,
+                          "tipo": t, **info, "texto": trecho})
     return saida

@@ -50,3 +50,26 @@ def test_itaipava_nas_mensagens_conta_como_petropolis():
     r = _um("TOQUE DE AVISO DE CHUVA (13/10/2026 - 18h35)\n\nMunicípio:\nItaipava: 3 sirenes\n\nFonte: CEMADEN-RJ")
     _, cod = REF.municipio("Petrópolis")
     assert r["municipios"] == [cod] and r["envios"] == 1
+
+
+MSG_COMBINADA = (
+    "_*SEDEC-RJ*_      \r\nCEMADEN-RJ  \r\n07/11/2026\r\n \r\n*IDAP*\r\nALERTA VIA IDAP\r\n\r\n"
+    "-Tipo: Chuvas Intensas todos os municípios não autônomos do estado do Rio de Janeiro (Vigência: 15h00 de 07/11 até às 12h00 de 08/11)\r\n"
+    "-Tipo: Chuvas Intensas todos os municípios não autônomos da região Baixada Litorânea. (Vigência: 16h10 de 07/11 até às 00h00 de 08/11)\r\n\r\n"
+    "*DEFESA CIVIL ALERTA (DCA/Cell Broadcast)*  \r\nMunicípios:\r\n"
+    "*Niterói, São Gonçalo, Itaboraí e Magé* - Chuvas Intensas (Severo - 15h40)\r\n"
+    "*Cachoeira de Macacu, Tanguá e Maricá* - Chuvas Intensas (Severo - 16h15)\r\n"
+    "*Petrópolis* - Inundação (Severo - 16h45)\r\n\r\n"
+    "*SIRENES MOBILIZADAS*\r\nMunicípios: \r\n*Rio de Janeiro* - 01 sirene\r\n\r\n"
+    "*TOQUE DE AVISO DE CHUVA*\r\nMunicípios:\r\n*Barra do Piraí*: 14 estações (14h49)\r\n*Petrópolis*: 21 estações (15h05)\r\n\r\n"
+    "FONTE: CEMADEN-RJ; Defesa Civil de Petrópolis.")
+
+
+def test_mensagem_combinada_vira_um_registro_por_parte():
+    regs = A.estruturar([{"data": "07/11/2026 17:36", "mensagem": MSG_COMBINADA}], REF, lambda m: None)
+    por = {r["tipo"]: r for r in regs}
+    assert [r["tipo"] for r in regs] == ["idap", "cb", "sirene"]
+    assert por["idap"]["envios"] == 2 and por["idap"]["municipios"] == [] and por["idap"]["redecs"] == []  # estado todo
+    assert por["cb"]["envios"] == 3 and len(por["cb"]["municipios"]) == 8
+    assert por["sirene"]["envios"] == 3 and por["sirene"]["sirenes"] == 36
+    assert "Niterói" not in por["sirene"]["texto"] and "Barra do Piraí" not in por["cb"]["texto"]
