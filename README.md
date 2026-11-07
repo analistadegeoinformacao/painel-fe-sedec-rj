@@ -48,6 +48,7 @@ Os danos humanos do ambiente Eventos REDECs vêm da planilha **Histórico de Dan
 - **Mensagens de alerta (Eventos REDECs › Resposta):** aba ALERTAS-MENSAGENS (DATA | MENSAGEM), com a mensagem
   colada como chega no WhatsApp. `etl/alertas.py` reconhece IDAP, Cell Broadcast e sirenes e conta envios
   (IDAP: blocos "Tipo"; CB: "N Alerta(s)" por município; sirenes: municípios acionados — "desligadas" não contam).
+  Uma mensagem que junta IDAP + Cell Broadcast + sirenes vira um registro por parte.
   Cartões clicáveis abrem a lista com o texto completo. Mensagem não reconhecida aparece na Qualidade.
 - Filtros de período, REDEC e município valem nos três ambientes; o endereço guarda ambiente, aba e filtros.
 
