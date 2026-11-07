@@ -26,7 +26,8 @@ _REGIOES = [("Baixada Fluminense", 2), ("Baixada Litorânea", 9), ("Costa Verde"
 def _cabecalho(texto: str) -> str:
     for linha in texto.split("\n"):
         s = re.sub(r"[_*\s\xa0\"]+", " ", linha).strip()
-        if not s or re.match(r"^(\[Encaminhada\] )?SEDEC-?R?J?$|^CEMADEN-RJ$", s, re.I):
+        # linhas que antecedem o título: remetente, data solta ("07/11/2026") e o rótulo "IDAP" isolado
+        if not s or re.match(r"^(\[Encaminhada\] )?SEDEC-?R?J?$|^CEMADEN-RJ$|^\d{1,2}/\d{1,2}(/\d{2,4})?$|^IDAP$", s, re.I):
             continue
         return s.upper()
     return ""

@@ -50,3 +50,11 @@ def test_itaipava_nas_mensagens_conta_como_petropolis():
     r = _um("TOQUE DE AVISO DE CHUVA (13/10/2026 - 18h35)\n\nMunicípio:\nItaipava: 3 sirenes\n\nFonte: CEMADEN-RJ")
     _, cod = REF.municipio("Petrópolis")
     assert r["municipios"] == [cod] and r["envios"] == 1
+
+
+def test_mensagem_combinada_com_data_e_rotulo_idap_soltos_e_idap():
+    r = _um("_*SEDEC-RJ*_      \r\nCEMADEN-RJ  \r\n07/11/2026\r\n \r\n*IDAP*\r\nALERTA VIA IDAP\r\n\r\n"
+            "-Tipo: Chuvas Intensas todos os municípios não autônomos do estado do Rio de Janeiro (Vigência: 15h00 de 07/11 até às 12h00 de 08/11)\r\n"
+            "-Tipo: Chuvas Intensas todos os municípios não autônomos da região Baixada Litorânea. (Vigência: 16h10 de 07/11 até às 00h00 de 08/11)\r\n\r\n"
+            "*DEFESA CIVIL ALERTA (DCA/Cell Broadcast)*  \r\nMunicípios:\r\n*Niterói, São Gonçalo* - Chuvas Intensas (Severo - 15h40)\r\n")
+    assert r["tipo"] == "idap" and r["envios"] == 2
