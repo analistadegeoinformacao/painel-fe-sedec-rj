@@ -66,7 +66,6 @@ conjuntos:
       sirene_toque:    ["SIRENE - TOQUE DE CHUVA (Nº)"]
       sirene_mobilizacao: ["SIRENE - MOBILIZAÇÃO (Nº)"]
       cell_broadcast:  ["CELL BROADCAST"]
-      pontos_apoio:    ["PONTOS DE APOIO (Nº)"]
       decreto:         ["DECRETO"]
     tipos:
       data: data
@@ -91,7 +90,6 @@ conjuntos:
       sirene_toque: inteiro
       sirene_mobilizacao: inteiro
       cell_broadcast: inteiro
-      pontos_apoio: inteiro
     # Linhas sem município são boletins (sirenes, Cell Broadcast). Em vez de
     # aparecerem como "Não informado", vão para um conjunto próprio.
     separar_sem_municipio: boletins
