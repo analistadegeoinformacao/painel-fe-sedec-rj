@@ -313,3 +313,18 @@ body:not([data-amb="fogo"]) [data-so-amb="fogo"] { display: none; }
 .leaflet-bar a.botao-enquadrar { display: grid; place-items: center; color: #333; }
 /* detalhe dos danos humanos: números centralizados sob o título de cada coluna */
 #r-danos th:nth-child(n+3), #r-danos td:nth-child(n+3) { text-align: center; }
+
+/* ---- Resumo para a Nota Técnica */
+.dlg-nota { max-width: min(720px, 94vw); border: 1px solid var(--borda); border-radius: 10px; background: var(--superficie); color: var(--texto); padding: 18px 20px; }
+.dlg-nota::backdrop { background: rgba(0,0,0,.45); }
+.dlg-nota h2 { margin: 0 0 6px; font-size: 17px; }
+.dlg-nota p { margin: 0 0 10px; font-size: 13px; opacity: .85; }
+.dlg-nota__campos { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 8px; }
+.dlg-nota__campos label { display: flex; gap: 6px; align-items: center; font-weight: 600; font-size: 13px; }
+.dlg-nota input { font: inherit; padding: 4px 6px; border: 1px solid var(--borda); border-radius: 6px; background: var(--superficie); color: var(--texto); }
+.dlg-nota__presets, .dlg-nota__fim { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.dlg-nota__tab { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+.dlg-nota__tab th { text-align: left; font-weight: 600; padding: 4px 10px 4px 0; vertical-align: top; width: 38%; }
+.dlg-nota__tab td { padding: 4px 0; }
+.dlg-nota__aviso { font-size: 12px; }
+.dlg-nota textarea { width: 100%; font: 12px/1.4 var(--mono, ui-monospace, monospace); border: 1px solid var(--borda); border-radius: 6px; background: var(--superficie); color: var(--texto); padding: 6px; }

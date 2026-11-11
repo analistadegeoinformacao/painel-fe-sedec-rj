@@ -3,6 +3,7 @@ import { seguro, kpis, tabela, indisponivel, multiSelecao } from "./componentes.
 import { barrasH, serieDiaria, rosca, colunasPorMes, redimensionarTodos } from "./graficos.js";
 import { criarMapa } from "./mapa.js";
 import { iniciarAnalytics, registrarAba } from "./analytics.js";
+import { resumoNota, blocoNota } from "./nota.js";
 import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, soma, rotuloRedec, titulo } from "./util.js";
 
 // =====================================================================
@@ -415,10 +416,10 @@ const ROTULO_ALERTA = { idap: "IDAP", cb: "Cell Broadcast", sirene: "Sirenes" };
 
 // Cartões de danos humanos: com o histórico, situação na data "Até" (sem filtro, hoje);
 // sem ele (planilha fora do ar), a aba DANOS HUMANOS da NOVA BASE, como antes.
-function dadosDanos() {
+function dadosDanos() { return danosEm(st.ate || hojeBRT()); }
+function danosEm(dia) {
   if (temHistorico()) {
     const retratos = retratosDiarios() || [];
-    const dia = st.ate || hojeBRT();
     const linhas = situacaoEm(retratos, dia);
     const ultimo = linhas.reduce((m, l) => (l.data_ref > m ? l.data_ref : m), "");
     return { historico: true, retratos, dia, linhas, ultimo, cob: cobertura() };
@@ -925,6 +926,70 @@ function montarBotaoAtualizar() {
   });
 }
 
+// ---- Resumo para a Nota Técnica Operacional: números do período, com as mesmas regras do painel
+// Ignora os filtros de REDEC/município/tipo da tela (a Nota é sempre do estado inteiro) e usa janela por data e hora.
+function gerarResumoNota(ini, fim) {
+  const guarda = { redec: st.redec, municipio: st.municipio, tipo: st.tipo };
+  st.redec = ""; st.municipio = ""; st.tipo = "";
+  try {
+    const todos = (nome) => filtrar(nome, { comPeriodo: false, depuracao: "todas", semTipo: true });
+    return resumoNota({
+      ini, fim, gerado: new Date().toISOString(), municipios: BASE.meta.municipios,
+      sisgeo: todos("sisgeo") || [], fogo: todos("fogo_sisgeo"), fogoAbertos: todos("fogo_abertos") || [],
+      danos: (dia) => danosEm(dia), decretos: filtrar("decretos", { comPeriodo: false }) || [], vigente,
+      severidade: filtrar("severidade", { comPeriodo: false }) || [], alertas: filtrar("alertas_msg", { comPeriodo: false }) || [],
+    });
+  } finally { Object.assign(st, guarda); }
+}
+
+function montarResumoNota() {
+  const dlg = document.getElementById("dlg-nota");
+  if (!dlg || typeof dlg.showModal !== "function") return;
+  const $ = (id) => document.getElementById(id);
+  const campos = ["nota-de", "nota-hde", "nota-ate", "nota-hate"];
+  const preset = (tipo) => {
+    const hoje = hojeBRT();
+    const v = { diurno: [hoje, "07:00", hoje, "19:00"], noturno: [somaDias(hoje, -1), "19:00", hoje, "07:00"], dia: [hoje, "00:00", hoje, "19:00"] }[tipo];
+    campos.forEach((id, i) => { $(id).value = v[i]; });
+    calcular();
+  };
+  const linhaK = (rotulo, valor) => `<tr><th>${esc(rotulo)}</th><td>${esc(valor)}</td></tr>`;
+  function calcular() {
+    const [de, hde, ate, hate] = campos.map((id) => $(id).value);
+    if (!de || !hde || !ate || !hate) { $("nota-previa").innerHTML = ""; $("nota-bloco").value = ""; return; }
+    const ini = `${de}T${hde}`, fim = `${ate}T${hate}`;
+    if (fim <= ini) { $("nota-previa").innerHTML = `<p class="falha">O fim precisa ser posterior ao início.</p>`; $("nota-bloco").value = ""; return; }
+    const r = gerarResumoNota(ini, fim);
+    const c = r.chuvas;
+    const tipos = Object.entries(c.tipos).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}: ${n}`).join(" · ") || "—";
+    $("nota-previa").innerHTML = `<table class="dlg-nota__tab">` +
+      linhaK("Chuvas · total registradas", fmt(c.total)) + linhaK("Chuvas · validadas", fmt(c.validadas)) + linhaK("Chuvas · por tipo (validadas)", tipos) +
+      (r.fogo ? linhaK("Fogo em vegetação · validadas", fmt(r.fogo.validadas)) : "") +
+      linhaK("Danos humanos (retrato em " + fmtData(r.fim.slice(0, 10)) + ")", r.danos ? `desabrigados ${fmt(r.danos.desabrigados)} · desalojados ${fmt(r.danos.desalojados)} · óbitos ${fmt(r.danos.obitos)} · afetados ${fmt(r.danos.afetados)}` : "sem registro nesta data") +
+      linhaK("Decretos vigentes", fmt(r.decretos.length)) +
+      linhaK("Severidade", `ALTO: ${r.severidade.alto.join(", ") || "—"} · MUITO ALTO: ${r.severidade.muito_alto.join(", ") || "—"}`) +
+      `</table><p class="dlg-nota__aviso">Conferir "ocorrências abertas", abrigos, toques de aviso e riscos (CEMADEN): não vêm do painel.</p>`;
+    $("nota-bloco").value = blocoNota(r);
+  }
+  document.getElementById("botao-nota").addEventListener("click", () => {
+    if (!campos.every((id) => $(id).value)) {
+      const hoje = hojeBRT();
+      const de = st.de || hoje, ate = st.ate || hoje;
+      campos.forEach((id, i) => { $(id).value = [de, "07:00", ate, "19:00"][i]; });
+    }
+    calcular();
+    dlg.showModal();
+  });
+  campos.forEach((id) => $(id).addEventListener("change", calcular));
+  dlg.querySelectorAll("[data-preset]").forEach((b) => b.addEventListener("click", () => preset(b.dataset.preset)));
+  $("nota-copiar").addEventListener("click", async () => {
+    const t = $("nota-bloco").value;
+    try { await navigator.clipboard.writeText(t); } catch { $("nota-bloco").select(); document.execCommand("copy"); }
+    $("nota-copiar").textContent = "Copiado";
+    setTimeout(() => { $("nota-copiar").textContent = "Copiar bloco"; }, 1800);
+  });
+}
+
 // ---- modo claro/escuro: o botão alterna e guarda a escolha neste navegador
 function temaEfetivo() {
   const t = document.documentElement.dataset.theme;
@@ -1004,6 +1069,7 @@ async function iniciar() {
   status(BASE.meta);
   montarFiltros();
   montarBotaoAtualizar();
+  montarResumoNota();
   // painel aberto numa tela: confere a cada 2 min se há dados novos e recarrega sozinho
   setInterval(() => verificarDadosNovos().catch(() => {}), 2 * 60 * 1000);
 

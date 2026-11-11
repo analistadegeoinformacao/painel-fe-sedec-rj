@@ -73,6 +73,17 @@ Os danos humanos do ambiente Eventos REDECs vêm da planilha **Histórico de Dan
 - **Reserva:** se a planilha de histórico não puder ser lida (ou estiver vazia), os cartões voltam a mostrar a aba
   DANOS HUMANOS e o resto do painel publica normalmente.
 
+## Resumo para a Nota Técnica Operacional
+
+Botão **Resumo p/ Nota** (topo do painel): o operador escolhe início e fim (data e hora; presets diurno 07h–19h,
+noturno 19h–07h e 00h–19h) e o painel calcula, **para o estado inteiro** (ignora os filtros de REDEC, município e tipo
+da tela) e com as mesmas regras de depuração: ocorrências de chuva (total registradas, validadas, por tipo, por REDEC e
+município), fogo em vegetação, danos humanos (último retrato por município na data do fim), decretos vigentes (já
+em forma de linha da Nota), REDECs em nível ALTO/MUITO ALTO e alertas (IDAP, Cell Broadcast, sirenes) no período.
+Início e fim entram na janela. O bloco copiado começa com `NIIAD-NOTA/1` e traz o JSON na linha seguinte; é colado na
+*Ferramenta-base do Operador*. Não vêm do painel: ocorrências abertas, abrigos, toques de aviso e riscos hidrológico,
+de deslizamento e de incêndio (CEMADEN). Código em `site/assets/js/nota.js`; testes: `node --test tests/js/nota.test.mjs`.
+
 ## Por que este desenho não quebra a cada commit
 
 | Risco | Proteção |

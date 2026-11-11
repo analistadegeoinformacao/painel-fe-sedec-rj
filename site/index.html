@@ -55,12 +55,33 @@
         <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
         <span>Atualizar</span>
       </button>
+      <button type="button" class="botao-atualizar" id="botao-nota" title="Números do período para a Nota Técnica Operacional (ferramenta do operador NI²AD)"><span>Resumo p/ Nota</span></button>
       <button type="button" class="botao-atualizar botao-tema" id="botao-tema" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
         <svg class="icone-lua" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icone-sol" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
       </button>
     </div>
   </header>
+
+  <dialog id="dlg-nota" class="dlg-nota" aria-labelledby="dlg-nota-t">
+    <h2 id="dlg-nota-t">Resumo para a Nota Técnica Operacional</h2>
+    <p>Janela por data e hora (início e fim incluídos), estado inteiro, com as regras de depuração do painel. Copie o bloco e cole na Ferramenta-base do Operador.</p>
+    <div class="dlg-nota__campos">
+      <label>Início <input type="date" id="nota-de"> <input type="time" id="nota-hde"></label>
+      <label>Fim <input type="date" id="nota-ate"> <input type="time" id="nota-hate"></label>
+    </div>
+    <div class="dlg-nota__presets">
+      <button type="button" class="botao-texto" data-preset="diurno">Diurno 07h–19h</button>
+      <button type="button" class="botao-texto" data-preset="noturno">Noturno 19h (ontem)–07h</button>
+      <button type="button" class="botao-texto" data-preset="dia">00h–19h</button>
+    </div>
+    <div id="nota-previa"></div>
+    <textarea id="nota-bloco" readonly rows="4" aria-label="Bloco para colar na ferramenta"></textarea>
+    <div class="dlg-nota__fim">
+      <button type="button" class="botao-texto" id="nota-copiar">Copiar bloco</button>
+      <button type="button" class="botao-texto" onclick="this.closest('dialog').close()">Fechar</button>
+    </div>
+  </dialog>
 
   <!-- Abas de cada ambiente: só as do ambiente ativo aparecem -->
   <nav class="abas" role="tablist" aria-label="Seções do ambiente">
