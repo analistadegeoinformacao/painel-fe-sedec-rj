@@ -377,6 +377,29 @@ conjuntos:
 
     compactar: true     # ~17 mil linhas: município/REDEC saem do JSON e voltam pelo código IBGE
 
+  chuvas_abertos:
+    aba: "EVENTOS ABERTOS"
+    titulo: "Eventos de chuva em andamento"
+    min_linhas: 0
+    obrigatorias: []
+    data_minima: "2025-01-01"
+    colunas:
+      redec:           ["REDEC"]
+      id_evento:       ["IdEvento"]
+      ocorrencia:      ["Ocorrência"]
+      data_ocorrencia: ["Data Ocorrência"]
+      unidade:         ["Unidade"]
+      tipo:            ["Tipo"]
+      subtipo:         ["Subtipo"]
+      situacao:        ["Situação"]
+      bairro:          ["Bairro"]
+      municipio:       ["Município"]
+      # DE FORA DE PROPÓSITO: coordenadas, Endereço, Efetivo, Viatura, Avaliação/Atualização Cenário
+    tipos: {redec: redec, data_ocorrencia: datahora, municipio: municipio}
+    excluir:
+      tipo: ["Fogo em Vegetação"]   # fogo em andamento fica no SisGeO · Fogo
+    chave_unica: [id_evento, ocorrencia]
+
   fogo_abertos:
     planilha: fogo
     aba: "EVENTOS ABERTOS"

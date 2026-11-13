@@ -98,7 +98,7 @@ test("REDEC e município aceitam várias escolhas, e o link guarda todas", async
 });
 
 test("nenhum dado pessoal no JSON publicado", async ({ request }) => {
-  for (const base of ["sisgeo", "fogo_sisgeo", "fogo_abertos"]) {
+  for (const base of ["sisgeo", "fogo_sisgeo", "fogo_abertos", "chuvas_abertos"]) {
     const txt = await (await request.get(`/data/${base}.json`)).text();
     expect(txt, base).not.toMatch(/\(#?\d{5,7}\)/);
     expect(txt.toLowerCase(), base).not.toContain("efetivo");
@@ -132,7 +132,7 @@ test("botão Atualizar busca a versão mais recente e carrega dados novos", asyn
 test("SisGeO: indicadores de tipo, subtipo, município e REDEC", async ({ page }) => {
   await abrir(page, "#amb=sisgeo");
   await expect(page.locator("#s-kpis .kpi__rotulo")).toHaveText([
-    "Tipo mais frequente", "Subtipo mais frequente", "Município com mais ocorrências", "REDEC com mais ocorrências",
+    "Tipo mais frequente", "Subtipo mais frequente", "Município com mais ocorrências", "REDEC com mais ocorrências", "Em andamento",
   ]);
   await expect(page.locator("#s-kpis .kpi__sub").first()).toContainText("ocorrências (");
 });
@@ -447,4 +447,12 @@ test("REDECs: Consulta oferece só o histórico de decretação e o histórico d
   expect(await page.locator("#r-base option").evaluateAll((os) => os.map((o) => o.value))).toEqual(["decretos_historico", "danos_historico"]);
   await page.selectOption("#r-base", "danos_historico");
   await expect(page.locator("#r-consulta thead")).toContainText("Afetados (total)");
+});
+
+test("SisGeO · Chuvas: eventos em andamento (aba EVENTOS ABERTOS, sem fogo em vegetação)", async ({ page }) => {
+  await abrir(page);
+  await expect(page.locator("#s-kpis .kpi").filter({ hasText: "Em andamento" }).locator(".kpi__valor")).toHaveText("1");
+  await expect(page.locator("#s-abertos tbody tr")).toHaveCount(1);
+  await expect(page.locator("#s-abertos")).toContainText("DESLIZAMENTO DE TERRA");
+  await expect(page.locator("#s-abertos")).not.toContainText("Fogo em Vegetação");
 });

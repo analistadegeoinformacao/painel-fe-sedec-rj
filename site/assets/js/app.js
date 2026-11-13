@@ -15,7 +15,7 @@ import { fmt, fmtData, fmtMoeda, esc, hojeBRT, somaDias, diasEntre, contarPor, s
 // =====================================================================
 
 const AMBIENTES = {
-  sisgeo: { abas: ["geral", "tipos", "registros", "depuracao", "qualidade"], conjuntos: ["sisgeo", "nivel_resposta"],
+  sisgeo: { abas: ["geral", "tipos", "registros", "depuracao", "qualidade"], conjuntos: ["sisgeo", "chuvas_abertos", "nivel_resposta"],
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
   redecs: { abas: ["geral", "decretos", "resposta", "registros", "consulta", "qualidade"],
             conjuntos: ["eventos", "boletins", "danos_humanos", "danos_historico", "decretos", "decretos_historico", "alertas",
@@ -56,6 +56,7 @@ function gravarURL() {
 // ------------------------------------------------------------- filtros
 const CAMPO_DATA = {
   fogo_sisgeo: (l) => l.data_ocorrencia?.slice(0, 10), fogo_abertos: (l) => l.data_ocorrencia?.slice(0, 10),
+  chuvas_abertos: (l) => l.data_ocorrencia?.slice(0, 10),
   fogo_temperatura: (l) => l.data, fogo_umidade: (l) => l.data,
   sisgeo: (l) => l.data_ocorrencia?.slice(0, 10), eventos: (l) => l.data, boletins: (l) => l.data,
   alertas: (l) => l.data, alertas_msg: (l) => l.data, ajuda_humanitaria: (l) => l.data, pontos_apoio: (l) => l.data,
@@ -298,6 +299,7 @@ const SISGEO = {
         ...TIPOS_PRINCIPAIS.map(doTipo),
       ]);
     });
+    const abertos = filtrar("chuvas_abertos", { comPeriodo: false });
     seguro("s-kpis", (el) => {
       const lider = (campo, nomear) => liderDe(sis, campo, nomear);
       kpis(el, [
@@ -305,7 +307,20 @@ const SISGEO = {
         { rotulo: "Subtipo mais frequente", texto: true, ...lider("subtipo") },
         { rotulo: "Município com mais ocorrências", texto: true, ...lider("cod_ibge", nomeMun) },
         { rotulo: "REDEC com mais ocorrências", texto: true, ...lider("redec", rotuloRedec) },
+        { rotulo: "Em andamento", valor: abertos ? abertos.length : "—", sub: "aba EVENTOS ABERTOS" },
       ]);
+    });
+    seguro("s-abertos", (el) => {
+      if (abertos && !abertos.length) { el.innerHTML = `<div class="vazio">Nenhum evento de chuva em aberto no momento.</div>`; return; }
+      tabela(el, {
+        nome: "chuvas_em_andamento", linhas: abertos, porPagina: 15, ordem: { campo: "data_ocorrencia", dir: -1 },
+        colunas: [
+          { campo: "data_ocorrencia", titulo: "Início", formato: fmtData }, { campo: "id_evento", titulo: "Evento" },
+          { campo: "ocorrencia", titulo: "Ocorrência" }, { campo: "municipio", titulo: "Município", formato: titulo },
+          { campo: "bairro", titulo: "Bairro" }, { campo: "tipo", titulo: "Tipo" }, { campo: "subtipo", titulo: "Subtipo" },
+          { campo: "unidade", titulo: "Unidade" }, { campo: "situacao", titulo: "Situação" },
+        ],
+      });
     });
     seguro("s-redec", (el) => { if (!indisponivel(el, sis)) barrasH(el, porRedec(sis), { aoClicar: alternarRedec, selecionado: redecsSel(), unidade: "ocorrências" }); });
     seguro("s-serie", (el) => {

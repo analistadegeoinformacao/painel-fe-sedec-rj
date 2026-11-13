@@ -417,3 +417,13 @@ def test_historico_sem_coluna_obrigatoria_bloqueia(tmp_path):
     quebrada.write_text(AMOSTRA_HIST.read_text(encoding="utf-8").replace("DATA_REF", "DATA"), encoding="utf-8")
     rc, _ = rodar_historico(tmp_path, quebrada)
     assert rc == 1
+
+
+def test_chuvas_abertos_sem_fogo_e_sem_dados_pessoais(tmp_path):
+    rc, saida = rodar(tmp_path)
+    assert rc == 0
+    ab = json.loads((saida / "chuvas_abertos.json").read_text(encoding="utf-8"))
+    assert [r["ocorrencia"] for r in ab] == ["C20992976301"]
+    txt = json.dumps(ab, ensure_ascii=False)
+    for proibido in ("ANONIMIZADO", "-22.51", "lat", "endereco", "efetivo"):
+        assert proibido not in txt.lower() if proibido.islower() else proibido not in txt
