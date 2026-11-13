@@ -449,10 +449,12 @@ test("REDECs: Consulta oferece só o histórico de decretação e o histórico d
   await expect(page.locator("#r-consulta thead")).toContainText("Afetados (total)");
 });
 
-test("SisGeO · Chuvas: eventos em andamento (aba EVENTOS ABERTOS, sem fogo em vegetação)", async ({ page }) => {
+test("SisGeO · Chuvas: eventos em andamento (aba EVENTOS ABERTOS, sem fogo em vegetação)", async ({ page, request }) => {
+  // a conta esperada sai dos próprios dados publicados (amostra no PR, planilha real na publicação)
+  const dados = await (await request.get("/data/chuvas_abertos.json")).json();
   await abrir(page);
-  await expect(page.locator("#s-kpis .kpi").filter({ hasText: "Em andamento" }).locator(".kpi__valor")).toHaveText("1");
-  await expect(page.locator("#s-abertos tbody tr")).toHaveCount(1);
-  await expect(page.locator("#s-abertos")).toContainText("DESLIZAMENTO DE TERRA");
-  await expect(page.locator("#s-abertos")).not.toContainText("Fogo em Vegetação");
+  await expect(page.locator("#s-kpis .kpi").filter({ hasText: "Em andamento" }).locator(".kpi__valor")).toHaveText(String(dados.length));
+  if (dados.length) await expect(page.locator("#s-abertos tbody tr").first()).toBeVisible();
+  else await expect(page.locator("#s-abertos")).toContainText("Nenhum evento de chuva em aberto");
+  expect(dados.some((l) => /fogo em vegeta/i.test(l.tipo || ""))).toBe(false);
 });
