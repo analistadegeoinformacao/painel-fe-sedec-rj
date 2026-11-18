@@ -31,7 +31,8 @@ jobs:
       - working-directory: e2e
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          # usa o Google Chrome já instalado no runner (igual ao publicar.yml): baixar o Chromium e as
+          # dependências do sistema travava o job por 10 min
           npx playwright test
       - if: always()
         uses: actions/upload-artifact@v4

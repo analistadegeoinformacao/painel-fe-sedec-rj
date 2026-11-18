@@ -26,7 +26,7 @@ const AMBIENTES = {
             fonte: "Fonte: SISGEO/CBMERJ | CEMADEN-RJ | INMET" },
 };
 
-const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "", decretos: "", danos: "", evol: "" };
+const st = { amb: "sisgeo", aba: "geral", de: "", ate: "", hde: "", hate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", camada: "eventos", apoio: "", alerta: "", decretos: "", danos: "", evol: "" };
 const ultimaAba = { sisgeo: "geral", redecs: "geral", fogo: "geral" };
 let BASE = null;
 let redecDoCod = new Map();
@@ -63,12 +63,27 @@ const CAMPO_DATA = {
   danos_historico: (l) => l.data_ref,
 };
 
+// Hora do dia (HH:MM) de cada conjunto que a tem. Os demais (boletins, danos humanos, decretos...)
+// só têm a data e ficam como estão quando o filtro de horário é usado.
+// Os "abertos" (situação de agora) também não entram: o filtro de horário não esconde evento em andamento.
+const CAMPO_HORA = {
+  fogo_sisgeo: (l) => l.data_ocorrencia?.slice(11, 16), sisgeo: (l) => l.data_ocorrencia?.slice(11, 16),
+  eventos: (l) => l.hora, alertas_msg: (l) => l.hora,
+};
+// Janela de horário de cada dia. Se "das" for maior que "às", atravessa a meia-noite (22:00 às 06:00).
+function naJanelaHoraria(h) {
+  const de = st.hde || "00:00", ate = st.hate || "23:59";
+  if (!h) return false;
+  return de <= ate ? h >= de && h <= ate : h >= de || h <= ate;
+}
+
 // Depuração do SisGeO (feita no ETL): linhas com "depuracao" (situacao | motivo | ambos) não contam
 // em nenhum painel; só aparecem na aba Depuração (depuracao: "excluidas").
 function filtrar(nome, { comPeriodo = true, depuracao = "validas", semTipo = false } = {}) {
   const linhas = BASE.dados[nome];
   if (linhas === null || linhas === undefined) return null;
   const fd = CAMPO_DATA[nome];
+  const fh = (st.hde || st.hate) ? CAMPO_HORA[nome] : null;
   const rs = redecsSel(), ms = munsSel();
   return linhas.filter((l) => {
     if (depuracao === "validas" && l.depuracao) return false;
@@ -77,6 +92,7 @@ function filtrar(nome, { comPeriodo = true, depuracao = "validas", semTipo = fal
       const d = fd(l);
       if (!d || (st.de && d < st.de) || (st.ate && d > st.ate)) return false;
     }
+    if (fh && !naJanelaHoraria(fh(l))) return false;
     if (nome === "alertas_msg") {
       // mensagem sem local identificado vale para o estado todo; IDAP por região vale para a REDEC citada
       if (ms.length && l.municipios.length && !l.municipios.some((c) => ms.includes(c))) return false;
@@ -98,8 +114,9 @@ function aplicarPeriodo(p) {
   else if (p === "ano") { st.de = hoje.slice(0, 4) + "-01-01"; st.ate = hoje; }
   else { st.de = somaDias(hoje, -(Number(p) - 1)); st.ate = hoje; }
 }
+const descricaoHorario = () => (st.hde || st.hate ? ` · das ${st.hde || "00:00"} às ${st.hate || "23:59"}` : "");
 const descricaoPeriodo = () =>
-  !st.de && !st.ate ? "todo o período" : `${st.de ? fmtData(st.de) : "início"} a ${st.ate ? fmtData(st.ate) : "hoje"}`;
+  (!st.de && !st.ate ? "todo o período" : `${st.de ? fmtData(st.de) : "início"} a ${st.ate ? fmtData(st.ate) : "hoje"}`) + descricaoHorario();
 
 // municípios oferecidos = os das REDECs escolhidas (todos, se nenhuma); escolhas fora delas saem
 function preencherMunicipios() {
@@ -122,11 +139,14 @@ function montarFiltros() {
   });
   document.getElementById("f-de").addEventListener("change", (e) => { st.de = e.target.value; st.periodo = ""; atualizar(); });
   document.getElementById("f-ate").addEventListener("change", (e) => { st.ate = e.target.value; st.periodo = ""; atualizar(); });
+  // o horário não mexe nos botões Hoje/7 dias/...: é um recorte a mais sobre o período escolhido
+  document.getElementById("f-hde").addEventListener("change", (e) => { st.hde = e.target.value; atualizar(); });
+  document.getElementById("f-hate").addEventListener("change", (e) => { st.hate = e.target.value; atualizar(); });
   const selT = document.getElementById("f-tipo");
   ordenar(contarPor((BASE.dados.sisgeo || []).filter((l) => !l.depuracao), "tipo")).forEach(([t]) => selT.add(new Option(t, t)));
   selT.addEventListener("change", (e) => { st.tipo = e.target.value; atualizar(); });
   document.getElementById("f-limpar").addEventListener("click", () => {
-    Object.assign(st, { de: "", ate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "", decretos: "", danos: "", evol: "" });
+    Object.assign(st, { de: "", ate: "", hde: "", hate: "", periodo: "tudo", redec: "", municipio: "", tipo: "", apoio: "", alerta: "", decretos: "", danos: "", evol: "" });
     preencherMunicipios();
     atualizar();
   });
@@ -136,6 +156,8 @@ function sincronizarControles() {
   document.body.dataset.amb = st.amb;
   document.getElementById("f-de").value = st.de;
   document.getElementById("f-ate").value = st.ate;
+  document.getElementById("f-hde").value = st.hde;
+  document.getElementById("f-hate").value = st.hate;
   ctrlRedec.marcar(redecsSel());
   ctrlMun.marcar(munsSel());
   document.getElementById("f-tipo").value = st.tipo;

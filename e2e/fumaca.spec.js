@@ -97,6 +97,39 @@ test("REDEC e município aceitam várias escolhas, e o link guarda todas", async
   await expect.poll(n).toBe(total);
 });
 
+test("filtro de horário recorta cada dia, atravessa a meia-noite e vai no link", async ({ page }) => {
+  await abrir(page, "#amb=sisgeo&aba=depuracao");
+  const kpi = page.locator("#s-dep-kpis .kpi__valor").first(); // Registradas
+  const n = async () => Number((await kpi.innerText()).replace(/\D/g, ""));
+  const total = await n();
+  expect(total).toBeGreaterThan(0);
+  const janela = async (de, ate) => {
+    await page.fill("#f-hde", de);
+    await page.fill("#f-hate", ate);
+    await page.locator("#f-hate").dispatchEvent("change");
+  };
+  await janela("06:00", "11:59");
+  await expect.poll(n).toBeLessThan(total);
+  const manha = await n();
+  await expect(page.locator("#s-dep-kpis .kpi__sub").first()).toContainText("das 06:00 às 11:59");
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get("hde")).toBe("06:00");
+  // "das 22:00 às 05:59" atravessa a meia-noite; as duas janelas e o resto do dia somam o total
+  await janela("12:00", "21:59");
+  const tarde = await n();
+  await janela("22:00", "05:59");
+  const noite = await n();
+  await janela("00:00", "05:59");
+  const madrugada = await n();
+  await janela("22:00", "23:59");
+  const fimDoDia = await n();
+  expect(noite).toBe(madrugada + fimDoDia);
+  expect(manha + tarde + noite).toBe(total);
+  // o horário não mexe nos botões de período e some ao limpar
+  await page.click("#f-limpar");
+  await expect(page.locator("#f-hde")).toHaveValue("");
+  await expect.poll(n).toBe(total);
+});
+
 test("nenhum dado pessoal no JSON publicado", async ({ request }) => {
   for (const base of ["sisgeo", "fogo_sisgeo", "fogo_abertos", "chuvas_abertos"]) {
     const txt = await (await request.get(`/data/${base}.json`)).text();
